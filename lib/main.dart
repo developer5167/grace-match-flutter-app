@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:app_links/app_links.dart';
+import 'core/constants/app_constants.dart';
 import 'core/storage/app_storage.dart';
 import 'core/state/active_chat_state.dart';
 import 'core/router/app_router.dart';
@@ -54,6 +55,10 @@ void _handleAppLink(Uri uri) {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // A release build pinned to the dev tunnel cannot be fixed without a new
+  // store submission, so fail loudly here rather than silently in the field.
+  AppConstants.assertReleaseConfig();
 
   // Initialize Firebase
 await Firebase.initializeApp(

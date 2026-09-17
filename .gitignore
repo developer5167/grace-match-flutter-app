@@ -45,3 +45,38 @@ app.*.map.json
 /android/app/release
 /lib/firebase_options.dart
 aws.csv
+
+# ── Added for this repo ──────────────────────────────────────
+# Secrets and per-environment config
+.env
+.env.*
+!.env.example
+
+# iOS: Pods are resolved from Podfile.lock, which IS committed.
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# Signing / provisioning
+*.mobileprovision
+*.p12
+*.cer
+
+# Flutter build output
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages

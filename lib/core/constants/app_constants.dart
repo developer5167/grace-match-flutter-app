@@ -1,6 +1,36 @@
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
   AppConstants._();
-  static const String baseUrl = 'https://edison-unsighted-shani.ngrok-free.dev/api/v1';
+  /// API base URL, supplied at build time so dev / staging / prod differ by
+  /// flag rather than by editing this file:
+  ///
+  ///   flutter build apk --dart-define=API_BASE_URL=https://api.gracematch.app/api/v1
+  ///
+  /// The default is the development tunnel. A release build MUST override it;
+  /// see assertReleaseConfig() below.
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://edison-unsighted-shani.ngrok-free.dev/api/v1',
+  );
+
+  /// Socket origin, derived from baseUrl unless overridden explicitly.
+  static const String socketUrl = String.fromEnvironment('SOCKET_URL');
+
+  /// True when the app is still pointing at the development tunnel.
+  static bool get isUsingDevTunnel => baseUrl.contains('ngrok');
+
+  /// Fails fast in a release build that forgot --dart-define=API_BASE_URL.
+  /// A store release pinned to a dev tunnel is unrecoverable without a new
+  /// submission, so this is worth crashing over at startup.
+  static void assertReleaseConfig() {
+    if (kReleaseMode && isUsingDevTunnel) {
+      throw StateError(
+        'Release build is pointing at the development tunnel. '
+        'Rebuild with --dart-define=API_BASE_URL=https://<your-api-host>/api/v1',
+      );
+    }
+  }
   static const String appName = 'GraceMatch';
   static const String tagline = 'Where faith meets forever';
 }

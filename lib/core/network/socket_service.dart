@@ -28,7 +28,11 @@ class SocketService {
     final token = await AppStorage.getAccessToken();
     if (token == null) return;
 
-    _socket = io.io(AppConstants.baseUrl.replaceAll('/api/v1', ''), {
+    _socket = io.io(
+        AppConstants.socketUrl.isNotEmpty
+            ? AppConstants.socketUrl
+            : AppConstants.baseUrl.replaceAll('/api/v1', ''),
+        {
       'transports': ['websocket'],
       'autoConnect': true,
       'auth': {'token': token},
