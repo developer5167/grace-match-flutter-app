@@ -83,7 +83,37 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
-      body: Padding(
+      // The action is pinned in bottomNavigationBar rather than floated with a
+      // Spacer. SafeArea then keeps it clear of the home indicator, and it
+      // cannot be pushed off-screen by a tall preview or a small device.
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+        child: ElevatedButton(
+          onPressed: (_selectedImage == null || _isUploading) ? null : _uploadId,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.gold,
+            foregroundColor: AppColors.textOnGold,
+            disabledBackgroundColor: AppColors.surfaceHighest,
+            disabledForegroundColor: AppColors.textTertiary,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+          ),
+          child: _isUploading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : Text(
+                  _selectedImage == null
+                      ? 'Select an ID photo first'
+                      : 'Submit for Verification',
+                ),
+        ),
+      ),
+      // Scrollable: a 200px preview plus copy overflows a small screen, and
+      // the old Column had no scroll view at all.
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -130,24 +160,14 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
                       ),
               ),
             ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: (_selectedImage == null || _isUploading) ? null : _uploadId,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.textOnGold,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            const SizedBox(height: 16),
+            if (_selectedImage != null)
+              TextButton.icon(
+                onPressed: _isUploading ? null : _pickImage,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Choose a different photo'),
+                style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
               ),
-              child: _isUploading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('Submit for Verification'),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),

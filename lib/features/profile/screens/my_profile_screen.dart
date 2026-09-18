@@ -81,8 +81,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
         final hasRejected = photos.any((p) => p is Map && p['review_status'] == 'rejected');
         final hasPending = photos.any((p) => p is Map && p['review_status'] == 'pending');
-        final isVerified = profile['is_id_verified'] ?? profile['trust_badge'] ?? false;
-        final hasVideo = profile['video_selfie_url'] != null;
+        // These live under `verification`, not on the profile row. Reading them
+        // off `profile` meant the panel was always "nothing submitted", even
+        // immediately after a successful upload.
+        final verification = data['verification'] as Map<String, dynamic>? ?? const {};
+        final isVerified = verification['is_id_verified'] == true;
+        final hasVideo = verification['has_selfie_video'] == true;
         final completionScore = (profile['profile_completion_score'] as num?)?.toInt() ?? 0;
         final subscription = data['subscription'] as Map<String, dynamic>? ?? const {};
         final isPremium = subscription['is_premium'] == true;
@@ -240,12 +244,14 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                             profile: profile,
                             hasPhotos: photos.isNotEmpty,
                             hasVideo: hasVideo,
-                            isVerified: isVerified is bool ? isVerified : false,
+                            isVerified: isVerified,
                             onTap: (extra) {
                               // Verify identity chip should open govt ID upload screen directly.
                               if (extra == -1) {
-                                Navigator.push(
-                                  context,
+                                // rootNavigator: true, otherwise this pushes
+                                // onto the shell's inner Navigator and renders
+                                // underneath the bottom tab bar.
+                                Navigator.of(context, rootNavigator: true).push(
                                   MaterialPageRoute(
                                     builder: (_) => const IdentityVerificationScreen(),
                                   ),
@@ -385,7 +391,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           Icons.verified_user_rounded, 
                           'Identity Verification', 
                           isVerified ? 'Verified Account' : 'Trust badge status',
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IdentityVerificationScreen())),
+                          onTap: () => Navigator.of(context, rootNavigator: true)
+                              .push(MaterialPageRoute(builder: (_) => const IdentityVerificationScreen())),
                         ),
                         _buildSettingsTile(
                           Icons.ios_share_rounded,

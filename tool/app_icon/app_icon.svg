@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#dfc08a"/>
+      <stop offset="45%"  stop-color="#c9a96e"/>
+      <stop offset="100%" stop-color="#9e7a47"/>
+    </linearGradient>
+    <linearGradient id="gB" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#f0d9a8"/>
+      <stop offset="50%"  stop-color="#dfc08a"/>
+      <stop offset="100%" stop-color="#c9a96e"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="46%" r="52%">
+      <stop offset="0%"   stop-color="#c9a96e" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#c9a96e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%"   stop-color="#13131a"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#tile)"/>
+  <rect width="1024" height="1024" fill="url(#halo)"/>
+
+  <!-- Same construction as the web nav mark: two equal rings, overlapping by
+       half a radius, the right one lighter so the interlock reads. -->
+  <g fill="none" stroke-linecap="round">
+    <circle cx="420" cy="512" r="224" stroke="url(#gA)" stroke-width="56"/>
+    <circle cx="604" cy="512" r="224" stroke="url(#gB)" stroke-width="56" opacity="0.92"/>
+  </g>
+</svg>

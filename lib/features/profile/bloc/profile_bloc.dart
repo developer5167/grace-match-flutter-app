@@ -47,15 +47,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _onSendInterest(SendInterestEvent event, Emitter<ProfileState> emit) async {
     try {
       await _repository.sendInterest(event.userId, isSuper: event.isSuper);
-      // We could emit a specific 'InterestSent' state if needed, 
-      // but for now we just refresh or stay on current state.
       if (state is ProfileLoaded) {
-        final currentData = (state as ProfileLoaded).profile;
-        // Optimization: Update local state to show interest sent
+        final current = state as ProfileLoaded;
+        // userId MUST be carried over. The profile screen renders a spinner
+        // whenever state.userId != the profile it is showing, so emitting
+        // without it leaves the screen loading forever.
+        // interaction_sender_id is left as it was. Going from 'none' it is
+        // null, which is what the bottom bar needs to show "interest sent"
+        // rather than the accept/decline pair meant for the receiver.
         emit(ProfileLoaded({
-          ...currentData,
-          'interaction_status': 'sent'
-        }));
+          ...current.profile,
+          'interaction_status': 'sent',
+        }, userId: current.userId));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));

@@ -697,18 +697,40 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           ),
         );
       } else {
+        // Wrapped in a Row like every other branch. Without it this is a
+        // Container of unbounded height inside bottomNavigationBar, and the
+        // Center then expands to fill the entire screen.
         return Container(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceElevated,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.goldMild),
-            ),
-            child: const Center(
-              child: Text('INTEREST SENT', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            ),
+          decoration: BoxDecoration(color: AppColors.background.withOpacity(0.8)),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.goldMild),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_rounded, color: AppColors.gold, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'INTEREST SENT',
+                        style: TextStyle(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       }

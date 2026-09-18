@@ -20,6 +20,10 @@ dependencies:
 
   # ─── Networking ───────────────────────────────────────
   dio: ^5.7.0
+  # Both are already pulled in transitively by dio/flutter, but importing them
+  # directly requires declaring them.
+  http_parser: ^4.1.0   # MediaType, for setting a multipart part's Content-Type
+  path: ^1.9.0          # basename/extension when building the upload part
   dio_smart_retry: ^6.0.0
 
   # ─── Dependency Injection ─────────────────────────────
@@ -67,6 +71,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
 
@@ -76,3 +81,24 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/icons/
+
+# ─── App icon ────────────────────────────────────────────────
+# The two interlocking rings from the web site's brand mark, so the icon on a
+# handset and the logo beside "GraceMatch" on the web are the same object.
+#
+# Sources live in tool/ rather than assets/ on purpose: they are build-time
+# inputs, and assets/icons/ is a declared Flutter asset folder, so keeping two
+# 1024px PNGs there would ship them inside the app for nothing.
+#
+# Regenerate after editing tool/app_icon/app_icon.svg:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "tool/app_icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true          # the App Store rejects icons with alpha
+  # Adaptive icons are masked to a circle, squircle or squarcle depending on the
+  # launcher, so the rings are inset into the 66% safe zone in this variant and
+  # the tile colour is drawn behind rather than baked in.
+  adaptive_icon_background: "#0a0a0f"
+  adaptive_icon_foreground: "tool/app_icon/app_icon_foreground.png"

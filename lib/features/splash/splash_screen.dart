@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/storage/app_storage.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/widgets/rings_mark.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -149,16 +150,13 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo mark
-                  _buildLogoMark()
+                  // Brand mark: the same two rings as the app icon and the
+                  // web logo, converging the way they do on the site. It runs
+                  // its own entrance, so no scale/elastic here — the two would
+                  // fight each other.
+                  const AnimatedRingsMark(size: 150)
                       .animate()
-                      .scale(
-                        begin: const Offset(0.5, 0.5),
-                        end: const Offset(1.0, 1.0),
-                        duration: 700.ms,
-                        curve: Curves.elasticOut,
-                      )
-                      .fadeIn(duration: 400.ms),
+                      .fadeIn(duration: 500.ms),
 
                   const SizedBox(height: 28),
 
@@ -229,46 +227,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildLogoMark() {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (_, __) => Container(
-        width: 90,
-        height: 90,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [AppColors.surface, AppColors.surfaceElevated],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: AppColors.goldMild, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.gold
-                  .withAlpha((_glowAnimation.value * 80).toInt()),
-              blurRadius: 30,
-              spreadRadius: 4,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Cross symbol
-              Text(
-                '✝',
-                style: TextStyle(
-                  fontSize: 28,
-                  color: AppColors.gold.withAlpha(
-                      (_glowAnimation.value * 255).toInt()),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
