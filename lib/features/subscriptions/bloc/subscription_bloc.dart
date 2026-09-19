@@ -14,7 +14,12 @@ class FetchPlansEvent extends SubscriptionEvent {}
 
 class InitiatePaymentEvent extends SubscriptionEvent {
   final Map<String, dynamic> plan;
-  const InitiatePaymentEvent(this.plan);
+
+  /// Priced by the server, not here. The sheet must open on the amount the
+  /// server will actually charge.
+  final String? couponCode;
+
+  const InitiatePaymentEvent(this.plan, {this.couponCode});
 }
 
 class PaymentSuccessEvent extends SubscriptionEvent {
@@ -80,7 +85,10 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   Future<void> _onInitiatePayment(InitiatePaymentEvent event, Emitter<SubscriptionState> emit) async {
     emit(PaymentPending());
     try {
-      final orderData = await _repository.createOrder(event.plan['id']);
+      final orderData = await _repository.createOrder(
+        event.plan['id'],
+        couponCode: event.couponCode,
+      );
       final rupees = orderData['amount'];
       final amountPaise = ((rupees is num)
               ? rupees.toDouble()

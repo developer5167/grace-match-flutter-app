@@ -103,6 +103,20 @@ class ApiEndpoints {
   static String contactStatus(String targetUserId) => '/premium/contact-status/$targetUserId';
   static const String contactRespond = '/premium/contact-request'; // /:id/respond appended in repo
   static String contactRespondAction(String id) => '/premium/contact-request/$id/respond';
+  static String contactRevoke(String id) => '/premium/contact-request/$id/revoke';
+
+  // ─── Trust ──────────────────────────────────────────────────
+  static const String reportAndExit      = '/trust/report-and-exit';
+  static const String screenshotAlert    = '/trust/screenshot';
+  static const String verificationSelfie = '/trust/verification-selfie';
+
+  // ─── Calls ──────────────────────────────────────────────────
+  static const String iceServers  = '/calls/ice-servers';
+  static const String callHistory = '/calls/history';
+
+  // ─── Offers ─────────────────────────────────────────────────
+  static const String offers         = '/offers';
+  static const String offersValidate = '/offers/validate';
   static const String contactRequestsIncoming = '/premium/contact-requests/incoming';
 
   // Growth

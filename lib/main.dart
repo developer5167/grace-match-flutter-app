@@ -12,6 +12,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/injection.dart' as di;
 import 'core/network/socket_service.dart';
+import 'features/calls/data/incoming_call_watcher.dart';
+import 'features/calls/screens/call_screen.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/onboarding/bloc/onboarding_bloc.dart';
@@ -142,6 +144,29 @@ await Firebase.initializeApp(
 
   // Connect Sockets
   di.sl<SocketService>().connect();
+
+  // A call can arrive while the member is anywhere in the app, so the listener
+  // lives above the routes rather than on the call screen — otherwise the only
+  // place a call could be received is the screen you reach by making one.
+  CallScreenFactory.builder = ({
+    required socket,
+    required conversationId,
+    required peerName,
+    required isVideo,
+    incomingCallId,
+  }) =>
+      CallScreen(
+        socket: socket,
+        conversationId: conversationId,
+        peerName: peerName,
+        isVideo: isVideo,
+        incomingCallId: incomingCallId,
+      );
+
+  IncomingCallWatcher(
+    socket: di.sl<SocketService>(),
+    navigatorKey: AppRouter.rootNavigatorKey,
+  ).start();
 
   // Screenshot & screen-recording protection (Android only via FLAG_SECURE).
   // Implemented natively in MainActivity.kt — no package needed.

@@ -9,6 +9,9 @@ import '../../../core/storage/app_storage.dart';
 import '../../../core/state/active_chat_state.dart';
 import '../../../core/di/injection.dart' as di;
 import '../../../core/network/socket_service.dart';
+import '../../../core/network/dio_client.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../data/chat_repository.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
@@ -293,12 +296,167 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
       actions: [
+        // Calling inside the app is the point of the feature: two people can
+        // see and hear each other without either handing over a phone number
+        // they cannot take back.
+        IconButton(
+          tooltip: 'Voice call',
+          icon: const Icon(Icons.call_rounded, size: 21),
+          onPressed: () => _startCall(video: false),
+        ),
+        IconButton(
+          tooltip: 'Video call',
+          icon: const Icon(Icons.videocam_rounded, size: 22),
+          onPressed: () => _startCall(video: true),
+        ),
         IconButton(
           icon: const Icon(Icons.more_vert_rounded),
-          onPressed: () {},
+          onPressed: _openMenu,
         ),
       ],
     );
+  }
+
+  void _startCall({required bool video}) {
+    AppHaptics.selection();
+    context.push(
+      '/call/${widget.conversationId}'
+      '?name=${Uri.encodeComponent(widget.otherUserName)}&video=$video',
+    );
+  }
+
+  void _openMenu() {
+    AppHaptics.light();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceHighest,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // One action, not two. Reporting and blocking were separate
+            // journeys, and someone being harassed right now is the least
+            // likely person to go and find the second one.
+            ListTile(
+              leading: const Icon(Icons.flag_rounded, color: AppColors.error, size: 20),
+              title: Text('Report and stop contact',
+                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.error)),
+              subtitle: Text(
+                'They will not be able to message or call you again.',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              ),
+              onTap: () {
+                Navigator.of(sheet).pop();
+                _reportAndExit();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reportAndExit() async {
+    final otherId = widget.otherUserId;
+    if (otherId == null) return;
+
+    String reason = 'harassment';
+    final details = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: Text('Report ${widget.otherUserName}?', style: AppTextStyles.labelLarge),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Our team will review this. They will not be told who reported '
+                'them, and they will not be able to reach you again.',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: reason,
+                dropdownColor: AppColors.surfaceHighest,
+                style: AppTextStyles.bodyMedium,
+                decoration: const InputDecoration(isDense: true),
+                items: const [
+                  DropdownMenuItem(value: 'harassment', child: Text('Harassment or abuse')),
+                  DropdownMenuItem(value: 'fake_profile', child: Text('Fake profile')),
+                  DropdownMenuItem(value: 'inappropriate', child: Text('Inappropriate content')),
+                  DropdownMenuItem(value: 'money_request', child: Text('Asked me for money')),
+                  DropdownMenuItem(value: 'other', child: Text('Something else')),
+                ],
+                onChanged: (v) => setLocal(() => reason = v ?? reason),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: details,
+                maxLines: 3,
+                maxLength: 500,
+                style: AppTextStyles.bodySmall,
+                decoration: InputDecoration(
+                  hintText: 'What happened? (optional)',
+                  hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text('Cancel',
+                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text('Report and block',
+                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
+      await DioClient.instance.post(ApiEndpoints.reportAndExit, data: {
+        'reported_user_id': otherId,
+        'reason': reason,
+        if (details.text.trim().isNotEmpty) 'details': details.text.trim(),
+      });
+      messenger.showSnackBar(const SnackBar(
+        content: Text('Reported. You will not hear from them again.'),
+        backgroundColor: AppColors.surfaceHighest,
+      ));
+      router.go('/chat');
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('Could not send the report. Please try again.'),
+        backgroundColor: AppColors.error,
+      ));
+    }
   }
 
   Widget _buildBody(ChatState state) {

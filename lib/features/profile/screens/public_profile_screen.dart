@@ -14,6 +14,7 @@ import '../bloc/profile_bloc.dart';
 import '../bloc/profile_state.dart';
 import '../bloc/profile_event.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../../core/utils/screen_guard.dart';
 import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
 import '../../discover/screens/match_explanation_screen.dart';
@@ -48,9 +49,25 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     _loadMyUserId();
     if (widget.userId != null) {
       context.read<ProfileBloc>().add(FetchProfileEvent(userId: widget.userId));
+      // Someone else's photos are on screen. Block the screenshot where the
+      // platform allows it (Android), and where it does not (iOS), at least
+      // tell the person whose photos they are.
+      ScreenGuard.protect();
+      ScreenGuard.watch(widget.userId!, surface: 'profile');
     } else {
       context.read<ProfileBloc>().add(FetchProfileEvent());
     }
+  }
+
+  @override
+  void deactivate() {
+    // Released here as well as in dispose: navigating away without disposing
+    // would otherwise leave the whole app unscreenshottable.
+    if (widget.userId != null) {
+      ScreenGuard.unwatch();
+      ScreenGuard.release();
+    }
+    super.deactivate();
   }
 
   Future<void> _loadMyUserId() async {

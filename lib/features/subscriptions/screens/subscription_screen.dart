@@ -6,9 +6,14 @@ import '../../../core/theme/app_text_styles.dart';
 import '../bloc/subscription_bloc.dart';
 import '../../profile/bloc/profile_bloc.dart';
 import '../../profile/bloc/profile_event.dart';
+import '../../offers/data/offers_repository.dart';
 
 class SubscriptionScreen extends StatefulWidget {
-  const SubscriptionScreen({super.key});
+  /// Prefilled when the member arrived by tapping an offer, so they never have
+  /// to retype a code the app just showed them.
+  final String? initialCoupon;
+
+  const SubscriptionScreen({super.key, this.initialCoupon});
 
   @override
   State<SubscriptionScreen> createState() => _SubscriptionScreenState();
@@ -19,10 +24,52 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   /// so the plan list does not disappear when checkout opens or fails.
   List<Map<String, dynamic>> _cachedPlans = [];
 
+  // ── Coupon state.
+  //
+  // Held per plan, because the same code can be valid on one plan and not
+  // another, and a preview shown against the wrong plan is a quoted price the
+  // member will not be charged.
+  late final TextEditingController _couponCtl =
+      TextEditingController(text: widget.initialCoupon ?? '');
+  final _offers = OffersRepository();
+  final Map<String, CouponPreview> _applied = {};
+  String? _couponError;
+  bool _checking = false;
+
   @override
   void initState() {
     super.initState();
     context.read<SubscriptionBloc>().add(FetchPlansEvent());
+  }
+
+  @override
+  void dispose() {
+    _couponCtl.dispose();
+    super.dispose();
+  }
+
+  /// Ask the server what the code is worth on this plan. Read-only: trying a
+  /// code must never consume it.
+  Future<void> _applyCoupon(String planId) async {
+    final code = _couponCtl.text.trim();
+    if (code.isEmpty) return;
+
+    setState(() { _checking = true; _couponError = null; });
+    try {
+      final preview = await _offers.validate(code: code, planId: planId);
+      if (!mounted) return;
+      setState(() {
+        _applied[planId] = preview;
+        _checking = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _applied.remove(planId);
+        _couponError = e.toString().replaceFirst('Exception: ', '');
+        _checking = false;
+      });
+    }
   }
 
   @override
@@ -138,6 +185,114 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// The coupon box, and what it did to this plan's price.
+  Widget _couponRow(Map<String, dynamic> plan) {
+    final planId = plan['id'].toString();
+    final applied = _applied[planId];
+
+    if (applied != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.goldSubtle,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.goldMild),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.local_offer_rounded, size: 15, color: AppColors.gold),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${applied.code} applied',
+                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                  const SizedBox(height: 2),
+                  Text(
+                    '₹${applied.discountInr} off — you pay ₹${applied.finalInr}',
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => setState(() {
+                _applied.remove(planId);
+                _couponError = null;
+              }),
+              child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textTertiary),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _couponCtl,
+                textCapitalization: TextCapitalization.characters,
+                style: AppTextStyles.labelMedium.copyWith(letterSpacing: 1.2),
+                decoration: InputDecoration(
+                  hintText: 'Have an offer code?',
+                  hintStyle:
+                      AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  filled: true,
+                  fillColor: AppColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.surfaceHighest),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.surfaceHighest),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.goldMild),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _checking ? null : () => _applyCoupon(planId),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.surfaceHighest,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                shape:
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _checking
+                  ? const SizedBox(
+                      width: 14, height: 14,
+                      child: CircularProgressIndicator(
+                          color: AppColors.gold, strokeWidth: 2),
+                    )
+                  : Text('Apply',
+                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+            ),
+          ],
+        ),
+        if (_couponError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _couponError!,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.roseDark),
+          ),
+        ],
+      ],
     );
   }
 
@@ -304,12 +459,28 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                     ),
                 ],
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // ── Coupon. Shown per plan because the same code can be valid
+                //    on one plan and not another.
+                if (canPurchase) _couponRow(plan),
+
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: buttonDisabled
                       ? null
                       : () {
-                          context.read<SubscriptionBloc>().add(InitiatePaymentEvent(plan));
+                          final planId = plan['id'].toString();
+                          context.read<SubscriptionBloc>().add(
+                                InitiatePaymentEvent(
+                                  plan,
+                                  // Only send a code that this plan has
+                                  // actually been priced against.
+                                  couponCode: _applied.containsKey(planId)
+                                      ? _applied[planId]!.code
+                                      : null,
+                                ),
+                              );
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isPopular ? AppColors.gold : AppColors.surfaceHighest,

@@ -106,8 +106,17 @@ class ActivityRepository {
     }
   }
 
+  /// Approve, decline, or withdraw a contact request.
+  ///
+  /// Withdrawing is a different endpoint, not a third action: approving is a
+  /// reply to a request, revoking is taking back something already given, and
+  /// only the owner of the number can do it.
   Future<void> respondContactRequest(String requestId, String action) async {
     try {
+      if (action == 'revoke') {
+        await _dio.post(ApiEndpoints.contactRevoke(requestId));
+        return;
+      }
       await _dio.post(
         ApiEndpoints.contactRespondAction(requestId),
         data: {'action': action},

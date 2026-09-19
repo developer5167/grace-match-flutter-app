@@ -60,7 +60,25 @@ class _ActivityScreenState extends State<ActivityScreen>
                   label: Text('Mark all read',
                       style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
                 ),
-              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'All notifications',
+                onPressed: () {
+                  AppHaptics.selection();
+                  context.push('/notifications');
+                },
+                icon: const Icon(Icons.history_rounded,
+                    size: 19, color: AppColors.textSecondary),
+              ),
+              IconButton(
+                tooltip: 'Offers',
+                onPressed: () {
+                  AppHaptics.selection();
+                  context.push('/offers');
+                },
+                icon: const Icon(Icons.local_offer_outlined,
+                    size: 19, color: AppColors.textSecondary),
+              ),
+              const SizedBox(width: 4),
             ],
             bottom: TabBar(
               controller: _tabController,
@@ -811,20 +829,47 @@ class _ContactRequestsTab extends StatelessWidget {
                           ),
                         ],
                       )
+                    // Sharing your number is not a one-way door. An approval
+                    // can be taken back, so the "Shared" chip is the control
+                    // for undoing it rather than a read-only label.
+                    else if (status == 'approved')
+                      GestureDetector(
+                        onTap: () async {
+                          AppHaptics.light();
+                          final confirmed = await _confirmRevoke(context, name);
+                          if (confirmed == true) onRespond(id, 'revoke');
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withAlpha(25),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: Colors.green.withAlpha(60)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Shared',
+                                style: AppTextStyles.overline.copyWith(color: Colors.green),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.keyboard_arrow_down_rounded,
+                                  size: 14, color: Colors.green.withAlpha(180)),
+                            ],
+                          ),
+                        ),
+                      )
                     else
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: status == 'approved'
-                              ? Colors.green.withAlpha(25)
-                              : AppColors.surfaceHighest,
+                          color: AppColors.surfaceHighest,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
-                          status == 'approved' ? 'Shared' : 'Declined',
-                          style: AppTextStyles.overline.copyWith(
-                            color: status == 'approved' ? Colors.green : AppColors.textTertiary,
-                          ),
+                          status == 'revoked' ? 'Withdrawn' : 'Declined',
+                          style: AppTextStyles.overline.copyWith(color: AppColors.textTertiary),
                         ),
                       ),
                   ],
@@ -833,6 +878,37 @@ class _ContactRequestsTab extends StatelessWidget {
             ),
           ).animate().fadeIn(delay: Duration(milliseconds: i * 60));
         },
+      ),
+    );
+  }
+
+  /// Confirm before withdrawing. Revoking is not destructive enough to warn
+  /// about in red, but it is a real change to someone else's access, so it
+  /// should not happen on a stray tap.
+  Future<bool?> _confirmRevoke(BuildContext context, String name) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('Stop sharing your number?', style: AppTextStyles.labelLarge),
+        content: Text(
+          '$name will no longer be able to see your contact details. '
+          'They can ask again later.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Keep sharing',
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Stop sharing',
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+          ),
+        ],
       ),
     );
   }

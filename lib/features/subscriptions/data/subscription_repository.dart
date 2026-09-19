@@ -9,9 +9,15 @@ class SubscriptionRepository {
     return List<Map<String, dynamic>>.from(response.data['data']);
   }
 
-  Future<Map<String, dynamic>> createOrder(dynamic planId) async {
+  /// Creates the order. [couponCode] is priced by the server, never here —
+  /// the amount the sheet opens with has to be the amount the server charges.
+  Future<Map<String, dynamic>> createOrder(dynamic planId, {String? couponCode}) async {
     final id = planId.toString().trim();
-    final response = await _dio.post(ApiEndpoints.razorpayOrder, data: {'plan_id': id});
+    final response = await _dio.post(ApiEndpoints.razorpayOrder, data: {
+      'plan_id': id,
+      if (couponCode != null && couponCode.trim().isNotEmpty)
+        'coupon_code': couponCode.trim().toUpperCase(),
+    });
     return Map<String, dynamic>.from(response.data['data']);
   }
 

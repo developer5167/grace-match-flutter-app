@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>GraceMatch needs your camera so you can make video calls to your matches before sharing personal contact details.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>GraceMatch needs your microphone so you can speak to your matches on voice and video calls.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -13,12 +13,21 @@ import '../../features/profile/screens/my_profile_screen.dart';
 import '../../features/profile/screens/public_profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/subscriptions/screens/subscription_screen.dart';
+import '../../features/offers/screens/offers_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/calls/screens/call_screen.dart';
+import '../network/socket_service.dart';
+import '../di/injection.dart' as di;
 import '../../features/profile/screens/review_status_screen.dart';
 import '../storage/app_storage.dart';
 import '../../core/widgets/app_shell.dart';
 
 class AppRouter {
   static final _rootKey = GlobalKey<NavigatorState>();
+
+  /// The root navigator, for things that must appear over whatever is on
+  /// screen — an incoming call being the only one so far.
+  static GlobalKey<NavigatorState> get rootNavigatorKey => _rootKey;
   static final _shellKey = GlobalKey<NavigatorState>();
 
   static late GoRouter router;
@@ -152,7 +161,31 @@ class AppRouter {
         ),
         GoRoute(
           path: '/subscription',
-          builder: (_, __) => const SubscriptionScreen(),
+          // ?coupon= arrives when the member tapped "Use offer", so the code
+          // is already in the box when the plans appear.
+          builder: (_, state) => SubscriptionScreen(
+            initialCoupon: state.uri.queryParameters['coupon'],
+          ),
+        ),
+        GoRoute(
+          path: '/offers',
+          builder: (_, __) => const OffersScreen(),
+        ),
+        // Outgoing when `call` is absent, incoming when it carries the id of a
+        // call that is already ringing.
+        GoRoute(
+          path: '/call/:conversationId',
+          builder: (_, state) => CallScreen(
+            socket: di.sl<SocketService>(),
+            conversationId: state.pathParameters['conversationId']!,
+            peerName: state.uri.queryParameters['name'] ?? 'Member',
+            isVideo: state.uri.queryParameters['video'] != 'false',
+            incomingCallId: state.uri.queryParameters['call'],
+          ),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (_, __) => const NotificationsScreen(),
         ),
       ],
     );
