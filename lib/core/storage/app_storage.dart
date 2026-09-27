@@ -67,4 +67,10 @@ class AppStorage {
 
   static String? getReviewStatus() =>
       _prefs.get('review_status') as String?;
+
+  static void saveSkippedUpdateVersion(String version) =>
+      _prefs.put(StorageKeys.skippedUpdateVersion, version);
+
+  static String? getSkippedUpdateVersion() =>
+      _prefs.get(StorageKeys.skippedUpdateVersion) as String?;
 }

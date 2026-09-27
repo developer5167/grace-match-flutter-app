@@ -9,6 +9,7 @@ import '../../core/storage/app_storage.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/rings_mark.dart';
+import 'update_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -80,6 +81,16 @@ class _SplashScreenState extends State<SplashScreen>
       await Future.delayed(Duration(milliseconds: remaining));
     }
     
+    if (!mounted) return;
+
+    // Admin-controlled update gate. Fail-open: if the check cannot run,
+    // members still get into the app.
+    try {
+      await UpdateGate.maybePrompt(context);
+    } catch (e) {
+      debugPrint('Update gate error: $e');
+    }
+
     if (!mounted) return;
 
     if (token == null) {

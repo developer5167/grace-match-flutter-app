@@ -13,6 +13,7 @@ import '../bloc/discover_bloc.dart';
 import '../bloc/discover_event.dart';
 import '../bloc/discover_state.dart';
 import '../bloc/discover_filters.dart';
+import '../data/discover_repository.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -36,12 +37,38 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (_isAnimatingOut || _currentIndex >= _profiles.length) return;
 
     final currentProfile = _profiles[_currentIndex];
+
+    if (superLike) {
+      try {
+        await DiscoverRepository().sendInterest(
+          currentProfile['id'].toString(),
+          isSuperInterest: true,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        final msg = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+        final lower = msg.toLowerCase();
+        if (lower.contains('plan') || lower.contains('upgrade') || lower.contains('super')) {
+          context.push('/subscription');
+        }
+        return;
+      }
+      await _advanceCard(liked: true);
+      return;
+    }
+
     context.read<DiscoverBloc>().add(SwipeProfileEvent(
       targetUserId: currentProfile['id'].toString(),
       isInterest: liked,
-      isSuperInterest: superLike,
     ));
 
+    await _advanceCard(liked: liked);
+  }
+
+  Future<void> _advanceCard({required bool liked}) async {
     setState(() => _isAnimatingOut = true);
 
     if (liked) {
@@ -320,21 +347,37 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   Widget _buildEmptyState() {
+    final limitReached = context.read<DiscoverBloc>().state is DiscoverLoaded &&
+        (context.read<DiscoverBloc>().state as DiscoverLoaded).limitReached;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text('✝', style: TextStyle(fontSize: 56, color: AppColors.goldMild)),
           const SizedBox(height: 16),
-          Text("You've seen everyone for now", style: AppTextStyles.headlineSmall),
-          const SizedBox(height: 8),
-          Text('Check back tomorrow for new matches', style: AppTextStyles.bodyMedium),
-          const SizedBox(height: 24),
-          TextButton(
-            onPressed: () =>
-                context.read<DiscoverBloc>().add(const FetchFeedEvent()),
-            child: const Text('Refresh Feed', style: TextStyle(color: AppColors.gold)),
+          Text(
+            limitReached ? "Today's matches are done" : "You've seen everyone for now",
+            style: AppTextStyles.headlineSmall,
           ),
+          const SizedBox(height: 8),
+          Text(
+            limitReached
+                ? 'Upgrade for unlimited daily matches'
+                : 'Check back tomorrow for new matches',
+            style: AppTextStyles.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+          if (limitReached)
+            TextButton(
+              onPressed: () => context.push('/subscription'),
+              child: const Text('See plans', style: TextStyle(color: AppColors.gold)),
+            )
+          else
+            TextButton(
+              onPressed: () =>
+                  context.read<DiscoverBloc>().add(const FetchFeedEvent()),
+              child: const Text('Refresh Feed', style: TextStyle(color: AppColors.gold)),
+            ),
         ],
       ),
     );

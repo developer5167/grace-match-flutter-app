@@ -21,17 +21,18 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
       _currentPage = event.page;
       if (event.filters != null) _activeFilters = event.filters!;
 
-      final profiles = await _repository.fetchFeed(
+      final feed = await _repository.fetchFeed(
         page: _currentPage,
         filters: _activeFilters,
       );
 
       final existing = state is DiscoverLoaded ? (state as DiscoverLoaded) : null;
       emit(DiscoverLoaded(
-        profiles: profiles,
-        hasReachedMax: profiles.length < 10,
+        profiles: feed.profiles,
+        hasReachedMax: feed.profiles.length < 10 || feed.limitReached,
         activeFilters: _activeFilters,
         dailyMatches: existing?.dailyMatches ?? [],
+        limitReached: feed.limitReached,
       ));
 
       // Fetch daily matches in parallel on first load

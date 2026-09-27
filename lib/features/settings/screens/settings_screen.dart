@@ -6,6 +6,7 @@ import '../../../core/di/injection.dart' as di;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/network/socket_service.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../profile/bloc/profile_bloc.dart';
 import '../../profile/bloc/profile_event.dart';
@@ -84,6 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirm != true || !mounted) return;
     setState(() => _busy = true);
     try {
+      di.sl<SocketService>().disconnect();
       await di.sl<AuthRepository>().logout();
       if (!mounted) return;
       context.go('/auth/phone');

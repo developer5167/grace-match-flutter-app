@@ -58,8 +58,8 @@ class RingsMark extends StatelessWidget {
 
 const double _kRingRadius = 1.5;
 const double _kTubeRadius = 0.12;
-const int _kTubular = 56; // segments around the ring
-const int _kRadial = 10; // segments around the tube
+const int _kTubular = 80; // segments around the ring
+const int _kRadial = 12; // segments around the tube
 
 /// Unit torus, computed once. Only the rotation and projection are per-frame.
 class _TorusMesh {
@@ -131,22 +131,22 @@ class _RingsPainter extends CustomPainter {
     final t = converge;
     final spinRad = spin * 2 * math.pi;
 
-    // The site's end frame leaves one ring almost edge-on, which is right for a
-    // moment you scroll past but reads as a scribble when it is the logo you
-    // land on. The rings settle turned towards each other instead: both keep a
-    // visible tube, and the silhouette matches the app icon.
+    // Land face-on so each ring is a circle. A 6° opposite pitch is enough
+    // for a true interlock (so the overlap does not z-fight) without reading
+    // as an oval. Ring B still starts quarter-turned so the splash converges.
+    const pitch = 0.10;
     final ringA = _Ring(
       tx: _lerp(-2.4, -0.78, t),
-      rotX: spinRad * 0.5,
-      rotY: _lerp(0, 0.62, t),
-      rotZ: _lerp(0, 0.16, t),
+      rotX: spinRad * 0.5 + pitch,
+      rotY: 0,
+      rotZ: 0,
       base: AppColors.gold,
     );
     final ringB = _Ring(
       tx: _lerp(2.4, 0.78, t),
-      rotX: -spinRad * 0.5,
-      rotY: _lerp(math.pi * 0.5, -0.52, t),
-      rotZ: _lerp(0, -0.16, t),
+      rotX: -spinRad * 0.5 - pitch,
+      rotY: _lerp(math.pi * 0.5, 0, t),
+      rotZ: 0,
       base: AppColors.goldLight,
     );
 
@@ -415,10 +415,9 @@ class _AnimatedRingsMarkState extends State<AnimatedRingsMark>
     super.initState();
 
     _converge = AnimationController(vsync: this, duration: widget.convergeDuration);
-    // The site tumbles the rings slowly and forever; this is the same idea at a
-    // speed that reads on a splash rather than over a long scroll.
-    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 18))
-      ..repeat();
+    // No idle tumble — a Y/X spin turns the circles into ovals, and the
+    // settled frame has to match the circular app icon.
+    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 18));
 
     if (widget.delay == Duration.zero) {
       _converge.forward();

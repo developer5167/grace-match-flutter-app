@@ -2,16 +2,15 @@ import 'package:flutter/foundation.dart';
 
 class AppConstants {
   AppConstants._();
-  /// API base URL, supplied at build time so dev / staging / prod differ by
-  /// flag rather than by editing this file:
+  /// API base URL. Override for local/dev:
   ///
-  ///   flutter build apk --dart-define=API_BASE_URL=https://api.gracematch.app/api/v1
+  ///   flutter run --dart-define=API_BASE_URL=https://<tunnel>/api/v1
   ///
-  /// The default is the development tunnel. A release build MUST override it;
-  /// see assertReleaseConfig() below.
+  /// Release builds default to production. assertReleaseConfig() still
+  /// refuses a store build that was pointed at the old ngrok tunnel.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://edison-unsighted-shani.ngrok-free.dev/api/v1',
+    defaultValue: 'https://api.gracematch.sotersystems.in/api/v1',
   );
 
   /// Socket origin, derived from baseUrl unless overridden explicitly.
@@ -33,6 +32,13 @@ class AppConstants {
   }
   static const String appName = 'GraceMatch';
   static const String tagline = 'Where faith meets forever';
+
+  /// Public website. iOS purchases open here instead of Razorpay (App Store
+  /// rule). Override with --dart-define=SITE_URL=... if the domain changes.
+  static const String siteUrl = String.fromEnvironment(
+    'SITE_URL',
+    defaultValue: 'https://gracematch.sotersystems.in',
+  );
 }
 
 class ApiEndpoints {
@@ -82,6 +88,7 @@ class ApiEndpoints {
 
   // Subscriptions
   static const String plans = '/subscriptions/plans';
+  static const String publicPlans = '/public/plans';
   static const String razorpayOrder = '/subscriptions/razorpay/order';
 
   // Notifications
@@ -99,6 +106,7 @@ class ApiEndpoints {
 
   // Premium / Contact reveal
   static const String spotlight = '/premium/spotlight';
+  static const String entitlements = '/premium/entitlements';
   static const String contactRequest = '/premium/contact-request';
   static String contactStatus(String targetUserId) => '/premium/contact-status/$targetUserId';
   static const String contactRespond = '/premium/contact-request'; // /:id/respond appended in repo
@@ -125,6 +133,7 @@ class ApiEndpoints {
 
   // App-level bootstrap (single call on launch)
   static const String appBootstrap = '/bootstrap';
+  static const String publicAppUpdate = '/public/app-update';
 
   // Discover
   static const String dailyMatches = '/discover/daily-matches';
@@ -140,6 +149,7 @@ class StorageKeys {
   static const String userId = 'user_id';
   static const String onboardingComplete = 'onboarding_complete';
   static const String onboardingStep = 'onboarding_step';
+  static const String skippedUpdateVersion = 'skipped_update_version';
 }
 
 class AppDurations {

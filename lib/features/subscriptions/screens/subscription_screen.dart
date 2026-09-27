@@ -1,6 +1,11 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../bloc/subscription_bloc.dart';
@@ -48,8 +53,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     super.dispose();
   }
 
-  /// Ask the server what the code is worth on this plan. Read-only: trying a
-  /// code must never consume it.
+  bool get _payOnWebsite => !kIsWeb && Platform.isIOS;
+
+  Future<void> _openWebsiteCheckout(Map<String, dynamic> plan) async {
+    final slug = plan['name']?.toString() ?? '';
+    final uri = Uri.parse('${AppConstants.siteUrl}/pricing').replace(
+      queryParameters: {
+        if (slug.isNotEmpty) 'plan': slug,
+      },
+    );
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open the website. Try again from Safari.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _applyCoupon(String planId) async {
     final code = _couponCtl.text.trim();
     if (code.isEmpty) return;
@@ -296,39 +320,79 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  /// Converts the backend features JSONB object into human-readable bullet strings.
-  /// Values of -1 mean "Unlimited"; 0 / false means skip.
-  List<String> _featuresToStrings(dynamic raw) {
-    if (raw == null) return [];
-
-    final Map<String, dynamic> map = raw is Map ? Map<String, dynamic>.from(raw) : {};
-
-    String count(dynamic v, String singular, String plural) {
-      if (v == null || v == false || v == 0) return '';
-      if (v == -1 || v == true) return 'Unlimited $plural';
-      return '$v ${v == 1 ? singular : plural}';
+  /// Same entitlement rows the website shows, in catalog order.
+  List<Map<String, dynamic>> _entitlements(Map<String, dynamic> plan) {
+    final ents = plan['entitlements'];
+    if (ents is List && ents.isNotEmpty) {
+      return ents.map<Map<String, dynamic>>((e) {
+        if (e is Map<String, dynamic>) return e;
+        if (e is Map) return Map<String, dynamic>.from(e);
+        return <String, dynamic>{};
+      }).toList();
     }
 
-    final lines = <String>[];
-
-    void add(dynamic v, String Function(dynamic) fn) {
-      final s = fn(v);
-      if (s.isNotEmpty) lines.add(s);
+    // Older API: rebuild the list from the features blob so the card is never
+    // blank just because entitlements were missing.
+    final raw = plan['features'];
+    if (raw is! Map) return [];
+    final map = Map<String, dynamic>.from(raw);
+    const catalog = <List<String>>[
+      ['daily_matches', '20 curated matches / day'],
+      ['see_who_viewed', 'See who viewed your profile'],
+      ['voice_calls', 'Voice calls with matches'],
+      ['video_calls', 'Video calls with matches'],
+      ['priority_discover', 'Priority in discovery'],
+      ['dedicated_support', 'Dedicated support'],
+    ];
+    final rows = <Map<String, dynamic>>[];
+    for (final row in catalog) {
+      final on = map[row[0]] == true;
+      rows.add({'key': row[0], 'label': row[1], 'compare': row[1], 'included': on});
     }
 
-    add(map['unlimited_swipes'], (v) => v == true ? 'Unlimited daily swipes' : '');
-    add(map['see_who_viewed'], (v) => v == true ? 'See who viewed your profile' : '');
-    add(
-        map['contact_reveals_per_month'],
-        (v) =>
-            count(v, 'Contact reveal', 'Contact reveals') +
-            (v != -1 && v != null && v != 0 ? ' / month' : ''));
-    add(map['spotlight_boosts'], (v) => count(v, 'Spotlight boost', 'Spotlight boosts'));
-    add(map['super_interests'], (v) => count(v, 'Super interest', 'Super interests'));
-    add(map['priority_discover'], (v) => v == true ? 'Priority in discovery' : '');
-    add(map['dedicated_support'], (v) => v == true ? 'Dedicated support' : '');
+    String intLabel(dynamic v, String one, String many, String unlimited) {
+      if (v == -1 || v == true) return unlimited;
+      final n = int.tryParse(v?.toString() ?? '') ?? 0;
+      if (n <= 0) return many;
+      return '$n ${n == 1 ? one : many}';
+    }
 
-    return lines.where((s) => s.isNotEmpty).toList();
+    bool intOn(dynamic v) {
+      if (v == -1 || v == true) return true;
+      final n = int.tryParse(v?.toString() ?? '') ?? 0;
+      return n > 0;
+    }
+
+    rows.add({
+      'key': 'contact_reveals_per_month',
+      'label': intLabel(map['contact_reveals_per_month'], 'contact reveal / month', 'contact reveals / month', 'Unlimited contact reveals'),
+      'compare': 'Contact reveals per month',
+      'included': intOn(map['contact_reveals_per_month']),
+    });
+    rows.add({
+      'key': 'spotlight_boosts',
+      'label': intLabel(map['spotlight_boosts'], 'spotlight boost', 'spotlight boosts', 'Unlimited spotlight boosts'),
+      'compare': 'Spotlight boosts',
+      'included': intOn(map['spotlight_boosts']),
+    });
+    rows.add({
+      'key': 'super_interests',
+      'label': intLabel(map['super_interests'], 'super interest', 'super interests', 'Unlimited super interests'),
+      'compare': 'Super interests',
+      'included': intOn(map['super_interests']),
+    });
+    return rows;
+  }
+
+  String _rupees(dynamic value) {
+    final n = num.tryParse(value?.toString() ?? '') ?? 0;
+    return '₹${n.toStringAsFixed(0)}';
+  }
+
+  String _termLabel(dynamic months) {
+    final n = int.tryParse(months?.toString() ?? '') ?? 0;
+    if (n == 1) return '1 Month';
+    return '$n Months';
   }
 
   String? _formatExpiry(dynamic value) {
@@ -346,10 +410,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required BuildContext context,
     required bool isProcessing,
   }) {
-    final bool isPopular = plan['name']?.toString().toLowerCase() == 'gold';
-    final List<String> features = _featuresToStrings(plan['features']);
+    final bool isPopular = plan['featured'] == true ||
+        plan['name']?.toString().toLowerCase() == 'gold';
+    final List<Map<String, dynamic>> entitlements = _entitlements(plan);
     final bool isCurrentActive = plan['is_current_active'] == true;
-    final bool canPurchase = plan['can_purchase'] != false;
+    final bool isFree = plan['is_free'] == true ||
+        (num.tryParse(plan['price_inr']?.toString() ?? '') ?? 0) <= 0;
+    final bool canPurchase = !isFree && plan['can_purchase'] != false;
     final bool buttonDisabled = isProcessing || !canPurchase;
     final currentSub = plan['current_subscription'];
     final expiryText = currentSub is Map ? _formatExpiry(currentSub['expires_at']) : null;
@@ -401,33 +468,60 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(plan['name'] ?? 'Plan', style: AppTextStyles.headlineLarge.copyWith(color: AppColors.gold)),
-                    Text('${plan['duration_months']} Months', style: AppTextStyles.labelLarge),
+                    Text(
+                      plan['display_name']?.toString() ?? plan['name'] ?? 'Plan',
+                      style: AppTextStyles.headlineLarge.copyWith(color: AppColors.gold),
+                    ),
+                    Text(
+                      isFree ? 'Always' : _termLabel(plan['duration_months']),
+                      style: AppTextStyles.labelLarge,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('₹${plan['price_inr']}', style: AppTextStyles.displayMedium),
+                    Text(
+                      isFree ? 'Free' : _rupees(plan['price_inr']),
+                      style: AppTextStyles.displayMedium,
+                    ),
                     const SizedBox(width: 8),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: Text('Total', style: AppTextStyles.bodyMedium),
+                      child: Text(isFree ? 'forever' : 'Total', style: AppTextStyles.bodyMedium),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                ...features.map((f) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.check_circle_rounded, color: AppColors.gold, size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(child: Text(f, style: AppTextStyles.bodyMedium)),
-                        ],
-                      ),
-                    )),
+                ...entitlements.map((f) {
+                  final included = f['included'] == true;
+                  final text = included
+                      ? (f['label']?.toString() ?? '')
+                      : (f['compare']?.toString() ?? f['label']?.toString() ?? '');
+                  if (text.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          included ? Icons.check_circle_rounded : Icons.remove_circle_outline_rounded,
+                          color: included ? AppColors.gold : AppColors.textTertiary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            text,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: included ? null : AppColors.textTertiary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 if (isCurrentActive) ...[
                   Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -461,21 +555,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ],
                 const SizedBox(height: 20),
 
-                // ── Coupon. Shown per plan because the same code can be valid
-                //    on one plan and not another.
-                if (canPurchase) _couponRow(plan),
+                if (canPurchase && !_payOnWebsite) _couponRow(plan),
 
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: buttonDisabled
                       ? null
                       : () {
+                          if (_payOnWebsite) {
+                            _openWebsiteCheckout(plan);
+                            return;
+                          }
                           final planId = plan['id'].toString();
                           context.read<SubscriptionBloc>().add(
                                 InitiatePaymentEvent(
                                   plan,
-                                  // Only send a code that this plan has
-                                  // actually been priced against.
                                   couponCode: _applied.containsKey(planId)
                                       ? _applied[planId]!.code
                                       : null,
@@ -488,18 +582,30 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                     minimumSize: const Size(double.infinity, 56),
                   ),
-                  child: isProcessing
+                  child: isProcessing && !_payOnWebsite
                       ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
-                          isCurrentActive
-                              ? 'Current Plan'
-                              : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
+                          isFree
+                              ? (isCurrentActive ? 'Your plan' : 'Included free')
+                              : isCurrentActive
+                                  ? 'Current Plan'
+                                  : _payOnWebsite
+                                      ? 'Continue on website'
+                                      : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
                         ),
                 ),
+                if (canPurchase && _payOnWebsite) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Complete this purchase on the GraceMatch website. Sign in there with the same mobile number.',
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ],
             ),
           ),

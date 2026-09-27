@@ -9,12 +9,13 @@ enum CallPhase { idle, dialling, ringing, connecting, connected, ended }
 
 /// One call, from dial to hang up.
 ///
-/// Owns the peer connection and the signalling exchange; knows nothing about
-/// who is allowed to call whom, because that is the server's decision and
-/// duplicating it here would mean two rules that drift apart.
+/// Signalling matches the working Masthi Chat flow: both sides open a peer
+/// connection and attach local media first; the caller only creates the SDP
+/// offer *after* the callee has answered. Sending the offer earlier drops it —
+/// the callee has no peer connection yet, and a broadcast stream does not
+/// buffer `call:signal`.
 ///
-/// Media never touches the API server. Audio and video go directly between the
-/// two phones, relayed by TURN only when a direct path cannot be found.
+/// Media never touches the API. Audio and video go phone-to-phone.
 class CallSession extends ChangeNotifier {
   final SocketService socket;
 
@@ -38,13 +39,10 @@ class CallSession extends ChangeNotifier {
   String? error;
   DateTime? connectedAt;
 
-  /// ICE candidates that arrive before the remote description is set.
-  ///
-  /// This ordering happens routinely — the callee's candidates can beat the
-  /// caller's answer. Applying one early throws and the call silently fails to
-  /// connect, so they are held and replayed.
   final List<RTCIceCandidate> _pendingCandidates = [];
+  final List<Map<String, dynamic>> _pendingSignals = [];
   bool _remoteReady = false;
+  bool _offerWhenReady = false;
 
   Future<void> _initRenderers() async {
     await localRenderer.initialize();
@@ -71,15 +69,8 @@ class CallSession extends ChangeNotifier {
 
     callId = ack['call_id']?.toString();
     _listen();
-
-    await _prepare(_iceFrom(ack));
+    await _prepare();
     _set(CallPhase.ringing);
-
-    // The caller makes the offer as soon as the call is created, so that when
-    // the callee answers there is already something to answer.
-    final offer = await _pc!.createOffer();
-    await _pc!.setLocalDescription(offer);
-    socket.sendSignal(callId!, {'type': 'offer', 'sdp': offer.sdp});
     return null;
   }
 
@@ -95,46 +86,62 @@ class CallSession extends ChangeNotifier {
     peerName = peerDisplayName;
     _set(CallPhase.connecting);
 
+    // Masthi Chat opens the peer connection on the incoming screen *before*
+    // accept is emitted. Same here: media first, then tell the caller to offer.
+    _listen();
+    await _prepare();
+
     final ack = await socket.answerCall(incomingCallId);
     if (ack['ok'] != true) {
       error = ack['error']?.toString() ?? 'Could not answer';
       _set(CallPhase.ended);
       return error;
     }
-
-    _listen();
-    await _prepare(_iceFrom(ack));
     return null;
   }
 
-  List<Map<String, dynamic>> _iceFrom(Map<String, dynamic> ack) {
-    final raw = ack['ice_servers'];
-    if (raw is List) {
-      return raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
-    }
-    // Falls back to public STUN. Works on most home wifi and fails on mobile
-    // carriers, which is why the server logs loudly when TURN is missing.
-    return [
-      {'urls': 'stun:stun.l.google.com:19302'}
-    ];
-  }
+  /// Copied from masthiChatFlutter/lib/CallScreen.dart.
+  /// That app never fetched ICE from the server; the phones used this list.
+  static const _masthiIceServers = [
+    {'urls': 'stun:stun.l.google.com:19302'},
+    {
+      'urls': 'turn:relay.metered.ca:80',
+      'username': 'openai',
+      'credential': 'openai123',
+    },
+  ];
 
-  Future<void> _prepare(List<Map<String, dynamic>> iceServers) async {
+  Future<void> _prepare() async {
     await _initRenderers();
 
     _local = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
+      'audio': {
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+      },
       'video': isVideo
-          ? {'facingMode': 'user', 'width': 640, 'height': 480}
+          ? {
+              'facingMode': 'user',
+              'width': {'ideal': 640},
+              'height': {'ideal': 480},
+            }
           : false,
     });
     localRenderer.srcObject = _local;
 
+    speakerOn = isVideo;
+    await Helper.setSpeakerphoneOn(speakerOn);
+
     _pc = await createPeerConnection({
-      'iceServers': iceServers,
-      // Required by the spec's unified plan; without it the remote track
-      // arrives on a path flutter_webrtc no longer reports.
+      'iceServers': _masthiIceServers,
       'sdpSemantics': 'unified-plan',
+    }, {
+      'mandatory': {
+        'OfferToReceiveAudio': true,
+        'OfferToReceiveVideo': isVideo,
+      },
+      'optional': [],
     });
 
     for (final track in _local!.getTracks()) {
@@ -142,7 +149,7 @@ class CallSession extends ChangeNotifier {
     }
 
     _pc!.onIceCandidate = (candidate) {
-      if (callId == null) return;
+      if (callId == null || candidate.candidate == null) return;
       socket.sendSignal(callId!, {
         'type': 'candidate',
         'candidate': candidate.candidate,
@@ -163,14 +170,38 @@ class CallSession extends ChangeNotifier {
       }
     };
 
-    _pc!.onConnectionState = (state) {
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+    _pc!.onIceConnectionState = (state) {
+      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+          state == RTCIceConnectionState.RTCIceConnectionStateCompleted) {
+        if (phase != CallPhase.connected) {
+          connectedAt = DateTime.now();
+          _set(CallPhase.connected);
+        }
+      } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
         error = 'The connection dropped';
         hangUp();
       }
     };
 
     notifyListeners();
+
+    if (_offerWhenReady) {
+      _offerWhenReady = false;
+      await _sendOffer();
+    }
+    await _flushPendingSignals();
+  }
+
+  Future<void> _sendOffer() async {
+    final pc = _pc;
+    final id = callId;
+    if (pc == null || id == null) return;
+    final offer = await pc.createOffer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': isVideo,
+    });
+    await pc.setLocalDescription(offer);
+    socket.sendSignal(id, {'type': 'offer', 'sdp': offer.sdp});
   }
 
   void _listen() {
@@ -180,7 +211,13 @@ class CallSession extends ChangeNotifier {
 
       switch (event.name) {
         case 'call:answered':
+          if (!isCaller) break;
           if (phase == CallPhase.ringing) _set(CallPhase.connecting);
+          if (_pc != null) {
+            await _sendOffer();
+          } else {
+            _offerWhenReady = true;
+          }
           break;
 
         case 'call:ended':
@@ -193,13 +230,32 @@ class CallSession extends ChangeNotifier {
           break;
 
         case 'call:signal':
-          await _onSignal(Map<String, dynamic>.from(event.data['signal'] as Map));
+          final raw = event.data['signal'];
+          if (raw is Map) {
+            await _onSignal(Map<String, dynamic>.from(raw));
+          }
           break;
       }
     });
   }
 
   Future<void> _onSignal(Map<String, dynamic> signal) async {
+    if (_pc == null) {
+      _pendingSignals.add(signal);
+      return;
+    }
+    await _applySignal(signal);
+  }
+
+  Future<void> _flushPendingSignals() async {
+    final pending = List<Map<String, dynamic>>.from(_pendingSignals);
+    _pendingSignals.clear();
+    for (final s in pending) {
+      await _applySignal(s);
+    }
+  }
+
+  Future<void> _applySignal(Map<String, dynamic> signal) async {
     final pc = _pc;
     if (pc == null) return;
 
@@ -213,7 +269,9 @@ class CallSession extends ChangeNotifier {
 
         final answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        socket.sendSignal(callId!, {'type': 'answer', 'sdp': answer.sdp});
+        if (callId != null) {
+          socket.sendSignal(callId!, {'type': 'answer', 'sdp': answer.sdp});
+        }
         break;
 
       case 'answer':
@@ -230,8 +288,6 @@ class CallSession extends ChangeNotifier {
           signal['sdpMid']?.toString(),
           (signal['sdpMLineIndex'] as num?)?.toInt(),
         );
-        // Holding these until the remote description exists is the difference
-        // between a call that connects and one that rings forever.
         if (_remoteReady) {
           await pc.addCandidate(candidate);
         } else {
@@ -299,7 +355,9 @@ class CallSession extends ChangeNotifier {
     await _pc?.close();
     _pc = null;
     _pendingCandidates.clear();
+    _pendingSignals.clear();
     _remoteReady = false;
+    _offerWhenReady = false;
     localRenderer.srcObject = null;
     remoteRenderer.srcObject = null;
   }

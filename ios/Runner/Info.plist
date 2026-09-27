@@ -6,6 +6,11 @@
 	<string>GraceMatch needs your camera so you can make video calls to your matches before sharing personal contact details.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>GraceMatch needs your microphone so you can speak to your matches on voice and video calls.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

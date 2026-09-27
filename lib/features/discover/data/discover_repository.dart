@@ -6,7 +6,7 @@ import '../bloc/discover_filters.dart';
 class DiscoverRepository {
   final Dio _dio = DioClient.instance;
 
-  Future<List<Map<String, dynamic>>> fetchFeed({
+  Future<({List<Map<String, dynamic>> profiles, bool limitReached})> fetchFeed({
     int page = 1,
     int limit = 10,
     DiscoverFilters? filters,
@@ -21,7 +21,14 @@ class DiscoverRepository {
         ApiEndpoints.discoverFeed,
         queryParameters: params,
       );
-      return List<Map<String, dynamic>>.from(response.data['data']['profiles']);
+      final data = response.data['data'];
+      final profiles = data is Map && data['profiles'] is List
+          ? List<Map<String, dynamic>>.from(data['profiles'])
+          : <Map<String, dynamic>>[];
+      return (
+        profiles: profiles,
+        limitReached: data is Map && data['limit_reached'] == true,
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }

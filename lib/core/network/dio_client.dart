@@ -32,13 +32,14 @@ class DioClient {
   }
 }
 
-// ─── Auth Interceptor (auto attach + refresh token) ───────────
 class _AuthInterceptor extends Interceptor {
   final Dio _dio;
-  bool _isRefreshing = false;
-  final List<RequestOptions> _pendingRequests = [];
+  Future<String>? _refreshing;
 
   _AuthInterceptor(this._dio);
+
+  bool _isRefreshCall(RequestOptions options) =>
+      options.path.contains(ApiEndpoints.refreshToken);
 
   @override
   void onRequest(
@@ -52,73 +53,57 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
-      // If no token at all, just let it fail
-      final currentToken = await AppStorage.getAccessToken();
-      if (currentToken == null) {
-        return handler.next(err);
-      }
-
-      if (!_isRefreshing) {
-        _isRefreshing = true;
-        try {
-          final refreshToken = await AppStorage.getRefreshToken();
-          if (refreshToken == null) {
-            _isRefreshing = false;
-            await AppStorage.clearAll();
-            return handler.next(err);
-          }
-
-          final response = await Dio().post(
-            '${AppConstants.baseUrl}${ApiEndpoints.refreshToken}',
-            data: {'refresh_token': refreshToken},
-          );
-
-          final newAccess = response.data['data']['access_token'] as String;
-          final newRefresh = response.data['data']['refresh_token'] as String;
-
-          await AppStorage.saveTokens(
-            accessToken: newAccess,
-            refreshToken: newRefresh,
-          );
-
-          // Retry the original request
-          err.requestOptions.headers['Authorization'] = 'Bearer $newAccess';
-          final retryResponse = await _dio.fetch(err.requestOptions);
-          
-          _isRefreshing = false;
-          handler.resolve(retryResponse);
-
-          // Retry all queued requests
-          for (final req in _pendingRequests) {
-            req.headers['Authorization'] = 'Bearer $newAccess';
-            try {
-              final res = await _dio.fetch(req);
-              // Note: since handler can only be resolved once per error, 
-              // we can't easily resolve the queued requests' handlers from here 
-              // without a more complex architecture. But at least we trigger them.
-            } catch (_) {}
-          }
-          _pendingRequests.clear();
-          return;
-        } catch (e) {
-          _isRefreshing = false;
-          _pendingRequests.clear();
-          await AppStorage.clearAll();
-          return handler.next(err);
-        }
-      } else {
-        // Queue the request to retry later
-        // A full implementation would use Completer, but for simplicity we let it fail 
-        // so the UI can handle it or we can just return next.
-        return handler.next(err);
-      }
+    if (err.response?.statusCode != 401) {
+      return handler.next(err);
     }
-    handler.next(err);
+
+    if (_isRefreshCall(err.requestOptions) ||
+        err.requestOptions.extra['retried'] == true) {
+      await AppStorage.clearAll();
+      return handler.next(err);
+    }
+
+    final currentToken = await AppStorage.getAccessToken();
+    if (currentToken == null) {
+      return handler.next(err);
+    }
+
+    try {
+      final access = await (_refreshing ??= _refreshTokens());
+      err.requestOptions.headers['Authorization'] = 'Bearer $access';
+      err.requestOptions.extra['retried'] = true;
+      final retryResponse = await _dio.fetch(err.requestOptions);
+      handler.resolve(retryResponse);
+    } catch (_) {
+      await AppStorage.clearAll();
+      handler.next(err);
+    }
+  }
+
+  Future<String> _refreshTokens() async {
+    try {
+      final refreshToken = await AppStorage.getRefreshToken();
+      if (refreshToken == null) {
+        throw StateError('no refresh token');
+      }
+      final response = await Dio().post(
+        '${AppConstants.baseUrl}${ApiEndpoints.refreshToken}',
+        data: {'refresh_token': refreshToken},
+      );
+      final data = response.data['data'] as Map<String, dynamic>;
+      final newAccess = data['access_token'] as String;
+      final newRefresh = data['refresh_token'] as String;
+      await AppStorage.saveTokens(
+        accessToken: newAccess,
+        refreshToken: newRefresh,
+      );
+      return newAccess;
+    } finally {
+      _refreshing = null;
+    }
   }
 }
 
-// ─── Logging Interceptor (debug only) ─────────────────────────
 class _LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {

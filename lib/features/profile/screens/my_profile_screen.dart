@@ -10,6 +10,7 @@ import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import 'package:go_router/go_router.dart';
 import '../bloc/profile_state.dart';
+import '../data/profile_repository.dart';
 import 'identity_verification_screen.dart';
 
 class MyProfileScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class MyProfileScreen extends StatefulWidget {
 }
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
+  bool _boosting = false;
+
   Future<void> _refreshProfile() async {
     context.read<ProfileBloc>().add(const FetchProfileEvent(silentRefresh: true));
     // Give the bloc/network a brief window; UI state updates through BlocBuilder.
@@ -91,6 +94,18 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         final subscription = data['subscription'] as Map<String, dynamic>? ?? const {};
         final isPremium = subscription['is_premium'] == true;
         final planName = subscription['plan_name']?.toString();
+        final planLabel = (planName != null && planName.isNotEmpty)
+            ? '${planName[0].toUpperCase()}${planName.substring(1)}'
+            : (isPremium ? 'Premium' : 'Bronze');
+        final usage = subscription['usage'] is Map
+            ? Map<String, dynamic>.from(subscription['usage'] as Map)
+            : const <String, dynamic>{};
+        final spotlight = usage['spotlight_boosts'] is Map
+            ? Map<String, dynamic>.from(usage['spotlight_boosts'] as Map)
+            : const <String, dynamic>{};
+        final spotlightRemaining = spotlight['remaining'];
+        final canSpotlight = spotlightRemaining == -1 ||
+            (spotlightRemaining is num && spotlightRemaining > 0);
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -315,15 +330,13 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            isPremium
-                                                ? 'GraceMatch ${planName != null ? '${planName[0].toUpperCase()}${planName.substring(1)}' : 'Premium'}'
-                                                : 'GraceMatch Free',
+                                            'GraceMatch $planLabel',
                                             style: AppTextStyles.labelLarge.copyWith(color: AppColors.textOnGold),
                                           ),
                                           Text(
                                             isPremium
                                                 ? 'Subscription active'
-                                                : 'Upgrade for 5x more matches',
+                                                : '20 matches a day · tap to upgrade',
                                             style: AppTextStyles.labelSmall.copyWith(color: AppColors.surface),
                                           ),
                                         ],
@@ -337,6 +350,47 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                         ),
                         
+                        const SizedBox(height: 16),
+                        _buildSettingsTile(
+                          Icons.wb_sunny_rounded,
+                          canSpotlight ? 'Boost my profile' : 'Unlock Spotlight',
+                          canSpotlight
+                              ? 'Appear at the top of Discover for 24 hours'
+                              : 'Spotlight is included on Gold and Platinum',
+                          onTap: () async {
+                            if (!canSpotlight) {
+                              context.push('/subscription');
+                              return;
+                            }
+                            if (_boosting) return;
+                            final messenger = ScaffoldMessenger.of(context);
+                            final router = GoRouter.of(context);
+                            final bloc = context.read<ProfileBloc>();
+                            setState(() => _boosting = true);
+                            try {
+                              await ProfileRepository().activateSpotlight();
+                              if (!mounted) return;
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('You are at the top of Discover for 24 hours'),
+                                ),
+                              );
+                              bloc.add(const FetchProfileEvent(silentRefresh: true));
+                            } catch (e) {
+                              if (!mounted) return;
+                              final msg = e.toString().replaceFirst('Exception: ', '');
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(msg), backgroundColor: Colors.red),
+                              );
+                              if (msg.toLowerCase().contains('plan')) {
+                                router.push('/subscription');
+                              }
+                            } finally {
+                              if (mounted) setState(() => _boosting = false);
+                            }
+                          },
+                        ),
+
                         const SizedBox(height: 32),
                         
                         _buildSettingsTile(

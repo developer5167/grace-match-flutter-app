@@ -34,7 +34,7 @@ void init() {
   sl.registerLazySingleton<ActivityRepository>(() => ActivityRepository());
 
   // BLoCs
-  sl.registerFactory(() => AuthBloc(sl()));
+  sl.registerFactory(() => AuthBloc(sl(), sl()));
   sl.registerFactory(() => OnboardingBloc(sl()));
   sl.registerFactory(() => DiscoverBloc(sl()));
   sl.registerFactory(() => InterestsBloc(sl()));

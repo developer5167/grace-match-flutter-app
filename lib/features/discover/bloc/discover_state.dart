@@ -17,12 +17,14 @@ class DiscoverLoaded extends DiscoverState {
   final bool hasReachedMax;
   final DiscoverFilters activeFilters;
   final List<Map<String, dynamic>> dailyMatches;
+  final bool limitReached;
 
   const DiscoverLoaded({
     required this.profiles,
     this.hasReachedMax = false,
     this.activeFilters = const DiscoverFilters(),
     this.dailyMatches = const [],
+    this.limitReached = false,
   });
 
   DiscoverLoaded copyWith({
@@ -30,17 +32,19 @@ class DiscoverLoaded extends DiscoverState {
     bool? hasReachedMax,
     DiscoverFilters? activeFilters,
     List<Map<String, dynamic>>? dailyMatches,
+    bool? limitReached,
   }) {
     return DiscoverLoaded(
       profiles: profiles ?? this.profiles,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       activeFilters: activeFilters ?? this.activeFilters,
       dailyMatches: dailyMatches ?? this.dailyMatches,
+      limitReached: limitReached ?? this.limitReached,
     );
   }
 
   @override
-  List<Object?> get props => [profiles, hasReachedMax, activeFilters, dailyMatches];
+  List<Object?> get props => [profiles, hasReachedMax, activeFilters, dailyMatches, limitReached];
 }
 
 class DiscoverError extends DiscoverState {

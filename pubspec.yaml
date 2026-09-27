@@ -85,17 +85,12 @@ flutter:
     - assets/icons/
 
 # ─── App icon ────────────────────────────────────────────────
-# The two interlocking rings from the web site's brand mark, so the icon on a
-# handset and the logo beside "GraceMatch" on the web are the same object.
+# Settled splash RingsMark (face-on circles) in assets/icons.
 #
-# Sources live in tool/ rather than assets/ on purpose: they are build-time
-# inputs, and assets/icons/ is a declared Flutter asset folder, so keeping two
-# 1024px PNGs there would ship them inside the app for nothing.
-#
-# Regenerate after editing tool/app_icon/app_icon.svg:
+#   flutter test tool/app_icon/export_icon.dart
 #   dart run flutter_launcher_icons
 flutter_launcher_icons:
-  image_path: "tool/app_icon/app_icon.png"
+  image_path: "assets/icons/app_icon.png"
   android: true
   ios: true
   remove_alpha_ios: true          # the App Store rejects icons with alpha
@@ -103,4 +98,4 @@ flutter_launcher_icons:
   # launcher, so the rings are inset into the 66% safe zone in this variant and
   # the tile colour is drawn behind rather than baked in.
   adaptive_icon_background: "#0a0a0f"
-  adaptive_icon_foreground: "tool/app_icon/app_icon_foreground.png"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"

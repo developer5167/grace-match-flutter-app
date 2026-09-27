@@ -39,6 +39,17 @@ class ProfileRepository {
     }
   }
 
+  Future<Map<String, dynamic>> activateSpotlight() async {
+    try {
+      final response = await _dio.post(ApiEndpoints.spotlight);
+      final data = response.data['data'];
+      if (data is Map<String, dynamic>) return data;
+      return {};
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<void> acceptInterest(String interestId) async {
     try {
       await _dio.post(ApiEndpoints.acceptInterest(interestId));

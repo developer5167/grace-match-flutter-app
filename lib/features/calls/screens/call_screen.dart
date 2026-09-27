@@ -86,6 +86,36 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _fail(String message) {
+    final needsPlan = message.toLowerCase().contains('plan');
+    if (needsPlan) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          title: Text('Upgrade to call', style: AppTextStyles.headlineMedium),
+          content: Text(message, style: AppTextStyles.bodyMedium),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.pop();
+              },
+              child: const Text('Not now'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.pop();
+                context.push('/subscription');
+              },
+              child: const Text('See plans'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.surfaceHighest),
     );
@@ -167,7 +197,7 @@ class _CallScreenState extends State<CallScreen> {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            if (_session.isVideo && connected)
+            if (_session.isVideo && connected && _session.remoteRenderer.srcObject != null)
               RTCVideoView(
                 _session.remoteRenderer,
                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
@@ -175,7 +205,8 @@ class _CallScreenState extends State<CallScreen> {
             else
               _placeholder(),
 
-            // Local preview
+            // Local preview — shown as soon as the camera is up, not only
+            // after the other side connects (same as the working Masthi Chat call).
             if (showVideo)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
@@ -280,14 +311,13 @@ class _CallScreenState extends State<CallScreen> {
               icon: Icons.cameraswitch_rounded,
               onTap: () { AppHaptics.light(); _session.switchCamera(); },
             ),
-          ] else ...[
-            const SizedBox(width: 16),
-            _round(
-              icon: _session.speakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
-              active: _session.speakerOn,
-              onTap: () { AppHaptics.light(); _session.toggleSpeaker(); },
-            ),
           ],
+          const SizedBox(width: 16),
+          _round(
+            icon: _session.speakerOn ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+            active: _session.speakerOn,
+            onTap: () { AppHaptics.light(); _session.toggleSpeaker(); },
+          ),
           const SizedBox(width: 16),
           _round(
             icon: Icons.call_end_rounded,
