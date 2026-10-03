@@ -29,6 +29,15 @@ class SocketService {
 
   Stream<CallEvent> get callStream => _callController.stream;
 
+  // ── Support.
+  //
+  // Live delivery for a thread the member already has open. The push
+  // notification is still what reaches them when the app is closed; this only
+  // saves someone sitting on the screen from backing out and reopening.
+  final _supportController = StreamController<SupportEvent>.broadcast();
+
+  Stream<SupportEvent> get supportStream => _supportController.stream;
+
   bool get isConnected => _socket?.connected == true;
 
   String get _url => AppConstants.socketUrl.isNotEmpty
@@ -88,6 +97,14 @@ class SocketService {
         ...Map<String, dynamic>.from(data as Map),
         'type': 'offline',
       });
+    });
+
+    _socket?.on('support:message', (data) {
+      final map = Map<String, dynamic>.from(data as Map);
+      _supportController.add(SupportEvent(
+        ticketId: map['ticket_id']?.toString() ?? '',
+        status: map['status']?.toString(),
+      ));
     });
 
     for (final name in const [
@@ -155,6 +172,7 @@ class SocketService {
   }
 
   void dispose() {
+    _supportController.close();
     _callController.close();
     _messageController.close();
     _deliveredController.close();
@@ -171,4 +189,17 @@ class CallEvent {
   const CallEvent(this.name, this.data);
 
   String? get callId => data['call_id']?.toString();
+}
+
+/// A support message arrived on a thread.
+///
+/// Deliberately carries only the ticket id: the screen refetches rather than
+/// trusting a socket payload to be the whole message. One extra request is
+/// cheaper than two code paths for building the same thread, which is how the
+/// socket version and the HTTP version drift apart.
+class SupportEvent {
+  final String ticketId;
+  final String? status;
+
+  const SupportEvent({required this.ticketId, this.status});
 }

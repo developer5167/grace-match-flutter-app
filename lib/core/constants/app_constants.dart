@@ -122,6 +122,13 @@ class ApiEndpoints {
   static const String iceServers  = '/calls/ice-servers';
   static const String callHistory = '/calls/history';
 
+  // ─── Support ────────────────────────────────────────────────
+  static const String supportTickets    = '/support';
+  static const String supportCategories = '/support/categories';
+  static const String supportUnread     = '/support/unread';
+  static String supportTicket(String id)   => '/support/$id';
+  static String supportMessages(String id) => '/support/$id/messages';
+
   // ─── Offers ─────────────────────────────────────────────────
   static const String offers         = '/offers';
   static const String offersValidate = '/offers/validate';

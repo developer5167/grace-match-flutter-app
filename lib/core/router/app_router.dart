@@ -16,6 +16,9 @@ import '../../features/subscriptions/screens/subscription_screen.dart';
 import '../../features/offers/screens/offers_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/calls/screens/call_screen.dart';
+import '../../features/support/screens/support_screen.dart';
+import '../../features/support/screens/new_ticket_screen.dart';
+import '../../features/support/screens/ticket_screen.dart';
 import '../network/socket_service.dart';
 import '../di/injection.dart' as di;
 import '../../features/profile/screens/review_status_screen.dart';
@@ -171,6 +174,18 @@ class AppRouter {
           path: '/offers',
           builder: (_, __) => const OffersScreen(),
         ),
+        // Shared profile links: https://gracematch.app/p/<userId>
+        //
+        // FlutterDeepLinkingEnabled hands the incoming URI straight to this
+        // router, so without a matching route go_router threw
+        // "no router for location /p/<id>" and the link died on a blank
+        // screen — the app_links listener never got a turn. The path is baked
+        // into every share already sent and into the App Links association
+        // file, so it has to be matched here rather than changed.
+        GoRoute(
+          path: '/p/:id',
+          redirect: (_, state) => '/profile/${state.pathParameters['id']}',
+        ),
         // Outgoing when `call` is absent, incoming when it carries the id of a
         // call that is already ringing.
         GoRoute(
@@ -186,6 +201,23 @@ class AppRouter {
         GoRoute(
           path: '/notifications',
           builder: (_, __) => const NotificationsScreen(),
+        ),
+        // Support. /support/new is declared before /support/:id so the literal
+        // wins — otherwise "new" is matched as a ticket id and the member gets
+        // a not-found instead of the compose screen.
+        GoRoute(
+          path: '/support',
+          builder: (_, __) => const SupportScreen(),
+        ),
+        GoRoute(
+          path: '/support/new',
+          builder: (_, state) => NewTicketScreen(
+            initialCategory: state.uri.queryParameters['category'],
+          ),
+        ),
+        GoRoute(
+          path: '/support/:id',
+          builder: (_, state) => TicketScreen(ticketId: state.pathParameters['id']!),
         ),
       ],
     );

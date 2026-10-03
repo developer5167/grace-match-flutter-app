@@ -12,6 +12,8 @@ import '../bloc/subscription_bloc.dart';
 import '../../profile/bloc/profile_bloc.dart';
 import '../../profile/bloc/profile_event.dart';
 import '../../offers/data/offers_repository.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/utils/app_haptics.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   /// Prefilled when the member arrived by tapping an offer, so they never have
@@ -195,7 +197,25 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   style: AppTextStyles.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
+                // Asked for here because this is where a payment problem
+                // happens. Making somebody hunt through Settings while they
+                // are already annoyed is how a fixable problem becomes a
+                // refund request.
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      AppHaptics.selection();
+                      context.push('/support/new?category=payment');
+                    },
+                    icon: const Icon(Icons.support_agent_rounded,
+                        size: 16, color: AppColors.textSecondary),
+                    label: Text('Problem with a payment?',
+                        style: AppTextStyles.labelSmall
+                            .copyWith(color: AppColors.textSecondary)),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 ...plans.map((plan) => Padding(
                       padding: const EdgeInsets.only(bottom: 24),
                       child: _buildPlanCard(

@@ -201,6 +201,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (v) => _patch({'is_images_locked': v}),
                   ),
                   const SizedBox(height: 32),
+                  // Support, above Profile & matching rather than buried at
+                  // the bottom: a member looking for this is usually looking
+                  // for it because something has gone wrong.
+                  _sectionTitle('Help'),
+                  const SizedBox(height: 12),
+                  _linkTile(
+                    icon: Icons.support_agent_rounded,
+                    title: 'Help & support',
+                    subtitle: 'Payments, your account, verification, safety — ask us anything.',
+                    onTap: () {
+                      AppHaptics.selection();
+                      context.push('/support');
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
                   _sectionTitle('Profile & matching'),
                   const SizedBox(height: 12),
                   _linkTile(

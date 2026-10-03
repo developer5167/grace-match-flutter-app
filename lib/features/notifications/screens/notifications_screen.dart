@@ -126,6 +126,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'offer':
       case 'offer_expiring':
         return '/offers';
+      case 'support_reply':
+        // Straight into the thread. A support notification that lands on a
+        // list is a second tap for someone already waiting on an answer.
+        final ticket = d['ticket_id'];
+        return ticket == null ? '/support' : '/support/$ticket';
+      case 'checkout_reminder':
+        return '/subscription';
       case 'subscription_expiring':
       case 'boost_expired':
         return '/subscription';
@@ -148,6 +155,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'contact_request':
       case 'contact_approved':     return Icons.contact_phone_rounded;
       case 'offer':                return Icons.local_offer_rounded;
+      case 'support_reply':        return Icons.support_agent_rounded;
+      case 'checkout_reminder':    return Icons.shopping_cart_rounded;
       case 'offer_expiring':       return Icons.timer_outlined;
       case 'subscription_expiring':return Icons.workspace_premium_rounded;
       case 'daily_matches':        return Icons.auto_awesome_rounded;
@@ -159,7 +168,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (type) {
       case 'offer':
       case 'offer_expiring':
+      case 'checkout_reminder':
         return AppColors.rose;
+      case 'support_reply':
+        return AppColors.gold;
       case 'interest_accepted':
         return AppColors.gold;
       default:
