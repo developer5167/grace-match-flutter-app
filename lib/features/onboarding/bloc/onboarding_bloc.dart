@@ -34,12 +34,14 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         }
         await _repository.uploadPhotos(localPaths);
       } else if (event.step == 9) {
-        final videoPath = event.data['verification_video_path'] as String?;
-        if (videoPath != null && videoPath.isNotEmpty) {
-          await _repository.submitIdentityVerification(videoPath);
-        } else {
-          await _repository.saveStep(event.step, {});
+        // The selfie is optional here (it can be done later from Profile →
+        // Verification), and the step is recorded as done either way. The
+        // video path never saved the step at all.
+        final selfiePath = event.data['verification_selfie_path'] as String?;
+        if (selfiePath != null && selfiePath.isNotEmpty) {
+          await _repository.submitVerificationSelfie(selfiePath);
         }
+        await _repository.saveStep(event.step, {});
       } else {
         await _repository.saveStep(event.step, event.data);
       }

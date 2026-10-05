@@ -83,7 +83,6 @@ class ApiEndpoints {
   static String matchExplanation(String id) => '/trust/explanation/$id';
   static const String report = '/trust/report';
   static const String block = '/trust/block';
-  static const String videoSelfie = '/trust/video-selfie';
   static const String verifyIdentity = '/trust/verify-identity';
 
   // Subscriptions
@@ -115,6 +114,8 @@ class ApiEndpoints {
 
   // ─── Trust ──────────────────────────────────────────────────
   static const String reportAndExit      = '/trust/report-and-exit';
+  static const String digilockerStart    = '/trust/digilocker/start';
+  static const String digilockerStatus   = '/trust/digilocker/status';
   static const String screenshotAlert    = '/trust/screenshot';
   static const String verificationSelfie = '/trust/verification-selfie';
 

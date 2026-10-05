@@ -235,6 +235,10 @@ class _ProfileCardState extends State<ProfileCard>
                             ],
                           ],
                         ),
+                        if (widget.profile['is_photo_verified'] == true) ...[
+                          const SizedBox(height: 4),
+                          const PhotoVerifiedLabel(),
+                        ],
                         const SizedBox(height: 6),
 
                         // Denomination + City
@@ -521,6 +525,25 @@ class _ProfileCardState extends State<ProfileCard>
             minHeight: 4,
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// "Photo verified" — staff accepted a selfie as the face in the photos.
+/// Deliberately quieter than the ✅ Verified tick, which means identity.
+class PhotoVerifiedLabel extends StatelessWidget {
+  const PhotoVerifiedLabel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.face_retouching_natural_rounded, color: AppColors.blessing, size: 13),
+        const SizedBox(width: 4),
+        Text('Photo verified',
+            style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing)),
       ],
     );
   }

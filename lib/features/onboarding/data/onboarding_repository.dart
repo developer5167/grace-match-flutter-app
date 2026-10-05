@@ -59,46 +59,28 @@ class OnboardingRepository {
     }
   }
 
-  /// Upload the selfie verification video. Called when the user taps Continue
-  /// on step 9.
+  /// Upload the verification selfie (a still photo) taken on step 9.
   ///
-  /// Two things here were wrong and are worth keeping right:
+  /// Staff compare it with the profile photo to award "Photo verified". It
+  /// replaced a 3-second video: a still is sharper exactly where a face match
+  /// needs it, and nobody was reviewing the videos.
   ///
-  ///  * It must go to `/trust/video-selfie`, not `/trust/verify-identity`.
-  ///    The latter accepts a single IMAGE on a field named `id_proof`, so
-  ///    posting a video on a field named `video` made multer reject the
-  ///    request outright with "Unexpected field" — every single time.
-  ///
-  ///  * The part needs an explicit Content-Type. `MultipartFile.fromFile`
-  ///    sends `application/octet-stream` by default, which the server's video
-  ///    filter refused. The server now also falls back to the extension, but
-  ///    sending the correct type is the actual fix rather than the safety net.
-  Future<void> submitIdentityVerification(String videoFilePath) async {
+  /// The part needs an explicit Content-Type: `MultipartFile.fromFile` sends
+  /// `application/octet-stream` by default, which the server's image filter
+  /// rejects.
+  Future<void> submitVerificationSelfie(String imagePath) async {
     try {
-      final file = File(videoFilePath);
-      if (!await file.exists()) {
-        throw 'The recording could not be found. Please record it again.';
+      if (!await File(imagePath).exists()) {
+        throw 'The selfie could not be found. Please take it again.';
       }
-
-      final extension = p.extension(videoFilePath).replaceFirst('.', '').toLowerCase();
-      final subtype = switch (extension) {
-        'mov' || 'qt' => 'quicktime',
-        'm4v' => 'x-m4v',
-        '3gp' => '3gpp',
-        'mkv' => 'x-matroska',
-        '' => 'mp4',
-        _ => extension,
-      };
-
       final formData = FormData.fromMap({
-        'video': await MultipartFile.fromFile(
-          videoFilePath,
-          filename: p.basename(videoFilePath),
-          contentType: MediaType('video', subtype),
+        'selfie': await MultipartFile.fromFile(
+          imagePath,
+          filename: p.basename(imagePath),
+          contentType: MediaType('image', 'jpeg'),
         ),
       });
-
-      await _dio.post(ApiEndpoints.videoSelfie, data: formData);
+      await _dio.post(ApiEndpoints.verificationSelfie, data: formData);
     } on DioException catch (e) {
       throw _handleError(e);
     }

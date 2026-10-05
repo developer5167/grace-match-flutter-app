@@ -18,6 +18,7 @@ import '../../../core/utils/screen_guard.dart';
 import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
 import '../../discover/screens/match_explanation_screen.dart';
+import '../../discover/widgets/profile_card.dart' show PhotoVerifiedLabel;
 
 class PublicProfileScreen extends StatefulWidget {
   final String? userId; // If null, shows own profile preview
@@ -489,6 +490,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             const Icon(Icons.verified_rounded, color: AppColors.blessing, size: 24),
                         ],
                       ),
+                      if (profile['is_photo_verified'] == true) ...[
+                        const SizedBox(height: 6),
+                        const PhotoVerifiedLabel(),
+                      ],
                       const SizedBox(height: 8),
                       Text('${profile['denomination'] ?? 'CSI'} • ${profile['location_city'] ?? 'Unknown'}', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.gold)),
                       const SizedBox(height: 24),
