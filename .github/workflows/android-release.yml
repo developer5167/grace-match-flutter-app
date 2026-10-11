@@ -125,4 +125,3 @@ jobs:
           track: ${{ github.event.inputs.track || 'internal' }}
           status: ${{ github.event.inputs.status || 'completed' }}
           releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
-          changesNotSentForReview: true
