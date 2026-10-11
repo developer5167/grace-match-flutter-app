@@ -40,7 +40,7 @@ class SocketService {
 
   bool get isConnected => _socket?.connected == true;
 
-  Future<void>? _ensuring;
+  Future<bool>? _ensuring;
 
   String get _url => AppConstants.socketUrl.isNotEmpty
       ? AppConstants.socketUrl

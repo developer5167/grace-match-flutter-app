@@ -128,7 +128,14 @@ class CallSession extends ChangeNotifier {
     try {
       final dio = DioClient.instance;
       final resp = await dio.get(ApiEndpoints.iceServers);
-      final list = resp.data is Map ? (resp.data['data'] as Map?)?['ice_servers'] : null;
+      final data = resp.data;
+      dynamic list;
+      if (data is Map) {
+        final inner = data['data'];
+        if (inner is Map) {
+          list = inner['ice_servers'];
+        }
+      }
       final parsed = _iceFrom(list);
       if (parsed.isNotEmpty) return parsed;
     } catch (_) {}
