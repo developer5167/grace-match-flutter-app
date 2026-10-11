@@ -283,8 +283,32 @@ await Firebase.initializeApp(
   runApp(const GraceMatchApp());
 }
 
-class GraceMatchApp extends StatelessWidget {
+class GraceMatchApp extends StatefulWidget {
   const GraceMatchApp({super.key});
+
+  @override
+  State<GraceMatchApp> createState() => _GraceMatchAppState();
+}
+
+class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      di.sl<SocketService>().ensureConnected();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

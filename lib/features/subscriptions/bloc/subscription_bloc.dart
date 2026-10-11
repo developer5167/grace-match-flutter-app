@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../../core/di/injection.dart' as di;
+import '../../../core/network/socket_service.dart';
 import '../data/subscription_repository.dart';
 
 // ─── Events ──────────────────────────────────────────────────
@@ -137,6 +139,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         signature: event.response.signature ?? '',
       );
       if (verified) {
+        await di.sl<SocketService>().ensureConnected();
         emit(const PaymentProcessed(
             success: true,
             message: '🎉 Premium Activated! Enjoy unlimited matches.'));
@@ -146,6 +149,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             message: 'Payment verification failed. Contact support if amount was deducted.'));
       }
     } catch (_) {
+      await di.sl<SocketService>().ensureConnected();
       // Even if verify call fails, the webhook will activate it.
       emit(const PaymentProcessed(
           success: true,

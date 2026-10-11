@@ -40,6 +40,8 @@ class SocketService {
 
   bool get isConnected => _socket?.connected == true;
 
+  Future<void>? _ensuring;
+
   String get _url => AppConstants.socketUrl.isNotEmpty
       ? AppConstants.socketUrl
       : AppConstants.baseUrl.replaceAll('/api/v1', '');
@@ -60,10 +62,65 @@ class SocketService {
       'transports': ['websocket'],
       'autoConnect': true,
       'forceNew': true,
+      'reconnection': true,
+      'reconnectionAttempts': 20,
+      'reconnectionDelay': 400,
+      'reconnectionDelayMax': 4000,
+      'timeout': 10000,
       'auth': {'token': token},
     });
 
     _bindListeners(_socket!);
+  }
+
+  /// Razorpay (and any other native overlay) pauses the app and drops the
+  /// websocket. A full restart used to be the only way back online. Resume
+  /// and the next call both come through here.
+  Future<bool> ensureConnected({
+    Duration timeout = const Duration(seconds: 6),
+  }) {
+    if (isConnected) return Future.value(true);
+    return _ensuring ??= _ensureConnected(timeout).whenComplete(() {
+      _ensuring = null;
+    });
+  }
+
+  Future<bool> _ensureConnected(Duration timeout) async {
+    final token = await AppStorage.getAccessToken();
+    if (token == null) return false;
+
+    if (_socket != null && !isConnected) {
+      _socket!.connect();
+      if (await _waitUntilConnected(timeout)) return true;
+    }
+
+    if (!isConnected) {
+      await connect();
+      if (await _waitUntilConnected(timeout)) return true;
+    }
+
+    return isConnected;
+  }
+
+  Future<bool> _waitUntilConnected(Duration timeout) async {
+    if (isConnected) return true;
+    final socket = _socket;
+    if (socket == null) return false;
+
+    final completer = Completer<bool>();
+    void onConnect(_) {
+      if (!completer.isCompleted) completer.complete(true);
+    }
+
+    socket.on('connect', onConnect);
+    try {
+      return await completer.future.timeout(
+        timeout,
+        onTimeout: () => isConnected,
+      );
+    } finally {
+      socket.off('connect', onConnect);
+    }
   }
 
   void _bindListeners(io.Socket socket) {
@@ -141,13 +198,14 @@ class SocketService {
     _socket?.emit('call:signal', {'call_id': callId, 'signal': signal});
   }
 
-  Future<Map<String, dynamic>> _ack(String event, Map<String, dynamic> payload) {
-    final completer = Completer<Map<String, dynamic>>();
+  Future<Map<String, dynamic>> _ack(String event, Map<String, dynamic> payload) async {
+    final ready = await ensureConnected();
     final socket = _socket;
-    if (socket == null || !socket.connected) {
-      return Future.value({'ok': false, 'error': 'You appear to be offline'});
+    if (!ready || socket == null || !socket.connected) {
+      return {'ok': false, 'error': 'You appear to be offline'};
     }
 
+    final completer = Completer<Map<String, dynamic>>();
     socket.emitWithAck(event, payload, ack: (res) {
       if (completer.isCompleted) return;
       completer.complete(
