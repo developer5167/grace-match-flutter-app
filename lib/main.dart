@@ -192,6 +192,28 @@ await Firebase.initializeApp(
   // Init router (needs async for token check)
   await AppRouter.init();
 
+  void openFromPush(RemoteMessage message) {
+    final data = message.data;
+    final route = data['route']?.toString();
+    final kind = data['kind']?.toString();
+    if (route != null && route.startsWith('/')) {
+      AppRouter.router.go(route);
+      return;
+    }
+    if (kind == 'REVIEW_ACTIONS' ||
+        kind == 'APPLICATION_RESULT' ||
+        kind == 'PHOTO_REVIEW_RESULT' ||
+        kind == 'ADMIN_MESSAGE') {
+      AppRouter.router.go('/review-status');
+    }
+  }
+
+  FirebaseMessaging.onMessageOpenedApp.listen(openFromPush);
+  final launchedFrom = await FirebaseMessaging.instance.getInitialMessage();
+  if (launchedFrom != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => openFromPush(launchedFrom));
+  }
+
   // App Links — handle incoming deep links while the app is running.
   // Cold-start links are handled by the router's redirect logic when
   // GoRouter picks up the initial URI automatically (Flutter 3.x+).

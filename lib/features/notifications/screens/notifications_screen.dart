@@ -139,6 +139,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'daily_matches':
         return '/discover';
       default:
+        final route = d['route']?.toString();
+        if (route != null && route.startsWith('/')) return route;
+        final kind = d['kind']?.toString();
+        if (kind == 'REVIEW_ACTIONS' ||
+            kind == 'APPLICATION_RESULT' ||
+            kind == 'PHOTO_REVIEW_RESULT' ||
+            kind == 'ADMIN_MESSAGE') {
+          return '/review-status';
+        }
         final sender = d['sender_id'] ?? d['requester_id'] ?? d['viewer_id'];
         return sender == null ? null : '/profile/$sender';
     }

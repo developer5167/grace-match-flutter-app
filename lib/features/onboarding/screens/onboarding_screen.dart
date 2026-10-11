@@ -25,7 +25,8 @@ import '../bloc/onboarding_state.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final int? initialStep;
-  const OnboardingScreen({super.key, this.initialStep});
+  final String? fixAction;
+  const OnboardingScreen({super.key, this.initialStep, this.fixAction});
 
   @override
   State<OnboardingScreen> createState() => OnboardingScreenState();
@@ -92,9 +93,15 @@ class OnboardingScreenState extends State<OnboardingScreen> {
     context.read<OnboardingBloc>().add(SaveStepEvent(_currentStep + 1, stepData));
   }
 
+  bool get _isFixing => widget.initialStep != null || widget.fixAction != null;
+
   void _onStepSaved() {
-    if (widget.initialStep != null) {
-      context.pop();
+    if (_isFixing) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/review-status');
+      }
       return;
     }
 
@@ -115,7 +122,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   String _getStepTitle() {
-    if (widget.initialStep != null) {
+    if (_isFixing) {
       final titles = [
         'Basic Info', 'Faith Details', 'Bio & Details', 'Lifestyle',
         'Family Background', 'Partner Preferences', 'Hobbies', 'My Photos',
@@ -127,7 +134,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _prevStep() {
-    if (widget.initialStep != null && _currentStep == widget.initialStep) {
+    if (_isFixing && (widget.initialStep == null || _currentStep == widget.initialStep)) {
       if (context.canPop()) {
         context.pop();
       } else {
@@ -217,7 +224,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               children: [
                 _buildHeader(isLoading),
-                if (widget.initialStep == null)
+                if (!_isFixing)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                     child: OnboardingStepIndicator(
@@ -233,7 +240,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: Text(
-                          widget.initialStep != null ? 'Edit ${_stepTitles[_currentStep]}' : _stepTitles[_currentStep],
+                          _isFixing ? 'Edit ${_stepTitles[_currentStep]}' : _stepTitles[_currentStep],
                           key: ValueKey('title_$_currentStep'),
                           style: AppTextStyles.headlineLarge,
                         ),
@@ -261,7 +268,11 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: AppButton(
-                    label: _currentStep == _totalSteps - 1 ? 'Complete Profile ✓' : 'Continue',
+                    label: _isFixing
+                        ? 'Save'
+                        : _currentStep == _totalSteps - 1
+                            ? 'Complete Profile ✓'
+                            : 'Continue',
                     isLoading: isLoading,
                     onPressed: _nextStep,
                   ),
@@ -280,7 +291,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
-          if (_currentStep > 0)
+          if (_currentStep > 0 || _isFixing)
             IconButton(
               onPressed: isLoading ? null : _prevStep,
               icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -289,7 +300,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           else
             const SizedBox(width: 48),
           const Spacer(),
-          if (widget.initialStep == null)
+          if (!_isFixing)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -305,7 +316,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           else
             const SizedBox(width: 48),
           const Spacer(),
-          if (widget.initialStep == null)
+          if (!_isFixing && _currentStep != 7 && _currentStep != 9)
             TextButton(
               onPressed: isLoading
                   ? null

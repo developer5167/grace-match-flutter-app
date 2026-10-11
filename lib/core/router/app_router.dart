@@ -23,6 +23,7 @@ import '../../features/support/screens/ticket_screen.dart';
 import '../network/socket_service.dart';
 import '../di/injection.dart' as di;
 import '../../features/profile/screens/review_status_screen.dart';
+import '../../features/profile/screens/identity_verification_screen.dart';
 import '../storage/app_storage.dart';
 import '../../core/widgets/app_shell.dart';
 
@@ -57,10 +58,16 @@ class AppRouter {
           return '/onboarding';
         }
 
-        // Check review status
+        // Not approved yet: they may fix what staff asked for, talk to
+        // support, or wait. Discover/chat stay closed until approval.
         final reviewStatus = AppStorage.getReviewStatus();
         if (reviewStatus != 'approved') {
-          if (path == '/review-status') return null;
+          final fixing = path == '/review-status' ||
+              path == '/onboarding' ||
+              path == '/verify-identity' ||
+              path == '/notifications' ||
+              path.startsWith('/support');
+          if (fixing) return null;
           return '/review-status';
         }
 
@@ -95,9 +102,17 @@ class AppRouter {
         GoRoute(
           path: '/onboarding',
           builder: (_, state) {
-            final initialStep = state.extra as int?;
-            return OnboardingScreen(initialStep: initialStep);
+            final extraStep = state.extra is int ? state.extra as int : null;
+            final queryStep = int.tryParse(state.uri.queryParameters['step'] ?? '');
+            return OnboardingScreen(
+              initialStep: extraStep ?? queryStep,
+              fixAction: state.uri.queryParameters['action'],
+            );
           },
+        ),
+        GoRoute(
+          path: '/verify-identity',
+          builder: (_, __) => const IdentityVerificationScreen(),
         ),
 
         // ─── Main Shell (bottom nav) ──────────────────────────

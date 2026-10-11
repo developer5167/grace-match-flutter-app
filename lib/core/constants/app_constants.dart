@@ -145,6 +145,11 @@ class ApiEndpoints {
   static const String appBootstrap = '/bootstrap';
   static const String publicAppUpdate = '/public/app-update';
 
+  // Review loop — items staff asked the member to fix
+  static const String reviewActions = '/review/actions';
+  static const String reviewSubmit = '/review/actions/submit';
+  static const String reviewSubmitAll = '/review/actions/submit-all';
+
   // Discover
   static const String dailyMatches = '/discover/daily-matches';
 
