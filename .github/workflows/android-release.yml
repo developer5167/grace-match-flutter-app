@@ -48,7 +48,7 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version-file: .flutter-version
           cache: true
       - name: Restore upload keystore
         env:
@@ -87,6 +87,22 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_org.gradle.jvmargs: '-Xmx4G -XX:MaxMetaspaceSize=1G'
         run: |
+          set -euo pipefail
+          flutter --version
+          if flutter --version | grep -q '3.47'; then
+            echo "CI must not use Flutter 3.47 (AGP 9). Check .flutter-version."
+            exit 1
+          fi
+          # Flutter 3.47 rewrites this file during "Upgrading gradle.properties".
+          # Write the opt-out immediately before the build so it sticks.
+          printf '%s\n' \
+            'org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G' \
+            'android.useAndroidX=true' \
+            'android.enableJetifier=true' \
+            'kotlin.jvm.target.validation.mode=warning' \
+            'android.newDsl=false' \
+            'android.builtInKotlin=false' \
+            > android/gradle.properties
           flutter build appbundle --release \
             --build-name="${{ steps.version.outputs.name }}" \
             --build-number="${{ steps.version.outputs.code }}" \

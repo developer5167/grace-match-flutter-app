@@ -15,6 +15,15 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+
+    // Flutter 3.47+ may request AGP 9. This app is on the 8.9 DSL.
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith("com.android.")) {
+                useVersion("8.9.1")
+            }
+        }
+    }
 }
 
 plugins {
