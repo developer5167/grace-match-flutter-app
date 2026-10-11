@@ -102,11 +102,15 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         'order_id': orderData['order_id']?.toString() ?? '',
         'description': event.plan['name']?.toString() ?? 'Premium',
         'timeout': 300,
-        'prefill': {
-          'contact': '9100000000',
-          'email': 'user@example.com',
-        },
       };
+      final prefill = <String, dynamic>{};
+      final contact = orderData['contact']?.toString().trim() ?? '';
+      final payerName = orderData['name']?.toString().trim() ?? '';
+      final email = orderData['email']?.toString().trim() ?? '';
+      if (contact.isNotEmpty) prefill['contact'] = contact;
+      if (payerName.isNotEmpty) prefill['name'] = payerName;
+      if (email.isNotEmpty) prefill['email'] = email;
+      if (prefill.isNotEmpty) options['prefill'] = prefill;
 
       if (options['key'] == null || (options['key'] as String).isEmpty) {
         throw Exception('Razorpay key missing. Set RAZORPAY_KEY_ID on the server.');
