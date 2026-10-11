@@ -155,6 +155,7 @@ class ApiEndpoints {
 
   // Subscription payment
   static const String razorpayVerify = '/subscriptions/razorpay/verify';
+  static const String razorpayAbandon = '/subscriptions/razorpay/abandon';
 }
 
 class StorageKeys {

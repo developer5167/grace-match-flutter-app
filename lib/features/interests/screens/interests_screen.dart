@@ -141,105 +141,129 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.surfaceHighest),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.surfaceHighest,
-                    border: Border.all(color: AppColors.goldMild, width: 2),
-                    image: profile['photo_url'] != null 
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(profile['photo_url']),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  ),
-                  child: profile['photo_url'] == null 
-                    ? const Icon(Icons.person, color: AppColors.textTertiary, size: 36)
-                    : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${profile['name'] ?? 'Sarah'}, ${profile['age'] ?? 24}', style: AppTextStyles.labelLarge),
-                      const SizedBox(height: 4),
-                      Text('${profile['denomination'] ?? 'CSI'} • ${profile['profession'] ?? 'Teacher'}', style: AppTextStyles.bodySmall),
-                      if (isReceived) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  context.read<InterestsBloc>().add(InterestActionEvent(
-                                    interestId: profile['interest_id'].toString(),
-                                    accept: true,
-                                  ));
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.gold,
-                                  foregroundColor: AppColors.textOnGold,
-                                  minimumSize: const Size(0, 36),
-                                ),
-                                child: const Text('Accept'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  context.read<InterestsBloc>().add(InterestActionEvent(
-                                    interestId: profile['interest_id'].toString(),
-                                    accept: false,
-                                  ));
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.textSecondary,
-                                  side: const BorderSide(color: AppColors.surfaceHighest),
-                                  minimumSize: const Size(0, 36),
-                                ),
-                                child: const Text('Decline'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (isMatch) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final convId = profile['conversation_id']?.toString();
-                              if (convId != null) {
-                                final profileId =
-                                    profile['profile_id']?.toString() ??
-                                    profile['user_id']?.toString() ??
-                                    profile['id']?.toString();
-                                context.push('/chat/$convId', extra: {
-                                  'name': profile['name'],
-                                  'photo': profile['photo_url'],
-                                  'userId': profileId,
-                                });
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.goldSubtle,
-                              foregroundColor: AppColors.gold,
-                              minimumSize: const Size(0, 36),
-                            ),
-                            child: const Text('Message'),
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surfaceHighest,
+                        border: Border.all(color: AppColors.goldMild, width: 2),
+                        image: profile['photo_url'] != null
+                          ? DecorationImage(
+                              image: CachedNetworkImageProvider(profile['photo_url']),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      ),
+                      child: profile['photo_url'] == null
+                        ? const Icon(Icons.person, color: AppColors.textTertiary, size: 28)
+                        : null,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${profile['name'] ?? 'Member'}, ${profile['age'] ?? ''}'.trim(),
+                            style: AppTextStyles.labelLarge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${profile['denomination'] ?? ''} • ${profile['profession'] ?? ''}',
+                            style: AppTextStyles.bodySmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (isReceived) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.read<InterestsBloc>().add(InterestActionEvent(
+                              interestId: profile['interest_id'].toString(),
+                              accept: true,
+                            ));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.gold,
+                            foregroundColor: AppColors.textOnGold,
+                            minimumSize: const Size(0, 36),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          child: const Text('Accept'),
                         ),
-                      ]
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            context.read<InterestsBloc>().add(InterestActionEvent(
+                              interestId: profile['interest_id'].toString(),
+                              accept: false,
+                            ));
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textSecondary,
+                            side: const BorderSide(color: AppColors.surfaceHighest),
+                            minimumSize: const Size(0, 36),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          child: const Text('Decline'),
+                        ),
+                      ),
                     ],
                   ),
-                ),
+                ],
+                if (isMatch) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final convId = profile['conversation_id']?.toString();
+                        if (convId != null) {
+                          final profileId =
+                              profile['profile_id']?.toString() ??
+                              profile['user_id']?.toString() ??
+                              profile['id']?.toString();
+                          context.push('/chat/$convId', extra: {
+                            'name': profile['name'],
+                            'photo': profile['photo_url'],
+                            'userId': profileId,
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.goldSubtle,
+                        foregroundColor: AppColors.gold,
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      child: const Text('Message'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

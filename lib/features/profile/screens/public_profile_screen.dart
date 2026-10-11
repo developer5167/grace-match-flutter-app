@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/constants/app_constants.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -104,24 +105,41 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     }
   }
 
+  String _apiMessage(Object e) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] != null) return data['message'].toString();
+    }
+    return e.toString().replaceFirst('DioException: ', '').replaceFirst('Exception: ', '');
+  }
+
   Future<void> _requestContact() async {
     if (widget.userId == null || _contactRequesting) return;
     setState(() => _contactRequesting = true);
     try {
       final dio = DioClient.instance;
-      await dio.post(ApiEndpoints.contactRequest, data: {'target_user_id': widget.userId});
-      // Refresh contact status after posting the request
-      _contactStatus = null;
-      await _loadContactStatus();
+      final resp = await dio.post(ApiEndpoints.contactRequest, data: {'target_user_id': widget.userId});
+      final payload = resp.data is Map ? resp.data['data'] : null;
+      if (payload is Map) {
+        if (mounted) {
+          setState(() => _contactStatus = Map<String, dynamic>.from(payload));
+        }
+      } else {
+        _contactStatus = null;
+        await _loadContactStatus();
+      }
       if (mounted) {
+        final msg = resp.data is Map && resp.data['message'] != null
+            ? resp.data['message'].toString()
+            : 'Contact request sent ✓';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Contact request sent ✓'), backgroundColor: Colors.green),
+          SnackBar(content: Text(msg), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+          SnackBar(content: Text(_apiMessage(e)), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -770,8 +788,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       }
 
       final outgoing = _contactStatus?['outgoing'] as Map?;
+      final incoming = _contactStatus?['incoming'] as Map?;
       final phone    = _contactStatus?['phone'] as String?;
-      final outStatus = outgoing?['status'] as String?; // pending | approved | rejected | null
+      final outStatus = outgoing?['status'] as String?;
+      final inStatus  = incoming?['status'] as String?;
 
       return Container(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
@@ -814,6 +834,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
             // Contact reveal row
             _ContactRevealTile(
               outStatus: outStatus,
+              inStatus: inStatus,
               phone: phone,
               loading: _contactLoading || _contactRequesting,
               onRequest: _requestContact,
@@ -920,13 +941,15 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
 // ─── Contact Reveal Tile ──────────────────────────────────────
 class _ContactRevealTile extends StatelessWidget {
-  final String? outStatus; // null | pending | approved | rejected
+  final String? outStatus; // null | pending | approved | rejected | revoked
+  final String? inStatus;
   final String? phone;
   final bool loading;
   final VoidCallback onRequest;
 
   const _ContactRevealTile({
     required this.outStatus,
+    this.inStatus,
     required this.phone,
     required this.loading,
     required this.onRequest,
@@ -934,8 +957,8 @@ class _ContactRevealTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Approved — show phone number
-    if (outStatus == 'approved' && phone != null) {
+    // Either side accepted — show the other person's number.
+    if (phone != null && phone!.isNotEmpty) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -954,6 +977,29 @@ class _ContactRevealTile extends StatelessWidget {
                   Text('Contact Number', style: AppTextStyles.overline.copyWith(color: Colors.green.shade300)),
                   Text(phone!, style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
                 ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (outStatus == 'revoked' || inStatus == 'revoked') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.surfaceHighest),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.phonelink_erase_rounded, color: AppColors.textTertiary, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Sharing stopped. This reveal still counts on the plan.',
+                style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
               ),
             ),
           ],

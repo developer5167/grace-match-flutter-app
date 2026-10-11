@@ -60,6 +60,7 @@ class SubscriptionError extends SubscriptionState {
 class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   final SubscriptionRepository _repository;
   final Razorpay _razorpay = Razorpay();
+  String? _lastOrderId;
 
   SubscriptionBloc(this._repository) : super(SubscriptionInitial()) {
     on<FetchPlansEvent>(_onFetchPlans);
@@ -119,6 +120,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         throw Exception('Could not create payment order.');
       }
 
+      _lastOrderId = options['order_id'] as String;
       _razorpay.open(options);
     } catch (e) {
       emit(SubscriptionError(e.toString()));
@@ -151,7 +153,10 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     }
   }
 
-  void _onPaymentError(PaymentErrorEvent event, Emitter<SubscriptionState> emit) {
+  Future<void> _onPaymentError(PaymentErrorEvent event, Emitter<SubscriptionState> emit) async {
+    final orderId = _lastOrderId;
+    _lastOrderId = null;
+    if (orderId != null) await _repository.abandonOrder(orderId);
     emit(PaymentProcessed(success: false, message: 'Payment Failed: ${event.response.message}'));
   }
 

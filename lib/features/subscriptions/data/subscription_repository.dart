@@ -49,6 +49,15 @@ class SubscriptionRepository {
       return false;
     }
   }
+
+  Future<void> abandonOrder(String orderId) async {
+    if (orderId.isEmpty) return;
+    try {
+      await _dio.post(ApiEndpoints.razorpayAbandon, data: {
+        'razorpay_order_id': orderId,
+      });
+    } catch (_) {}
+  }
 }
 
 Map<String, dynamic> _asMap(dynamic value) {

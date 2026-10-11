@@ -812,9 +812,10 @@ class _ContactRequestsTab extends StatelessWidget {
                           const SizedBox(width: 8),
                           // Approve
                           GestureDetector(
-                            onTap: () {
+                            onTap: () async {
                               AppHaptics.heavy();
-                              onRespond(id, 'approve');
+                              final confirmed = await _confirmAccept(context, name);
+                              if (confirmed == true) onRespond(id, 'approve');
                             },
                             child: Container(
                               width: 40,
@@ -882,6 +883,34 @@ class _ContactRequestsTab extends StatelessWidget {
     );
   }
 
+  Future<bool?> _confirmAccept(BuildContext context, String name) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('Share your number?', style: AppTextStyles.labelLarge),
+        content: Text(
+          'By accepting, your number will also be revealed to $name automatically. '
+          'This counts as one contact reveal on the requester\'s plan.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Not now',
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Accept and share',
+                style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Confirm before withdrawing. Revoking is not destructive enough to warn
   /// about in red, but it is a real change to someone else's access, so it
   /// should not happen on a stray tap.
@@ -894,7 +923,7 @@ class _ContactRequestsTab extends StatelessWidget {
         title: Text('Stop sharing your number?', style: AppTextStyles.labelLarge),
         content: Text(
           '$name will no longer be able to see your contact details. '
-          'They can ask again later.',
+          'This reveal still counts on the plan for this month.',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [

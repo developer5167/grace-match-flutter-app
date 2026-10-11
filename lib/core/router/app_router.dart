@@ -66,7 +66,8 @@ class AppRouter {
               path == '/onboarding' ||
               path == '/verify-identity' ||
               path == '/notifications' ||
-              path.startsWith('/support');
+              path.startsWith('/support') ||
+              path.startsWith('/call');
           if (fixing) return null;
           return '/review-status';
         }

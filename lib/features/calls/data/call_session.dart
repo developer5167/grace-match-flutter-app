@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+import '../../../core/constants/app_constants.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/network/socket_service.dart';
 
 enum CallPhase { idle, dialling, ringing, connecting, connected, ended }
@@ -43,6 +45,7 @@ class CallSession extends ChangeNotifier {
   final List<Map<String, dynamic>> _pendingSignals = [];
   bool _remoteReady = false;
   bool _offerWhenReady = false;
+  Timer? _connectTimeout;
 
   Future<void> _initRenderers() async {
     await localRenderer.initialize();
@@ -69,7 +72,7 @@ class CallSession extends ChangeNotifier {
 
     callId = ack['call_id']?.toString();
     _listen();
-    await _prepare();
+    await _prepare(_iceFrom(ack['ice_servers']));
     _set(CallPhase.ringing);
     return null;
   }
@@ -89,7 +92,7 @@ class CallSession extends ChangeNotifier {
     // Masthi Chat opens the peer connection on the incoming screen *before*
     // accept is emitted. Same here: media first, then tell the caller to offer.
     _listen();
-    await _prepare();
+    await _prepare(await _loadIce());
 
     final ack = await socket.answerCall(incomingCallId);
     if (ack['ok'] != true) {
@@ -111,7 +114,28 @@ class CallSession extends ChangeNotifier {
     },
   ];
 
-  Future<void> _prepare() async {
+  List<Map<String, dynamic>> _iceFrom(dynamic raw) {
+    if (raw is List && raw.isNotEmpty) {
+      return raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+    return List<Map<String, dynamic>>.from(_masthiIceServers);
+  }
+
+  Future<List<Map<String, dynamic>>> _loadIce() async {
+    try {
+      final dio = DioClient.instance;
+      final resp = await dio.get(ApiEndpoints.iceServers);
+      final list = resp.data is Map ? (resp.data['data'] as Map?)?['ice_servers'] : null;
+      final parsed = _iceFrom(list);
+      if (parsed.isNotEmpty) return parsed;
+    } catch (_) {}
+    return List<Map<String, dynamic>>.from(_masthiIceServers);
+  }
+
+  Future<void> _prepare([List<Map<String, dynamic>>? iceServers]) async {
     await _initRenderers();
 
     _local = await navigator.mediaDevices.getUserMedia({
@@ -134,7 +158,7 @@ class CallSession extends ChangeNotifier {
     await Helper.setSpeakerphoneOn(speakerOn);
 
     _pc = await createPeerConnection({
-      'iceServers': _masthiIceServers,
+      'iceServers': iceServers ?? _masthiIceServers,
       'sdpSemantics': 'unified-plan',
     }, {
       'mandatory': {
@@ -345,6 +369,8 @@ class CallSession extends ChangeNotifier {
   }
 
   Future<void> _teardown() async {
+    _connectTimeout?.cancel();
+    _connectTimeout = null;
     await _sub?.cancel();
     _sub = null;
     for (final t in _local?.getTracks() ?? <MediaStreamTrack>[]) {
@@ -364,6 +390,18 @@ class CallSession extends ChangeNotifier {
 
   void _set(CallPhase next) {
     phase = next;
+    if (next == CallPhase.connecting || next == CallPhase.ringing) {
+      _connectTimeout?.cancel();
+      _connectTimeout = Timer(const Duration(seconds: 40), () {
+        if (phase == CallPhase.connecting || phase == CallPhase.ringing) {
+          error = phase == CallPhase.ringing ? 'No answer' : 'Could not connect';
+          hangUp();
+        }
+      });
+    } else {
+      _connectTimeout?.cancel();
+      _connectTimeout = null;
+    }
     notifyListeners();
   }
 

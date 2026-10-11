@@ -2,88 +2,163 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../../../core/network/dio_client.dart';
+import 'incoming_call_notifications.dart';
 import '../../../core/network/socket_service.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 
-/// Listens for incoming calls anywhere in the app.
-///
-/// Without this a call only arrives if the member happens to already be on the
-/// call screen, which is nowhere. It is started once at app level and lives
-/// for the session.
-///
-/// Presents a full-screen answer/decline sheet rather than a snackbar: a
-/// ringing phone is the most interruptive thing this app does, and it should
-/// look like it.
+/// Listens for incoming calls anywhere in the app — socket while open,
+/// and the same full-screen sheet when a call push wakes the process.
 class IncomingCallWatcher {
+  IncomingCallWatcher._({required this.socket, required this.navigatorKey});
+
   final SocketService socket;
   final GlobalKey<NavigatorState> navigatorKey;
 
   StreamSubscription<CallEvent>? _sub;
   String? _showingCallId;
 
-  IncomingCallWatcher({required this.socket, required this.navigatorKey});
+  static IncomingCallWatcher? instance;
+  static Map<String, dynamic>? _queued;
 
-  void start() {
-    _sub?.cancel();
-    _sub = socket.callStream.listen(_onEvent);
+  static IncomingCallWatcher start({
+    required SocketService socket,
+    required GlobalKey<NavigatorState> navigatorKey,
+  }) {
+    final watcher = IncomingCallWatcher._(socket: socket, navigatorKey: navigatorKey);
+    instance = watcher;
+    watcher._listen();
+    final queued = _queued;
+    _queued = null;
+    if (queued != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        watcher.presentFromPush(queued);
+      });
+    }
+    return watcher;
   }
 
   void stop() {
     _sub?.cancel();
     _sub = null;
+    if (instance == this) instance = null;
+  }
+
+  void _listen() {
+    _sub?.cancel();
+    _sub = socket.callStream.listen(_onEvent);
   }
 
   Future<void> _onEvent(CallEvent event) async {
-    final nav = navigatorKey.currentState;
-    if (nav == null) return;
-
-    // The caller gave up, or the call was answered on another device.
     if (event.name == 'call:cancelled' || event.name == 'call:ended') {
-      if (_showingCallId != null && event.callId == _showingCallId) {
-        _showingCallId = null;
-        nav.popUntil((route) => route.settings.name != _routeName);
-      }
+      dismiss(event.callId);
+      return;
+    }
+    if (event.name != 'call:incoming') return;
+    presentFromPush({
+      'call_id': event.callId,
+      'conversation_id': event.data['conversation_id'],
+      'caller_name': event.data['caller_name'],
+      'is_video': event.data['is_video'],
+    });
+  }
+
+  static void presentOrQueue(Map<String, dynamic> data) {
+    final live = instance;
+    if (live != null) {
+      live.presentFromPush(data);
+      return;
+    }
+    _queued = data;
+  }
+
+  Future<void> presentFromPush(Map<String, dynamic> data) async {
+    final callId = data['call_id']?.toString();
+    if (callId == null || callId.isEmpty) return;
+    if (callId == _showingCallId) return;
+
+    final nav = navigatorKey.currentState;
+    if (nav == null) {
+      _queued = data;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final again = _queued;
+        _queued = null;
+        if (again != null) presentFromPush(again);
+      });
       return;
     }
 
-    if (event.name != 'call:incoming') return;
-
-    final callId = event.callId;
-    if (callId == null || callId == _showingCallId) return;
     _showingCallId = callId;
-
     AppHaptics.heavy();
 
-    final data = event.data;
+    final isVideo = data['is_video']?.toString() != 'false' && data['is_video'] != false;
     await nav.push(
       MaterialPageRoute(
         settings: const RouteSettings(name: _routeName),
         fullscreenDialog: true,
-        builder: (_) => _IncomingCallSheet(
+        builder: (_) => IncomingCallSheet(
           socket: socket,
           callId: callId,
           conversationId: data['conversation_id']?.toString() ?? '',
-          callerName: data['caller_name']?.toString() ?? 'Someone',
-          isVideo: data['is_video'] != false,
+          callerName: data['caller_name']?.toString().isNotEmpty == true
+              ? data['caller_name'].toString()
+              : 'Someone',
+          isVideo: isVideo,
         ),
       ),
     );
+    if (_showingCallId == callId) _showingCallId = null;
+  }
+
+  void dismiss(String? callId) {
+    cancelIncomingCallNotification(FlutterLocalNotificationsPlugin(), callId);
+    if (callId == null || _showingCallId == null) return;
+    if (callId != _showingCallId) return;
     _showingCallId = null;
+    final nav = navigatorKey.currentState;
+    nav?.popUntil((route) => route.settings.name != _routeName);
+  }
+
+  Future<void> acceptFromNotification(Map<String, dynamic> data) async {
+    dismiss(data['call_id']?.toString());
+    final conv = data['conversation_id']?.toString() ?? '';
+    final callId = data['call_id']?.toString() ?? '';
+    if (conv.isEmpty || callId.isEmpty) return;
+    final name = Uri.encodeComponent(data['caller_name']?.toString() ?? 'Member');
+    final video = data['is_video']?.toString() != 'false';
+    AppRouter.router.push('/call/$conv?call=$callId&name=$name&video=$video');
+  }
+
+  Future<void> declineFromNotification(Map<String, dynamic> data) async {
+    final callId = data['call_id']?.toString();
+    if (callId == null || callId.isEmpty) return;
+    dismiss(callId);
+    try {
+      await socket.rejectCall(callId);
+    } catch (_) {
+      try {
+        await DioClient.instance.post('/calls/$callId/reject');
+      } catch (_) {}
+    }
   }
 
   static const _routeName = 'incoming-call';
 }
 
-class _IncomingCallSheet extends StatelessWidget {
+class IncomingCallSheet extends StatelessWidget {
   final SocketService socket;
   final String callId;
   final String conversationId;
   final String callerName;
   final bool isVideo;
 
-  const _IncomingCallSheet({
+  const IncomingCallSheet({
+    super.key,
     required this.socket,
     required this.callId,
     required this.conversationId,
@@ -131,7 +206,13 @@ class _IncomingCallSheet extends StatelessWidget {
                   onTap: () async {
                     AppHaptics.light();
                     final nav = Navigator.of(context);
-                    await socket.rejectCall(callId);
+                    try {
+                      await socket.rejectCall(callId);
+                    } catch (_) {
+                      try {
+                        await DioClient.instance.post('/calls/$callId/reject');
+                      } catch (_) {}
+                    }
                     nav.pop();
                   },
                 ),
@@ -143,11 +224,10 @@ class _IncomingCallSheet extends StatelessWidget {
                     AppHaptics.medium();
                     final nav = Navigator.of(context);
                     nav.pop();
-                    // Answering happens inside the call screen so there is one
-                    // place that owns the peer connection.
-                    nav.push(MaterialPageRoute(
-                      builder: (_) => _deferredCallScreen(),
-                    ));
+                    final name = Uri.encodeComponent(callerName);
+                    AppRouter.router.push(
+                      '/call/$conversationId?call=$callId&name=$name&video=$isVideo',
+                    );
                   },
                 ),
               ],
@@ -156,17 +236,6 @@ class _IncomingCallSheet extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _deferredCallScreen() {
-    // Imported lazily to keep this file free of a cycle with the call screen.
-    return CallScreenFactory.build(
-      socket: socket,
-      conversationId: conversationId,
-      peerName: callerName,
-      isVideo: isVideo,
-      incomingCallId: callId,
     );
   }
 

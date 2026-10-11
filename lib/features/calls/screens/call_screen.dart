@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/network/socket_service.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
@@ -43,6 +44,7 @@ class _CallScreenState extends State<CallScreen> {
   late final CallSession _session = CallSession(widget.socket);
   Timer? _ticker;
   bool _starting = true;
+  bool _left = false;
 
   @override
   void initState() {
@@ -85,6 +87,22 @@ class _CallScreenState extends State<CallScreen> {
     if (failure != null) _fail(failure);
   }
 
+  void _leave() {
+    if (_left || !mounted) return;
+    _left = true;
+    final nav = Navigator.of(context, rootNavigator: true);
+    if (nav.canPop()) {
+      nav.pop();
+      return;
+    }
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+      return;
+    }
+    router.go('/chat');
+  }
+
   void _fail(String message) {
     final needsPlan = message.toLowerCase().contains('plan');
     if (needsPlan) {
@@ -98,15 +116,15 @@ class _CallScreenState extends State<CallScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                context.pop();
+                _leave();
               },
               child: const Text('Not now'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                context.pop();
-                context.push('/subscription');
+                _leave();
+                AppRouter.router.push('/subscription');
               },
               child: const Text('See plans'),
             ),
@@ -119,9 +137,7 @@ class _CallScreenState extends State<CallScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.surfaceHighest),
     );
-    Future.delayed(const Duration(milliseconds: 900), () {
-      if (mounted) context.pop();
-    });
+    Future.delayed(const Duration(milliseconds: 900), _leave);
   }
 
   void _onChange() {
@@ -134,14 +150,14 @@ class _CallScreenState extends State<CallScreen> {
     if (_session.phase == CallPhase.ended) {
       _ticker?.cancel();
       final why = _session.error;
-      Future.delayed(const Duration(milliseconds: 600), () {
+      Future.delayed(const Duration(milliseconds: 400), () {
         if (!mounted) return;
         if (why != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(why), backgroundColor: AppColors.surfaceHighest),
           );
         }
-        context.pop();
+        _leave();
       });
     }
     setState(() {});
@@ -188,9 +204,8 @@ class _CallScreenState extends State<CallScreen> {
         if (didPop) return;
         // Captured before the await: the context from build() is not safe to
         // reach across an async gap, and this one is a hang-up.
-        final router = GoRouter.of(context);
         await _session.hangUp();
-        if (mounted) router.pop();
+        _leave();
       },
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -326,6 +341,7 @@ class _CallScreenState extends State<CallScreen> {
             onTap: () async {
               AppHaptics.heavy();
               await _session.hangUp();
+              _leave();
             },
           ),
         ],

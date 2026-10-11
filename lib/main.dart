@@ -12,6 +12,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/injection.dart' as di;
 import 'core/network/socket_service.dart';
+import 'features/calls/data/incoming_call_notifications.dart';
 import 'features/calls/data/incoming_call_watcher.dart';
 import 'features/calls/screens/call_screen.dart';
 import 'features/auth/data/auth_repository.dart';
@@ -25,12 +26,50 @@ import 'features/subscriptions/bloc/subscription_bloc.dart';
 import 'features/activity/bloc/activity_bloc.dart';
 import 'firebase_options.dart';
 
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _ensureCallChannel() async {
+  await _localNotifications
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(incomingCallChannel);
+}
+
+void _handleCallNotificationResponse(NotificationResponse response) {
+  final data = decodeCallPayload(response.payload);
+  if (data == null) return;
+  if (response.actionId == declineCallActionId) {
+    IncomingCallWatcher.instance?.declineFromNotification(data);
+    return;
+  }
+  if (response.actionId == acceptCallActionId) {
+    IncomingCallWatcher.presentOrQueue(data);
+    IncomingCallWatcher.instance?.acceptFromNotification(data);
+    return;
+  }
+  IncomingCallWatcher.presentOrQueue(data);
+}
+
+@pragma('vm:entry-point')
+void _notificationTapBackground(NotificationResponse response) {
+  _handleCallNotificationResponse(response);
+}
+
 // Background message handler — must be top-level, called when app is killed/background.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // No UI work here — system tray notification is shown automatically by FCM
-  // when the backend sends both notification + data payloads.
+  if (isIncomingCallData(message.data)) {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await _localNotifications.initialize(
+      const InitializationSettings(android: android),
+      onDidReceiveNotificationResponse: _handleCallNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: _notificationTapBackground,
+    );
+    await _ensureCallChannel();
+    await showIncomingCallNotification(_localNotifications, message.data);
+  }
 }
 
 // Handles https://<site>/p/:userId links after the app is already running.
@@ -85,20 +124,34 @@ await Firebase.initializeApp(
   );
 
   // Local Notifications for foreground
-  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-  await flutterLocalNotificationsPlugin.initialize(const InitializationSettings(android: initializationSettingsAndroid));
+  await _localNotifications.initialize(
+    const InitializationSettings(android: initializationSettingsAndroid),
+    onDidReceiveNotificationResponse: _handleCallNotificationResponse,
+    onDidReceiveBackgroundNotificationResponse: _notificationTapBackground,
+  );
   const androidChannel = AndroidNotificationChannel(
     'gracematch_default',
     'General',
     description: 'General notifications for GraceMatch',
     importance: Importance.high,
   );
-  await flutterLocalNotificationsPlugin
+  await _localNotifications
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(androidChannel);
+  await _ensureCallChannel();
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (isIncomingCallData(message.data)) {
+      IncomingCallWatcher.presentOrQueue({
+        ...message.data,
+        if (message.data['caller_name'] == null)
+          'caller_name': message.notification?.title,
+      });
+      showIncomingCallNotification(_localNotifications, message.data);
+      return;
+    }
+
     // Suppress if the user is already inside the conversation this message belongs to
     final incomingConvId = message.data['conversation_id'];
     if (incomingConvId != null &&
@@ -108,7 +161,7 @@ await Firebase.initializeApp(
 
     final notification = message.notification;
     if (notification != null) {
-      flutterLocalNotificationsPlugin.show(
+      _localNotifications.show(
         message.hashCode,
         notification.title,
         notification.body,
@@ -164,10 +217,10 @@ await Firebase.initializeApp(
         incomingCallId: incomingCallId,
       );
 
-  IncomingCallWatcher(
+  IncomingCallWatcher.start(
     socket: di.sl<SocketService>(),
     navigatorKey: AppRouter.rootNavigatorKey,
-  ).start();
+  );
 
   // Screenshot & screen-recording protection (Android only via FLAG_SECURE).
   // Implemented natively in MainActivity.kt — no package needed.
@@ -194,10 +247,18 @@ await Firebase.initializeApp(
 
   void openFromPush(RemoteMessage message) {
     final data = message.data;
+    if (isIncomingCallData(data)) {
+      IncomingCallWatcher.presentOrQueue(data);
+      return;
+    }
     final route = data['route']?.toString();
     final kind = data['kind']?.toString();
     if (route != null && route.startsWith('/')) {
       AppRouter.router.go(route);
+      return;
+    }
+    if (kind == 'contact_request' || kind == 'contact_approved') {
+      AppRouter.router.go('/activity');
       return;
     }
     if (kind == 'REVIEW_ACTIONS' ||
