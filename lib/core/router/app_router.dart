@@ -37,9 +37,6 @@ class AppRouter {
   static late GoRouter router;
 
   static Future<void> init() async {
-    final token = await AppStorage.getAccessToken();
-    final onboardingDone = AppStorage.isOnboardingComplete();
-
     router = GoRouter(
       navigatorKey: _rootKey,
       initialLocation: '/splash',
