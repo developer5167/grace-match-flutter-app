@@ -73,4 +73,26 @@ class AppStorage {
 
   static String? getSkippedUpdateVersion() =>
       _prefs.get(StorageKeys.skippedUpdateVersion) as String?;
+
+  /// Shared profile the guest opened (or tapped Get the app for) before login.
+  static void setPendingShareProfile(String? userId) {
+    if (userId == null || userId.isEmpty) {
+      _prefs.delete(StorageKeys.pendingShareProfileId);
+    } else {
+      _prefs.put(StorageKeys.pendingShareProfileId, userId);
+    }
+  }
+
+  static String? getPendingShareProfile() =>
+      _prefs.get(StorageKeys.pendingShareProfileId) as String?;
+
+  /// Full in-app profile once the member is approved; otherwise keep waiting.
+  static String? takeShareResumeRoute() {
+    final id = getPendingShareProfile();
+    if (id == null) return null;
+    if (!isOnboardingComplete()) return null;
+    if (getReviewStatus() != 'approved') return null;
+    _prefs.delete(StorageKeys.pendingShareProfileId);
+    return '/profile/$id';
+  }
 }

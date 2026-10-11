@@ -33,7 +33,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // when the backend sends both notification + data payloads.
 }
 
-// Handles gracematch.app/p/:userId links after the app is already running.
+// Handles https://<site>/p/:userId links after the app is already running.
 void _initAppLinks() {
   final appLinks = AppLinks();
   appLinks.uriLinkStream.listen((uri) {
@@ -47,11 +47,12 @@ void _initAppLinks() {
 }
 
 void _handleAppLink(Uri uri) {
-  // Expected: https://gracematch.app/p/<userId>
+  // Expected: https://gracematch.sotersystems.in/p/<userId>
   final segments = uri.pathSegments;
   if (segments.length >= 2 && segments[0] == 'p') {
     final userId = segments[1];
-    AppRouter.router.push('/profile/$userId');
+    AppStorage.setPendingShareProfile(userId);
+    AppRouter.router.go('/p/$userId');
   }
 }
 

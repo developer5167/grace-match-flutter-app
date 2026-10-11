@@ -11,6 +11,7 @@ import '../../features/chat/screens/chat_screen.dart';
 import '../../features/activity/screens/activity_screen.dart';
 import '../../features/profile/screens/my_profile_screen.dart';
 import '../../features/profile/screens/public_profile_screen.dart';
+import '../../features/profile/screens/share_preview_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/subscriptions/screens/subscription_screen.dart';
 import '../../features/offers/screens/offers_screen.dart';
@@ -50,6 +51,7 @@ class AppRouter {
 
         if (!isAuth) {
           if (path.startsWith('/auth')) return null;
+          if (path.startsWith('/p/')) return null;
           return '/auth/phone';
         }
 
@@ -174,17 +176,22 @@ class AppRouter {
           path: '/offers',
           builder: (_, __) => const OffersScreen(),
         ),
-        // Shared profile links: https://gracematch.app/p/<userId>
-        //
-        // FlutterDeepLinkingEnabled hands the incoming URI straight to this
-        // router, so without a matching route go_router threw
-        // "no router for location /p/<id>" and the link died on a blank
-        // screen — the app_links listener never got a turn. The path is baked
-        // into every share already sent and into the App Links association
-        // file, so it has to be matched here rather than changed.
+        // Shared https://…/p/<userId> links. Guests see the public preview;
+        // signed-in members get the full profile with actions.
         GoRoute(
           path: '/p/:id',
-          redirect: (_, state) => '/profile/${state.pathParameters['id']}',
+          redirect: (_, state) async {
+            final authed = await AppStorage.getAccessToken() != null;
+            if (authed &&
+                AppStorage.isOnboardingComplete() &&
+                AppStorage.getReviewStatus() == 'approved') {
+              return '/profile/${state.pathParameters['id']}';
+            }
+            return null;
+          },
+          builder: (_, state) => SharePreviewScreen(
+            userId: state.pathParameters['id']!,
+          ),
         ),
         // Outgoing when `call` is absent, incoming when it carries the id of a
         // call that is already ringing.

@@ -43,13 +43,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Android App Links — profile sharing deep links -->
-            <intent-filter android:autoVerify="true">
+            <!-- Deep links from the website "Get the app" button. autoVerify is
+                 off on purpose: a shared https://…/p/… URL must open in the
+                 browser so anyone can preview the profile. The app is opened
+                 only when they tap Get the app (explicit intent). -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
-                      android:host="gracematch.app"
+                      android:host="gracematch.sotersystems.in"
                       android:pathPrefix="/p/" />
             </intent-filter>
         </activity>

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinput/pinput.dart';
+import '../../../core/storage/app_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
@@ -98,8 +99,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           if (state.isNewUser) {
             context.go('/onboarding');
           } else {
-            // Check if onboarding completed logic (Assuming completed since not new)
-            context.go('/discover');
+            context.go(AppStorage.takeShareResumeRoute() ?? '/discover');
           }
         } else if (state is AuthError) {
           setState(() {

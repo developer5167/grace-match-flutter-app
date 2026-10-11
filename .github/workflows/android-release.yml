@@ -1,0 +1,111 @@
+# Same pipeline as the monorepo workflow, for when this folder is its own GitHub repo.
+# Prefer running `.github/workflows/android-release.yml` at the c_m_m root.
+
+name: Android Play release
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Play Console track
+        type: choice
+        options: [internal, alpha, production]
+        default: internal
+      status:
+        description: completed ships immediately on that track; draft waits in Console
+        type: choice
+        options: [completed, draft]
+        default: completed
+      upload:
+        description: Upload the AAB to Play (off = build only)
+        type: boolean
+        default: true
+      version_code:
+        description: Override versionCode (leave empty to use pubspec + run number)
+        type: string
+        default: ''
+  push:
+    tags:
+      - 'android-v*'
+
+concurrency:
+  group: android-play-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and upload AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      API_BASE_URL: https://api.gracematch.sotersystems.in/api/v1
+      SITE_URL: https://gracematch.sotersystems.in
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Restore upload keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          test -n "${ANDROID_KEYSTORE_BASE64:-}" || { echo "Set secret ANDROID_KEYSTORE_BASE64"; exit 1; }
+          test -n "${ANDROID_KEYSTORE_PASSWORD:-}" || { echo "Set secret ANDROID_KEYSTORE_PASSWORD"; exit 1; }
+          ALIAS="${ANDROID_KEY_ALIAS:-upload}"
+          KEY_PASS="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+          printf '%s\n' \
+            "storePassword=$ANDROID_KEYSTORE_PASSWORD" \
+            "keyPassword=$KEY_PASS" \
+            "keyAlias=$ALIAS" \
+            "storeFile=upload-keystore.jks" \
+            > android/key.properties
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          LINE=$(grep '^version:' pubspec.yaml | head -1 | tr -d ' ')
+          NAME=${LINE#version:}
+          NAME=${NAME%%+*}
+          CODE=${LINE##*+}
+          RUN=${{ github.run_number }}
+          OVERRIDE='${{ github.event.inputs.version_code }}'
+          if [ -n "$OVERRIDE" ]; then CODE="$OVERRIDE"; else CODE=$((CODE + RUN)); fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+      - run: flutter pub get
+      - name: Build app bundle
+        env:
+          ORG_GRADLE_PROJECT_org.gradle.jvmargs: '-Xmx4G -XX:MaxMetaspaceSize=1G'
+        run: |
+          flutter build appbundle --release \
+            --build-name="${{ steps.version.outputs.name }}" \
+            --build-number="${{ steps.version.outputs.code }}" \
+            --dart-define=API_BASE_URL="$API_BASE_URL" \
+            --dart-define=SITE_URL="$SITE_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload to Google Play
+        if: ${{ github.event_name == 'push' || github.event.inputs.upload == 'true' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.sotersystems.grace_match
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: ${{ github.event.inputs.status || 'completed' }}
+          releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
+          changesNotSentForReview: true

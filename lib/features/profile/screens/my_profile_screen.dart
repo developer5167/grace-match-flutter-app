@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../../core/constants/app_constants.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import 'package:go_router/go_router.dart';
@@ -38,7 +39,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   Future<void> _shareProfile(String name) async {
     final userId = await AppStorage.getUserId();
     if (userId == null) return;
-    final url = 'https://gracematch.app/p/$userId';
+    final url = '${AppConstants.siteUrl}/p/$userId';
     await Share.share(
       'Hey! Check out $name\'s profile on GraceMatch — the Telugu Christian Matrimony app 🙏✝\n$url',
       subject: 'GraceMatch – $name',

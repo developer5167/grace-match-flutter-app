@@ -60,6 +60,7 @@ class ApiEndpoints {
   // Profile
   static const String myProfile = '/profile/me';
   static String publicProfile(String id) => '/profile/$id';
+  static String shareProfile(String id) => '/share/profile/$id';
   static const String updateFamily = '/profile/family';
   static const String updatePreferences = '/profile/preferences';
   static const String updateSettings = '/profile/settings';
@@ -115,6 +116,7 @@ class ApiEndpoints {
   // ─── Trust ──────────────────────────────────────────────────
   static const String reportAndExit      = '/trust/report-and-exit';
   static const String digilockerStart    = '/trust/digilocker/start';
+  static const String ageCheck           = '/onboarding/age-check';
   static const String digilockerStatus   = '/trust/digilocker/status';
   static const String screenshotAlert    = '/trust/screenshot';
   static const String verificationSelfie = '/trust/verification-selfie';
@@ -158,6 +160,7 @@ class StorageKeys {
   static const String onboardingComplete = 'onboarding_complete';
   static const String onboardingStep = 'onboarding_step';
   static const String skippedUpdateVersion = 'skipped_update_version';
+  static const String pendingShareProfileId = 'pending_share_profile_id';
 }
 
 class AppDurations {

@@ -94,7 +94,8 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (token == null) {
-      context.go('/auth/phone');
+      final pending = AppStorage.getPendingShareProfile();
+      context.go(pending != null ? '/p/$pending' : '/auth/phone');
       return;
     }
 
@@ -103,8 +104,8 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // Router redirect will handle the review-status check
-    context.go('/discover');
+    final share = AppStorage.takeShareResumeRoute();
+    context.go(share ?? '/discover');
   }
 
   @override

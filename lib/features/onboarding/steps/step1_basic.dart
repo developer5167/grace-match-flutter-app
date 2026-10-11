@@ -1,5 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/di/injection.dart' as di;
+import '../../../core/network/dio_client.dart';
+import '../../../core/network/socket_service.dart';
+import '../../auth/data/auth_repository.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
@@ -147,16 +154,64 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
     );
   }
 
+  /// Asks the server, which records an under-18 answer against the account so
+  /// it cannot be changed by picking again. Offline, the local calculation
+  /// still refuses, and step 1 is checked again on the server.
+  Future<bool> _isUnderage(DateTime dob) async {
+    final dateOnly =
+        '${dob.year.toString().padLeft(4, '0')}-${dob.month.toString().padLeft(2, '0')}-${dob.day.toString().padLeft(2, '0')}';
+    try {
+      await DioClient.instance.post(ApiEndpoints.ageCheck, data: {'date_of_birth': dateOnly});
+      return false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) return true;
+    } catch (_) {}
+    final now = DateTime.now();
+    var age = now.year - dob.year;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) age--;
+    return age < 18;
+  }
+
+  Future<void> _refuseMinor() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: Text('Adults only', style: AppTextStyles.headlineSmall),
+        content: Text(
+          'GraceMatch is only for adults aged 18 and over, so we can\'t create an account for you.',
+          style: AppTextStyles.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK', style: TextStyle(color: AppColors.gold)),
+          ),
+        ],
+      ),
+    );
+    try {
+      di.sl<SocketService>().disconnect();
+      await di.sl<AuthRepository>().logout();
+    } catch (_) {}
+    if (mounted) context.go('/auth/phone');
+  }
+
   Widget _dobPicker() {
     return GestureDetector(
       onTap: () async {
         AppHaptics.light();
         final now = DateTime.now();
+        // A neutral age question (Google Play's Age-Restricted Content
+        // policy): the picker opens on the year list at today and accepts any
+        // date, so it does not reveal the cut-off. The server decides.
         final picked = await showDatePicker(
           context: context,
-          initialDate: DateTime(now.year - 25),
-          firstDate: DateTime(now.year - 60),
-          lastDate: DateTime(now.year - 18),
+          initialDate: DateTime(now.year, now.month, now.day),
+          initialDatePickerMode: DatePickerMode.year,
+          firstDate: DateTime(now.year - 70),
+          lastDate: DateTime(now.year, now.month, now.day),
           builder: (ctx, child) => Theme(
             data: Theme.of(ctx).copyWith(
               colorScheme: const ColorScheme.dark(primary: AppColors.gold),
@@ -164,7 +219,12 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
             child: child!,
           ),
         );
-        if (picked != null) setState(() => _dob = picked);
+        if (picked == null) return;
+        if (await _isUnderage(picked)) {
+          await _refuseMinor();
+          return;
+        }
+        setState(() => _dob = picked);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
