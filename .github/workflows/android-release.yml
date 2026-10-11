@@ -48,7 +48,8 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version-file: .flutter-version
+          flutter-version: "3.35.7"
+          channel: any
           cache: true
       - name: Restore upload keystore
         env:
