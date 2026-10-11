@@ -891,8 +891,8 @@ class _ContactRequestsTab extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text('Share your number?', style: AppTextStyles.labelLarge),
         content: Text(
-          'By accepting, your number will also be revealed to $name automatically. '
-          'This counts as one contact reveal on the requester\'s plan.',
+          'They will see your number. You will not see theirs unless you request it '
+          'on a Premium plan that includes contact reveals.',
           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [

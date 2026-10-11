@@ -788,10 +788,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       }
 
       final outgoing = _contactStatus?['outgoing'] as Map?;
-      final incoming = _contactStatus?['incoming'] as Map?;
       final phone    = _contactStatus?['phone'] as String?;
       final outStatus = outgoing?['status'] as String?;
-      final inStatus  = incoming?['status'] as String?;
 
       return Container(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
@@ -834,7 +832,6 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
             // Contact reveal row
             _ContactRevealTile(
               outStatus: outStatus,
-              inStatus: inStatus,
               phone: phone,
               loading: _contactLoading || _contactRequesting,
               onRequest: _requestContact,
@@ -942,14 +939,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 // ─── Contact Reveal Tile ──────────────────────────────────────
 class _ContactRevealTile extends StatelessWidget {
   final String? outStatus; // null | pending | approved | rejected | revoked
-  final String? inStatus;
   final String? phone;
   final bool loading;
   final VoidCallback onRequest;
 
   const _ContactRevealTile({
     required this.outStatus,
-    this.inStatus,
     required this.phone,
     required this.loading,
     required this.onRequest,
@@ -957,7 +952,7 @@ class _ContactRevealTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Either side accepted — show the other person's number.
+    // Only the requester who paid for this reveal sees the number.
     if (phone != null && phone!.isNotEmpty) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -984,7 +979,7 @@ class _ContactRevealTile extends StatelessWidget {
       );
     }
 
-    if (outStatus == 'revoked' || inStatus == 'revoked') {
+    if (outStatus == 'revoked') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -998,7 +993,7 @@ class _ContactRevealTile extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Sharing stopped. This reveal still counts on the plan.',
+                'Sharing stopped. This reveal still counts on your plan.',
                 style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
               ),
             ),
