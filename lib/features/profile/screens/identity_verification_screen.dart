@@ -142,9 +142,14 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
       if (url == null) throw Exception('No DigiLocker link was returned');
 
       _dlWaiting = true;
-      // In-app browser: the page is DigiLocker's own, so their DigiLocker
-      // password is typed into DigiLocker and never into this app.
-      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
+      // A new authorize URL every tap. The in-app Custom Tab keeps the last
+      // DigiLocker/callback page, so a retry was reopening the failed session
+      // instead of starting again. Chrome/Safari as a real tab does not.
+      final uri = Uri.parse(url);
+      var opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened) {
+        opened = await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+      }
       if (!opened) throw Exception('Could not open DigiLocker');
     } catch (e) {
       _dlWaiting = false;
