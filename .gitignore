@@ -50,6 +50,9 @@ aws.csv
 .env
 .env.*
 !.env.example
+# Google / Firebase service-account private keys
+*firebase-adminsdk*.json
+faith-stream-notifications-*.json
 
 # iOS: Pods are resolved from Podfile.lock, which IS committed.
 ios/Pods/
