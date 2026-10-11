@@ -117,11 +117,13 @@ jobs:
           retention-days: 14
       - name: Upload to Google Play
         if: ${{ github.event_name == 'push' || github.event.inputs.upload == 'true' }}
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.sotersystems.grace_match
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
-          status: ${{ github.event.inputs.status || 'completed' }}
-          releaseName: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_PACKAGE: com.sotersystems.grace_match
+          PLAY_TRACK: ${{ github.event.inputs.track || 'internal' }}
+          PLAY_STATUS: ${{ github.event.inputs.status || 'completed' }}
+          PLAY_AAB: build/app/outputs/bundle/release/app-release.aab
+          PLAY_RELEASE_NAME: ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
+        run: |
+          pip install -q google-api-python-client google-auth
+          python3 tool/ci/upload_play.py
