@@ -25,6 +25,9 @@ class PushCenter {
   static bool _ready = false;
   static bool _pluginReady = false;
 
+  /// Return true when the response was fully handled and should not open a route.
+  static bool Function(NotificationResponse response)? extraResponseHandler;
+
   static const _channel = AndroidNotificationDetails(
     'gracematch_default',
     'General',
@@ -42,6 +45,7 @@ class PushCenter {
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
       onDidReceiveNotificationResponse: (r) {
+        if (extraResponseHandler?.call(r) == true) return;
         final data = decode(r.payload);
         if (data != null) open(data);
       },

@@ -3,17 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart' as ck;
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/socket_service.dart';
+import '../../../core/notifications/push_center.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 import 'call_kit.dart';
+import 'call_notifications.dart';
 import 'call_session.dart';
 
 /// The one live call, and everything that rings.
@@ -56,6 +59,19 @@ class CallManager {
     };
     _socketSub = socket.callStream.listen(_onSocketEvent);
     _kitSub = FlutterCallkitIncoming.onEvent.listen(_onKitEvent, onError: (_) {});
+    PushCenter.extraResponseHandler = _onLocalNotification;
+    CallNotifications.hide();
+  }
+
+  bool _onLocalNotification(NotificationResponse response) {
+    final data = PushCenter.decode(response.payload);
+    if (data?['kind']?.toString() != 'ongoing_call') return false;
+    if (response.actionId == 'call_hangup') {
+      active.value?.hangUp();
+    } else {
+      openScreen();
+    }
+    return true;
   }
 
   // ── Incoming ─────────────────────────────────────────────────────────
@@ -224,10 +240,12 @@ class CallManager {
     final failure = await session.dial();
     final id = session.callId;
     if (failure == null && session.isLive && id != null) {
+      // Permissions were already granted. Restart the foreground service now
+      // that the microphone (and camera) are in use, so it survives minimise.
       await CallKit.markOngoing(session.identity, outgoing: true);
       if (session.phase == CallPhase.connected) await CallKit.markConnected(id);
     }
-    return null;
+    return failure;
   }
 
   // ── Session lifecycle ────────────────────────────────────────────────
@@ -237,20 +255,42 @@ class CallManager {
     active.value = session;
     if (previous != null && previous != session) _retire(previous);
 
+    var kitOngoing = false;
+    var kitConnected = false;
+
     void onChange() {
-      if (session.phase != CallPhase.ended) return;
-      session.removeListener(onChange);
+      if (session.phase == CallPhase.ended) {
+        session.removeListener(onChange);
+        CallNotifications.hide();
+        final id = session.callId;
+        if (id != null) CallKit.end(id);
+        // Give the call screen a moment to show why the call ended before the
+        // session and its video renderers go away.
+        Future.delayed(const Duration(seconds: 4), () {
+          if (active.value == session) active.value = null;
+          _retire(session);
+        });
+        return;
+      }
+
+      // Incoming already has CallKit's tray item from the ring. Outgoing
+      // never did — this is the "Calling Priya" notification they expect
+      // after leaving the call screen.
+      if (session.isCaller) CallNotifications.show(session);
+
       final id = session.callId;
-      if (id != null) CallKit.end(id);
-      // Give the call screen a moment to show why the call ended before the
-      // session and its video renderers go away.
-      Future.delayed(const Duration(seconds: 4), () {
-        if (active.value == session) active.value = null;
-        _retire(session);
-      });
+      if (id != null && id.isNotEmpty && !kitOngoing) {
+        kitOngoing = true;
+        CallKit.markOngoing(session.identity, outgoing: session.isCaller);
+      }
+      if (id != null && session.phase == CallPhase.connected && !kitConnected) {
+        kitConnected = true;
+        CallKit.markConnected(id);
+      }
     }
 
     session.addListener(onChange);
+    onChange();
   }
 
   void _retire(CallSession session) {
@@ -373,6 +413,9 @@ class CallManager {
   void stop() {
     _socketSub?.cancel();
     _kitSub?.cancel();
+    if (PushCenter.extraResponseHandler == _onLocalNotification) {
+      PushCenter.extraResponseHandler = null;
+    }
     _started = false;
   }
 }

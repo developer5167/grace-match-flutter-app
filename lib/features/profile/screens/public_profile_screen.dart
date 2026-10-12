@@ -20,6 +20,7 @@ import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
 import '../../discover/screens/match_explanation_screen.dart';
 import '../../discover/widgets/profile_card.dart' show PhotoVerifiedLabel;
+import '../../calls/data/call_manager.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String? userId; // If null, shows own profile preview
@@ -43,12 +44,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Map<String, dynamic>? _contactStatus; // outgoing, incoming, phone
   bool _contactLoading = false;
   bool _contactRequesting = false;
+  CallEntitlements? _calls;
 
   @override
   void initState() {
     super.initState();
     _headerPageController = PageController();
     _loadMyUserId();
+    _loadCallOptions();
     if (widget.userId != null) {
       context.read<ProfileBloc>().add(FetchProfileEvent(userId: widget.userId));
       // Someone else's photos are on screen. Block the screenshot where the
@@ -75,6 +78,33 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Future<void> _loadMyUserId() async {
     final id = await AppStorage.getUserId();
     if (mounted) setState(() => _myUserId = id);
+  }
+
+  Future<void> _loadCallOptions() async {
+    final calls = await CallManager.instance.entitlements(refresh: true);
+    if (mounted) setState(() => _calls = calls);
+  }
+
+  Future<void> _startCall({
+    required String conversationId,
+    required String peerName,
+    required String peerPhoto,
+    required bool video,
+  }) async {
+    AppHaptics.selection();
+    final messenger = ScaffoldMessenger.of(context);
+    final failure = await CallManager.instance.startOutgoing(
+      conversationId: conversationId,
+      peerName: peerName,
+      peerPhoto: peerPhoto,
+      video: video,
+    );
+    if (!mounted) return;
+    if (failure != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failure), backgroundColor: AppColors.surfaceHighest),
+      );
+    }
   }
 
   // contact_status is now embedded in the profile response for accepted matches.
@@ -812,12 +842,79 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       final phone    = _contactStatus?['phone'] as String?;
       final outStatus = outgoing?['status'] as String?;
 
+      final otherName = data['profile'] is Map
+          ? (data['profile'] as Map)['first_name']?.toString() ?? 'Match'
+          : 'Match';
+      final photos = data['photos'];
+      String otherPhoto = '';
+      if (photos is List && photos.isNotEmpty) {
+        final first = photos.first;
+        if (first is Map) {
+          otherPhoto = first['photo_url']?.toString() ?? '';
+        } else if (first is String) {
+          otherPhoto = first;
+        }
+      }
+
       return Container(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
         decoration: BoxDecoration(color: AppColors.background.withOpacity(0.97)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_calls?.voice == true || _calls?.video == true) ...[
+              Row(
+                children: [
+                  if (_calls?.voice == true)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: conversationId == null
+                            ? null
+                            : () => _startCall(
+                                  conversationId: conversationId,
+                                  peerName: otherName,
+                                  peerPhoto: otherPhoto,
+                                  video: false,
+                                ),
+                        icon: const Icon(Icons.call_rounded, size: 18),
+                        label: const Text('Voice'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.gold,
+                          side: BorderSide(color: AppColors.goldMild),
+                          minimumSize: const Size(0, 48),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                  if (_calls?.voice == true && _calls?.video == true)
+                    const SizedBox(width: 10),
+                  if (_calls?.video == true)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: conversationId == null
+                            ? null
+                            : () => _startCall(
+                                  conversationId: conversationId,
+                                  peerName: otherName,
+                                  peerPhoto: otherPhoto,
+                                  video: true,
+                                ),
+                        icon: const Icon(Icons.videocam_rounded, size: 18),
+                        label: const Text('Video'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.textOnGold,
+                          minimumSize: const Size(0, 48),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
             // Send Message button
             ElevatedButton(
               onPressed: () {

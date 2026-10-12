@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/notifications/push_center.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/membership_sync.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../data/call_manager.dart';
 import '../data/call_session.dart';
@@ -73,9 +75,11 @@ class _CallScreenState extends State<CallScreen> {
       router.pop();
       return;
     }
-    // Opened straight from the lock screen: there is nothing underneath, so
-    // go through the normal start-up instead.
-    router.go('/splash');
+    // Opened from a killed app via the ringing screen: nothing sits under
+    // this route. Discover is the home they expect — not the brand splash.
+    PushCenter.finishStartupDiscarding();
+    syncMembershipTheme();
+    router.go('/discover');
   }
 
   void _minimise() {

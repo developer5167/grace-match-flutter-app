@@ -104,6 +104,7 @@ class CallSession extends ChangeNotifier {
     }
 
     callId = ack['call_id']?.toString();
+    _safeNotify();
     // The member pressed end while the server was still setting up.
     if (_hangUpRequested || phase == CallPhase.ended) {
       final id = callId;

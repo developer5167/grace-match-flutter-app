@@ -70,7 +70,22 @@ def main() -> None:
     print(f"assigned {track} status={status}")
 
     # Do not pass changesNotSentForReview — Play forbids it when review is automatic.
-    committed = publisher.edits().commit(packageName=package, editId=edit_id).execute()
+    try:
+        committed = publisher.edits().commit(packageName=package, editId=edit_id).execute()
+    except Exception as err:
+        text = str(err)
+        if "Foreground Service permissions" in text:
+            sys.exit(
+                "Play rejected the commit: declare Foreground Service types in "
+                "Play Console before CI can publish.\n"
+                "  1. Download this run's AAB artifact.\n"
+                "  2. Play Console → Internal testing → Create new release → upload the AAB → Save.\n"
+                "  3. Monitor and improve → App content → Foreground service permissions.\n"
+                "  4. Yes: phoneCall, microphone, camera only. Then re-run this workflow.\n"
+                "See ANDROID-RELEASE.md in the monorepo.\n"
+                f"{text}"
+            )
+        raise
     print(f"committed edit {committed.get('id', edit_id)}")
 
 

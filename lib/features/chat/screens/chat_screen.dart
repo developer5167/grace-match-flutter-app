@@ -414,7 +414,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadCallOptions() async {
-    final calls = await CallManager.instance.entitlements();
+    final calls = await CallManager.instance.entitlements(refresh: true);
     if (!mounted) return;
     setState(() => _calls = calls);
     if (calls.voice || calls.video) {

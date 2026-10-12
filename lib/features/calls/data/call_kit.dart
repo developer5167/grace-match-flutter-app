@@ -37,17 +37,24 @@ class CallKit {
   static bool isCancelled(Map<String, dynamic> data) =>
       data['kind']?.toString() == 'call_cancelled' || data['type']?.toString() == 'call_cancelled';
 
-  static CallKitParams params(IncomingCallData call, {bool outgoing = false}) {
+  static CallKitParams params(
+    IncomingCallData call, {
+    bool outgoing = false,
+    bool ongoing = false,
+  }) {
     final photo = call.callerPhoto.startsWith('http') ? call.callerPhoto : null;
+    final status = outgoing ? 'Calling…' : 'Ongoing call';
     return CallKitParams(
       id: call.callId,
       nameCaller: call.callerName,
       appName: 'GraceMatch',
       avatar: photo,
-      handle: call.isVideo ? 'GraceMatch video call' : 'GraceMatch voice call',
+      handle: ongoing
+          ? status
+          : (call.isVideo ? 'GraceMatch video call' : 'GraceMatch voice call'),
       type: call.isVideo ? 1 : 0,
-      // A little past the server's ring-out, which normally dismisses it first.
-      duration: 50000,
+      // Ringing times out with the server. An ongoing call must not.
+      duration: ongoing ? 6 * 60 * 60 * 1000 : 50000,
       // The server sends the missed-call notification, with the chat to open.
       missedCallNotification: const NotificationParams(
         showNotification: false,
@@ -55,14 +62,17 @@ class CallKit {
       ),
       callingNotification: NotificationParams(
         showNotification: true,
-        isShowCallback: false,
-        subtitle: outgoing ? 'Calling…' : 'Ongoing call',
+        isShowCallback: true,
+        subtitle: status,
+        callbackText: 'Hang up',
       ),
       extra: call.toMap(),
       android: AndroidParams(
-        isCustomNotification: true,
+        // CallStyle.forOngoingCall is dropped on Android 14 unless Telecom
+        // owns the call. Incoming ringing still uses the custom CallStyle.
+        isCustomNotification: !ongoing,
         isShowLogo: false,
-        isShowCallID: false,
+        isShowCallID: ongoing,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0E0D12',
         backgroundUrl: photo,
@@ -130,8 +140,11 @@ class CallKit {
   /// the foreground service that keeps the microphone and camera running
   /// while the member uses the rest of the app or locks the phone.
   static Future<void> markOngoing(IncomingCallData call, {required bool outgoing}) async {
+    if (call.callId.isEmpty) return;
     try {
-      await FlutterCallkitIncoming.startCall(params(call, outgoing: outgoing));
+      await FlutterCallkitIncoming.startCall(
+        params(call, outgoing: outgoing, ongoing: true),
+      );
     } catch (_) {}
   }
 
