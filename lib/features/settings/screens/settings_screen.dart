@@ -117,7 +117,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final visibility = profile['profile_visibility']?.toString() ?? 'everyone';
         final whoChat = profile['who_can_chat']?.toString() ?? 'interests_only';
         final contactOk = profile['is_contact_sharing_allowed'] != false;
-        final imagesLocked = profile['is_images_locked'] != false;
+        final imagesLocked = profile['is_images_locked'] == true;
+        final typingPush = profile['typing_push_enabled'] != false;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -196,9 +197,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _switchTile(
                     title: 'Lock photos until connected',
                     subtitle:
-                        'Blur your photos for people you are not matched with yet.',
+                        'Hide your photos from people you are not matched with yet. Off by default — turn this on if you want them private.',
                     value: imagesLocked,
                     onChanged: (v) => _patch({'is_images_locked': v}),
+                  ),
+                  const SizedBox(height: 8),
+                  _switchTile(
+                    title: 'Typing notifications',
+                    subtitle:
+                        'Get a banner when a match starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                    value: typingPush,
+                    onChanged: (v) => _patch({'typing_push_enabled': v}),
                   ),
                   const SizedBox(height: 32),
                   // Support, above Profile & matching rather than buried at

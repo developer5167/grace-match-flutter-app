@@ -28,6 +28,32 @@ class SocketService {
 
   final _callController = StreamController<CallEvent>.broadcast();
 
+  /// `{ conversation_id, user_id, typing }` from the other person in a chat.
+  final _typingController = StreamController<Map<String, dynamic>>.broadcast();
+
+  Stream<Map<String, dynamic>> get typingStream => _typingController.stream;
+
+  /// Tell the other person this member is (or has stopped) typing. The
+  /// server turns a start into their "is typing…" indicator and, if they are
+  /// not in the chat and want it, a notification.
+  void sendTyping(String conversationId, {required bool typing}) {
+    final socket = _socket;
+    if (socket == null || !socket.connected) return;
+    socket.emit('typing', {'conversation_id': conversationId, 'typing': typing});
+  }
+
+  String? _viewingChat;
+
+  /// So the server can skip a push for a chat this member is already looking at.
+  void setViewingChat(String? conversationId) {
+    _viewingChat = conversationId;
+    final socket = _socket;
+    if (socket == null || !socket.connected) return;
+    socket.emit(conversationId == null ? 'chat:close' : 'chat:open', {
+      'conversation_id': conversationId,
+    });
+  }
+
   Stream<CallEvent> get callStream => _callController.stream;
 
   // ── Support.
@@ -162,6 +188,8 @@ class SocketService {
 
     socket.onConnect((_) {
       socket.emit('call:sync', {'active_call_id': activeCallId?.call()});
+      final viewing = _viewingChat;
+      if (viewing != null) socket.emit('chat:open', {'conversation_id': viewing});
     });
     socket.onDisconnect((_) {});
     socket.onConnectError((err) {
@@ -189,6 +217,10 @@ class SocketService {
         ...Map<String, dynamic>.from(data as Map),
         'type': 'online',
       });
+    });
+
+    socket.on('typing', (data) {
+      if (data is Map) _typingController.add(Map<String, dynamic>.from(data));
     });
 
     socket.on('user_offline', (data) {
@@ -285,6 +317,7 @@ class SocketService {
   void dispose() {
     _supportController.close();
     _callController.close();
+    _typingController.close();
     _messageController.close();
     _deliveredController.close();
     _readReceiptController.close();

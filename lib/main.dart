@@ -9,6 +9,7 @@ import 'core/constants/app_constants.dart';
 import 'core/storage/app_storage.dart';
 import 'core/state/active_chat_state.dart';
 import 'core/router/app_router.dart';
+import 'core/notifications/push_center.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/injection.dart' as di;
 import 'core/network/socket_service.dart';
@@ -28,8 +29,6 @@ import 'features/subscriptions/bloc/subscription_bloc.dart';
 import 'features/activity/bloc/activity_bloc.dart';
 import 'firebase_options.dart';
 
-final FlutterLocalNotificationsPlugin _localNotifications =
-    FlutterLocalNotificationsPlugin();
 
 // Background message handler — must be top-level, called when app is killed/background.
 //
@@ -38,7 +37,7 @@ final FlutterLocalNotificationsPlugin _localNotifications =
 // it must not touch Hive or the service locator.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final data = message.data;
+  final data = Map<String, dynamic>.from(message.data);
   if (CallKit.isIncoming(data)) {
     final call = CallKit.parse(data);
     if (call != null) await CallKit.ring(call);
@@ -47,8 +46,24 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (CallKit.isCancelled(data)) {
     final id = data['call_id']?.toString();
     if (id != null && id.isNotEmpty) await CallKit.dismissIfRinging(id);
+    return;
+  }
+  if (_isTypingCleared(data)) {
+    await PushCenter.ensurePlugin();
+    await PushCenter.clear([data['tag']?.toString() ?? 'typing:${data['conversation_id']}']);
+    return;
+  }
+  // Data-only Android messages: the app draws the tray item so tap and
+  // dismiss both work. System-drawn FCM notifications do neither reliably.
+  final title = message.notification?.title ?? data['title']?.toString();
+  final body = message.notification?.body ?? data['body']?.toString();
+  if (title != null && title.isNotEmpty) {
+    await PushCenter.showForeground(title: title, body: body, data: data);
   }
 }
+
+bool _isTypingCleared(Map<String, dynamic> data) =>
+    data['kind']?.toString() == 'typing_cleared' || data['type']?.toString() == 'typing_cleared';
 
 // The call UI's buttons, pressed while the app is not running. Accept needs
 // nothing here: it launches the app, which picks the call up on start.
@@ -123,18 +138,16 @@ await Firebase.initializeApp(
     sound: true,
   );
 
-  // Local Notifications for foreground
-  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-  await _localNotifications.initialize(
-    const InitializationSettings(android: initializationSettingsAndroid),
-  );
+  // Local notifications: shown for pushes that arrive while the app is open,
+  // and tappable through to the same screen as a system one.
+  await PushCenter.init();
   const androidChannel = AndroidNotificationChannel(
     'gracematch_default',
     'General',
     description: 'General notifications for GraceMatch',
     importance: Importance.high,
   );
-  await _localNotifications
+  await PushCenter.plugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(androidChannel);
 
@@ -148,31 +161,26 @@ await Firebase.initializeApp(
       if (id != null && id.isNotEmpty) CallManager.instance.onCancelled(id);
       return;
     }
+    if (_isTypingCleared(message.data)) {
+      PushCenter.clear([message.data['tag']?.toString() ?? 'typing:${message.data['conversation_id']}']);
+      return;
+    }
 
     // Suppress if the user is already inside the conversation this message belongs to
     final incomingConvId = message.data['conversation_id'];
     if (incomingConvId != null &&
         incomingConvId == ActiveChatState.conversationId) {
+      PushCenter.clearChat(incomingConvId.toString());
       return; // Socket already delivered it live — no duplicate notification
     }
 
-    final notification = message.notification;
-    if (notification != null) {
-      _localNotifications.show(
-        message.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'gracematch_default',
-            'General',
-            channelDescription: 'General notifications for GraceMatch',
-            importance: Importance.high,
-            priority: Priority.high,
-            playSound: true,
-            enableVibration: true,
-          ),
-        ),
+    final title = message.notification?.title ?? message.data['title']?.toString();
+    final body = message.notification?.body ?? message.data['body']?.toString();
+    if (title != null && title.isNotEmpty) {
+      PushCenter.showForeground(
+        title: title,
+        body: body,
+        data: message.data,
       );
     }
   });
@@ -234,29 +242,14 @@ await Firebase.initializeApp(
       CallManager.instance.onIncoming(data);
       return;
     }
-    final route = data['route']?.toString();
-    final kind = data['kind']?.toString();
-    if (route != null && route.startsWith('/')) {
-      AppRouter.router.go(route);
-      return;
-    }
-    if (kind == 'contact_request' || kind == 'contact_approved') {
-      AppRouter.router.go('/activity');
-      return;
-    }
-    if (kind == 'REVIEW_ACTIONS' ||
-        kind == 'APPLICATION_RESULT' ||
-        kind == 'PHOTO_REVIEW_RESULT' ||
-        kind == 'ADMIN_MESSAGE') {
-      AppRouter.router.go('/review-status');
-    }
+    PushCenter.open(data);
   }
 
   FirebaseMessaging.onMessageOpenedApp.listen(openFromPush);
   final launchedFrom = await FirebaseMessaging.instance.getInitialMessage();
-  if (launchedFrom != null) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => openFromPush(launchedFrom));
-  }
+  // Held until the splash screen finishes, which would otherwise send the
+  // member to Discover straight after.
+  if (launchedFrom != null) openFromPush(launchedFrom);
 
   // App Links — handle incoming deep links while the app is running.
   // Cold-start links are handled by the router's redirect logic when
@@ -290,6 +283,7 @@ class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserv
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       di.sl<SocketService>().ensureConnected();
+      CallManager.instance.onAppResumed();
     }
   }
 

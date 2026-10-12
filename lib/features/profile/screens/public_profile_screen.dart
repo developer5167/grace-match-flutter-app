@@ -373,7 +373,30 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (photos.isNotEmpty)
+                      if (photos.isEmpty)
+                        ColoredBox(
+                          color: AppColors.surfaceElevated,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  imagesLocked ? Icons.lock_rounded : Icons.person_rounded,
+                                  color: AppColors.textTertiary,
+                                  size: 64,
+                                ),
+                                if (imagesLocked) ...[
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Photos hidden until you connect',
+                                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        )
+                      else
                         Stack(
                           children: [
                             PageView.builder(
@@ -384,10 +407,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 setState(() => _currentPhotoIndex = index);
                               },
                               itemBuilder: (context, index) => GestureDetector(
-                                onTap: () => _openGallery(photos, imagesLocked: imagesLocked),
+                                onTap: () => _openGallery(photos, imagesLocked: false),
                                 child: _PublicProfilePhotoTile(
                                   url: photos[index],
-                                  locked: imagesLocked,
+                                  locked: false,
                                 ),
                               ),
                             ),
@@ -436,10 +459,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                               ),
                             ],
                           ],
-                        )
-                      else
-                        Container(color: AppColors.surfaceElevated, child: const Icon(Icons.person, size: 100, color: AppColors.textTertiary)),
-                      
+                        ),
+
                       // ── Page Indicator ──────────────────────────
                       if (photos.length > 1)
                         Positioned(

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/di/injection.dart' as di;
 import '../../../core/network/socket_service.dart';
+import '../../../core/notifications/push_center.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -44,6 +45,7 @@ class _TicketScreenState extends State<TicketScreen> {
   @override
   void initState() {
     super.initState();
+    PushCenter.clear(['support:${widget.ticketId}']);
     _load();
 
     // A staff reply lands in an open thread without the member backing out

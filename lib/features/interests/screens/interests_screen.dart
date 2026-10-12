@@ -1,3 +1,4 @@
+import '../../../core/notifications/push_center.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,7 +10,10 @@ import '../bloc/interests_state.dart';
 import 'package:go_router/go_router.dart';
 
 class InterestsScreen extends StatefulWidget {
-  const InterestsScreen({super.key});
+  /// Which tab to open on — a notification links straight to its tab.
+  final String? tab;
+
+  const InterestsScreen({super.key, this.tab});
 
   @override
   State<InterestsScreen> createState() => _InterestsScreenState();
@@ -21,8 +25,26 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: _indexFor(widget.tab));
+    PushCenter.clear(const ['interests']);
     context.read<InterestsBloc>().add(FetchInterestsEvent());
+  }
+
+  static const _tabNames = ['received', 'matches', 'sent'];
+
+  int _indexFor(String? tab) {
+    final i = tab == null ? -1 : _tabNames.indexOf(tab);
+    return i < 0 ? 0 : i;
+  }
+
+  @override
+  void didUpdateWidget(covariant InterestsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Already on this screen when the notification was tapped.
+    if (widget.tab != null && widget.tab != oldWidget.tab) {
+      _tabController.animateTo(_indexFor(widget.tab));
+      PushCenter.clear(const ['interests']);
+    }
   }
 
   @override

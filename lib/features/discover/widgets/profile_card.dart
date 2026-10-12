@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -368,11 +367,27 @@ class _ProfileCardState extends State<ProfileCard>
     final photos = _extractPhotoUrls();
 
     if (photos == null || photos.isEmpty) {
+      final locked = widget.profile['is_images_locked'] == true;
       return Container(
         color: AppColors.surfaceElevated,
-        child: const Center(
-          child: Icon(Icons.person_rounded,
-              color: AppColors.textTertiary, size: 80),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                locked ? Icons.lock_rounded : Icons.person_rounded,
+                color: AppColors.textTertiary,
+                size: 80,
+              ),
+              if (locked) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Photos hidden until you connect',
+                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                ),
+              ],
+            ],
+          ),
         ),
       );
     }
@@ -383,7 +398,9 @@ class _ProfileCardState extends State<ProfileCard>
       itemCount: photos.length,
       itemBuilder: (context, index) {
         final url = photos[index];
-        final locked = widget.profile['is_images_locked'] == true;
+        // Photos on this card were allowed through by the server. Blurring
+        // them here because of a leftover `is_images_locked` flag hid every
+        // profile until a match, which nobody had asked for.
         final img = CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
@@ -404,36 +421,7 @@ class _ProfileCardState extends State<ProfileCard>
           ),
           fadeInDuration: const Duration(milliseconds: 300),
         );
-        if (!locked) return img;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: img,
-            ),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.lock_rounded, color: Colors.white.withOpacity(0.9), size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Photo locked',
-                      style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
+        return img;
       },
     );
   }

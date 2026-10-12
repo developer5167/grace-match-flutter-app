@@ -13,6 +13,7 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../calls/data/call_manager.dart';
+import '../../../core/notifications/push_center.dart';
 import '../data/chat_repository.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
@@ -36,7 +37,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final _msgCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   String? _myUserId;
@@ -47,9 +48,21 @@ class _ChatScreenState extends State<ChatScreen> {
   StreamSubscription? _statusSubscription;
   CallEntitlements? _calls = CallManager.instance.cachedEntitlements;
 
+  StreamSubscription? _typingSubscription;
+  bool _peerTyping = false;
+  Timer? _peerTypingTimeout;
+  bool _iAmTyping = false;
+  DateTime? _typingSentAt;
+  Timer? _typingIdle;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Whatever brought them here, the notifications about this chat are read.
+    PushCenter.clearChat(widget.conversationId);
+    di.sl<SocketService>().setViewingChat(widget.conversationId);
+    _typingSubscription = di.sl<SocketService>().typingStream.listen(_onPeerTyping);
     _loadMyUserId();
     _loadCallOptions();
     // A chat left open in the background may have lost its socket; calling
@@ -93,7 +106,62 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Messages that arrived while the phone was locked on this chat.
+    if (state == AppLifecycleState.resumed) {
+      PushCenter.clearChat(widget.conversationId);
+      di.sl<SocketService>().setViewingChat(widget.conversationId);
+    } else if (state == AppLifecycleState.paused) {
+      di.sl<SocketService>().setViewingChat(null);
+    }
+  }
+
+  void _onPeerTyping(Map<String, dynamic> data) {
+    if (data['conversation_id']?.toString() != widget.conversationId) return;
+    final typing = data['typing'] != false;
+    _peerTypingTimeout?.cancel();
+    // A lost "stopped" must not leave "typing…" up forever.
+    if (typing) {
+      _peerTypingTimeout = Timer(const Duration(seconds: 10), () {
+        if (mounted) setState(() => _peerTyping = false);
+      });
+    }
+    if (mounted && _peerTyping != typing) setState(() => _peerTyping = typing);
+  }
+
+  /// Repeated every few seconds while keys are pressed; stopped after a pause
+  /// or when the message is sent.
+  void _onTextChanged(String text) {
+    final socket = di.sl<SocketService>();
+    if (text.trim().isEmpty) {
+      _stopTyping();
+      return;
+    }
+    final last = _typingSentAt;
+    if (!_iAmTyping || last == null || DateTime.now().difference(last) > const Duration(seconds: 3)) {
+      socket.sendTyping(widget.conversationId, typing: true);
+      _typingSentAt = DateTime.now();
+      _iAmTyping = true;
+    }
+    _typingIdle?.cancel();
+    _typingIdle = Timer(const Duration(seconds: 5), _stopTyping);
+  }
+
+  void _stopTyping() {
+    _typingIdle?.cancel();
+    if (!_iAmTyping) return;
+    _iAmTyping = false;
+    _typingSentAt = null;
+    di.sl<SocketService>().sendTyping(widget.conversationId, typing: false);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    di.sl<SocketService>().setViewingChat(null);
+    _stopTyping();
+    _typingSubscription?.cancel();
+    _peerTypingTimeout?.cancel();
     ActiveChatState.conversationId = null;
     _statusSubscription?.cancel();
     context.read<ChatBloc>().add(SetCurrentConversationEvent(''));
@@ -111,6 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
           myUserId: _myUserId,
         ));
     _msgCtrl.clear();
+    _stopTyping();
     _scrollToNewest();
   }
 
@@ -127,6 +196,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String _formatLastSeen() {
+    if (_peerTyping) return 'typing…';
     if (_isOnline) return 'Online';
     if (_lastSeenAt == null) return 'Offline';
     final dt = DateTime.tryParse(_lastSeenAt!)?.toLocal();
@@ -712,6 +782,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       vertical: 12,
                     ),
                   ),
+                  onChanged: _onTextChanged,
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),

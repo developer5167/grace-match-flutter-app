@@ -128,7 +128,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/interests',
-              builder: (_, __) => const InterestsScreen(),
+              builder: (_, state) => InterestsScreen(tab: state.uri.queryParameters['tab']),
             ),
             GoRoute(
               path: '/chat',
@@ -136,7 +136,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/activity',
-              builder: (_, __) => const ActivityScreen(),
+              builder: (_, state) => ActivityScreen(tab: state.uri.queryParameters['tab']),
             ),
             GoRoute(
               path: '/profile',
@@ -151,11 +151,14 @@ class AppRouter {
           builder: (_, state) {
             final convId = state.pathParameters['convId']!;
             final extra = state.extra as Map<String, dynamic>?;
+            // From a notification there is no `extra`; the link carries the
+            // name and id instead.
+            final q = state.uri.queryParameters;
             return ChatScreen(
               conversationId: convId,
-              otherUserName: extra?['name'] ?? '',
-              otherUserPhoto: extra?['photo'],
-              otherUserId: extra?['userId']?.toString(),
+              otherUserName: extra?['name'] ?? q['name'] ?? '',
+              otherUserPhoto: extra?['photo'] ?? q['photo'],
+              otherUserId: extra?['userId']?.toString() ?? q['userId'],
             );
           },
         ),

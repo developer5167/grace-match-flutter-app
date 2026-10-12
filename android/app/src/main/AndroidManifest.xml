@@ -56,6 +56,12 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- FCM notification taps. Without this, Android launches the
+                 activity with no extras and the member lands on Discover. -->
+            <intent-filter>
+                <action android:name="FLUTTER_NOTIFICATION_CLICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
             <!-- Deep links from the website "Get the app" button. autoVerify is
                  off on purpose: a shared https://…/p/… URL must open in the

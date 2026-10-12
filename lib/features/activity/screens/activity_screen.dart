@@ -1,3 +1,4 @@
+import '../../../core/notifications/push_center.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,7 +14,10 @@ import '../bloc/activity_state.dart';
 import 'package:intl/intl.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
+  /// Which tab to open on — a notification links straight to its tab.
+  final String? tab;
+
+  const ActivityScreen({super.key, this.tab});
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
@@ -26,8 +30,26 @@ class _ActivityScreenState extends State<ActivityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: _indexFor(widget.tab));
+    PushCenter.clear(const ['views', 'shortlisted', 'contacts', 'notifications']);
     context.read<ActivityBloc>().add(const FetchActivityEvent());
+  }
+
+  static const _tabNames = ['notifications', 'views', 'shortlisted', 'contacts'];
+
+  int _indexFor(String? tab) {
+    final i = tab == null ? -1 : _tabNames.indexOf(tab);
+    return i < 0 ? 0 : i;
+  }
+
+  @override
+  void didUpdateWidget(covariant ActivityScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Already on this screen when the notification was tapped.
+    if (widget.tab != null && widget.tab != oldWidget.tab) {
+      _tabController.animateTo(_indexFor(widget.tab));
+      PushCenter.clear(const ['views', 'shortlisted', 'contacts', 'notifications']);
+    }
   }
 
   @override

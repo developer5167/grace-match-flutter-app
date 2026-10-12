@@ -84,14 +84,16 @@ class CallManager {
 
     await CallKit.ring(call);
 
-    // Without notification permission the phone's ringing UI cannot show at
-    // all, so ring inside the app instead — a call nobody can see is a call
-    // that cannot be answered.
-    final notificationsOn = await Permission.notification.isGranted;
-    if (!notificationsOn &&
-        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+    // App already in the member's hand: answer here, not from the shade.
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
       _showSheet(call);
     }
+  }
+
+  /// Phone unlocked onto the app while a call is still ringing.
+  void onAppResumed() {
+    if (inCall || _ringing.isEmpty) return;
+    _showSheet(_ringing.values.last);
   }
 
   void onCancelled(String callId) {
@@ -154,6 +156,10 @@ class CallManager {
     }
     _ringing.remove(call.callId);
     _closeSheet(call.callId);
+    // Always take the ringing notification down. Answering from inside the
+    // app used to leave it sitting in the shade. CallKit's own Accept
+    // already converted it to the ongoing-call notification, so skip that
+    // path — hideCallkitIncoming would pull that down too.
     if (!fromCallKit) await CallKit.dismiss(call.callId);
 
     final session = CallSession(

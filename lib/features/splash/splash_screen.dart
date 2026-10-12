@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/notifications/push_center.dart';
 import 'package:dio/dio.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -76,7 +77,9 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-    final remaining = 2800 - elapsed;
+    // A notification tap should not sit on the splash screen. Everything
+    // else keeps the brand pause.
+    final remaining = PushCenter.hasPending ? 0 : 2800 - elapsed;
     if (remaining > 0) {
       await Future.delayed(Duration(milliseconds: remaining));
     }
@@ -94,18 +97,27 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (token == null) {
+      PushCenter.finishStartupDiscarding();
       final pending = AppStorage.getPendingShareProfile();
       context.go(pending != null ? '/p/$pending' : '/auth/phone');
       return;
     }
 
     if (!AppStorage.isOnboardingComplete()) {
+      PushCenter.finishStartupDiscarding();
       context.go('/onboarding');
       return;
     }
 
     final share = AppStorage.takeShareResumeRoute();
-    context.go(share ?? '/discover');
+    if (share != null) {
+      PushCenter.finishStartupDiscarding();
+      context.go(share);
+      return;
+    }
+    // Opened by tapping a notification: go to what it was about.
+    if (PushCenter.finishStartup()) return;
+    context.go('/discover');
   }
 
   @override
