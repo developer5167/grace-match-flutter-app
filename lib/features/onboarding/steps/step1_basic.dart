@@ -186,7 +186,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK', style: TextStyle(color: AppColors.gold)),
+            child: Text('OK', style: TextStyle(color: AppColors.gold)),
           ),
         ],
       ),
@@ -214,7 +214,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           lastDate: DateTime(now.year, now.month, now.day),
           builder: (ctx, child) => Theme(
             data: Theme.of(ctx).copyWith(
-              colorScheme: const ColorScheme.dark(primary: AppColors.gold),
+              colorScheme: ColorScheme.dark(primary: AppColors.gold),
             ),
             child: child!,
           ),
@@ -240,7 +240,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
                 : 'Select date of birth',
             style: _dob != null ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium,
           )),
-          const Icon(Icons.calendar_today_rounded, color: AppColors.gold, size: 18),
+          Icon(Icons.calendar_today_rounded, color: AppColors.gold, size: 18),
         ]),
       ),
     );

@@ -53,7 +53,7 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.goldMild),
             ),
-            child: const Icon(Icons.face_retouching_natural_rounded, size: 48, color: AppColors.gold),
+            child: Icon(Icons.face_retouching_natural_rounded, size: 48, color: AppColors.gold),
           ),
           const SizedBox(height: 24),
           Text('Show it\'s really you', style: AppTextStyles.headlineMedium, textAlign: TextAlign.center),

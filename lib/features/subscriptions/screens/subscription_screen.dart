@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/membership_palette.dart';
 import '../bloc/subscription_bloc.dart';
 import '../../profile/bloc/profile_bloc.dart';
 import '../../profile/bloc/profile_event.dart';
@@ -138,7 +139,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
-            body: const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );
         }
 
@@ -247,7 +248,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.local_offer_rounded, size: 15, color: AppColors.gold),
+            Icon(Icons.local_offer_rounded, size: 15, color: AppColors.gold),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -304,7 +305,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.goldMild),
+                    borderSide: BorderSide(color: AppColors.goldMild),
                   ),
                 ),
               ),
@@ -319,7 +320,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: _checking
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 14, height: 14,
                       child: CircularProgressIndicator(
                           color: AppColors.gold, strokeWidth: 2),
@@ -430,6 +431,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required BuildContext context,
     required bool isProcessing,
   }) {
+    final palette = MembershipPalette.of(plan['name']?.toString());
     final bool isPopular = plan['featured'] == true ||
         plan['name']?.toString().toLowerCase() == 'gold';
     final List<Map<String, dynamic>> entitlements = _entitlements(plan);
@@ -446,40 +448,37 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isPopular ? AppColors.gold : AppColors.surfaceHighest,
-          width: isPopular ? 2 : 1,
+          color: isCurrentActive || isPopular ? palette.metal : palette.mild,
+          width: isCurrentActive || isPopular ? 2 : 1,
         ),
-        gradient: isPopular
-            ? LinearGradient(
-                colors: [AppColors.surfaceElevated, AppColors.gold.withAlpha(20)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
+        gradient: LinearGradient(
+          colors: [AppColors.surfaceElevated, palette.metal.withAlpha(22)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (isPopular)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: AppColors.gold,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
-                ),
-              ),
-              child: Text(
-                'MOST POPULAR',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textOnGold,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              gradient: palette.gradient,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
               ),
             ),
+            child: Text(
+              isPopular ? 'MOST POPULAR · ${palette.label.toUpperCase()}' : palette.label.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: palette.onMetal,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -490,7 +489,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   children: [
                     Text(
                       plan['display_name']?.toString() ?? plan['name'] ?? 'Plan',
-                      style: AppTextStyles.headlineLarge.copyWith(color: AppColors.gold),
+                      style: AppTextStyles.headlineLarge.copyWith(color: palette.metal),
                     ),
                     Text(
                       isFree ? 'Always' : _termLabel(plan['duration_months']),
@@ -526,7 +525,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       children: [
                         Icon(
                           included ? Icons.check_circle_rounded : Icons.remove_circle_outline_rounded,
-                          color: included ? AppColors.gold : AppColors.textTertiary,
+                          color: included ? palette.metal : AppColors.textTertiary,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -597,8 +596,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               );
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isPopular ? AppColors.gold : AppColors.surfaceHighest,
-                    foregroundColor: isPopular ? AppColors.textOnGold : AppColors.gold,
+                    backgroundColor: palette.metal,
+                    foregroundColor: palette.onMetal,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                     minimumSize: const Size(double.infinity, 56),
                   ),

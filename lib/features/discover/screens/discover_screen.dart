@@ -105,7 +105,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     return BlocBuilder<DiscoverBloc, DiscoverState>(
       builder: (context, state) {
         if (state is DiscoverLoading && _profiles.isEmpty) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );
@@ -225,7 +225,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     child: Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.gold,
                         shape: BoxShape.circle,
                       ),
@@ -248,7 +248,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
           child: Row(
             children: [
-              const Icon(Icons.auto_awesome, color: AppColors.gold, size: 16),
+              Icon(Icons.auto_awesome, color: AppColors.gold, size: 16),
               const SizedBox(width: 8),
               Text("Today's Picks",
                   style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold)),
@@ -295,11 +295,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                     placeholder: (_, __) =>
                                         Container(color: AppColors.surfaceHighest),
                                     errorWidget: (_, __, ___) =>
-                                        const Icon(Icons.person, color: AppColors.gold),
+                                        Icon(Icons.person, color: AppColors.gold),
                                   )
                                 : Container(
                                     color: AppColors.surfaceHighest,
-                                    child: const Icon(Icons.person, color: AppColors.gold),
+                                    child: Icon(Icons.person, color: AppColors.gold),
                                   ),
                           ),
                         ),
@@ -353,7 +353,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('✝', style: TextStyle(fontSize: 56, color: AppColors.goldMild)),
+          Text('✝', style: TextStyle(fontSize: 56, color: AppColors.goldMild)),
           const SizedBox(height: 16),
           Text(
             limitReached ? "Today's matches are done" : "You've seen everyone for now",
@@ -370,13 +370,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           if (limitReached)
             TextButton(
               onPressed: () => context.push('/subscription'),
-              child: const Text('See plans', style: TextStyle(color: AppColors.gold)),
+              child: Text('See plans', style: TextStyle(color: AppColors.gold)),
             )
           else
             TextButton(
               onPressed: () =>
                   context.read<DiscoverBloc>().add(const FetchFeedEvent()),
-              child: const Text('Refresh Feed', style: TextStyle(color: AppColors.gold)),
+              child: Text('Refresh Feed', style: TextStyle(color: AppColors.gold)),
             ),
         ],
       ),

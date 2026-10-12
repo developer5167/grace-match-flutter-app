@@ -184,7 +184,7 @@ class _TicketScreenState extends State<TicketScreen> {
 
   Widget _body() {
     if (_loading) {
-      return const Center(
+      return Center(
           child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2));
     }
     if (_error != null) {
@@ -300,7 +300,7 @@ class _TicketScreenState extends State<TicketScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: const BorderSide(color: AppColors.goldMild),
+                    borderSide: BorderSide(color: AppColors.goldMild),
                   ),
                 ),
               ),
@@ -310,7 +310,7 @@ class _TicketScreenState extends State<TicketScreen> {
               onTap: () { AppHaptics.light(); _send(); },
               child: Container(
                 width: 44, height: 44,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                     color: AppColors.gold, shape: BoxShape.circle),
                 child: _sending
                     ? const Padding(

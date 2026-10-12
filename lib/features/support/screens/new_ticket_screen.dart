@@ -100,7 +100,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
         future: _categories,
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
                 child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2));
           }
 
@@ -218,7 +218,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.goldMild),
+          borderSide: BorderSide(color: AppColors.goldMild),
         ),
       ),
     );
@@ -271,7 +271,7 @@ class _CategoryTile extends StatelessWidget {
                 ),
               ),
               if (selected)
-                const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.gold),
+                Icon(Icons.check_circle_rounded, size: 18, color: AppColors.gold),
             ],
           ),
         ),

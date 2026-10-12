@@ -7,6 +7,7 @@ import 'package:pinput/pinput.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/membership_sync.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_button.dart';
 import '../bloc/auth_bloc.dart';
@@ -96,6 +97,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
+          syncMembershipTheme();
           if (state.isNewUser) {
             context.go('/onboarding');
           } else {

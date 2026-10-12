@@ -90,10 +90,10 @@ class _PremiumNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated.withAlpha(230),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.surfaceHighest, width: 1),
+        border: Border.all(color: AppColors.goldMild, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(100),
+            color: AppColors.gold.withAlpha(28),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -121,15 +121,14 @@ class _PremiumNavBar extends StatelessWidget {
                           curve: Curves.elasticOut,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.goldSubtle
-                                : Colors.transparent,
+                            gradient: isSelected ? AppColors.goldenGradient : null,
+                            color: isSelected ? null : Colors.transparent,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(
                             tabs[i].icon,
                             color: isSelected
-                                ? AppColors.gold
+                                ? AppColors.textOnGold
                                 : AppColors.textTertiary,
                             size: isSelected ? 24 : 22,
                           ),

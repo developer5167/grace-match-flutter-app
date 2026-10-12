@@ -11,6 +11,7 @@ import 'core/state/active_chat_state.dart';
 import 'core/router/app_router.dart';
 import 'core/notifications/push_center.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/membership_palette.dart';
 import 'core/di/injection.dart' as di;
 import 'core/network/socket_service.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart' as ck;
@@ -118,6 +119,8 @@ await Firebase.initializeApp(
 
   // Init storage before any authenticated network calls (e.g. FCM token sync)
   await AppStorage.init();
+  MembershipTheme.bindPersist(AppStorage.saveMembershipPlan);
+  MembershipTheme.restore(AppStorage.getMembershipPlan());
 
   // Answered on the lock screen while the app was closed: the call is
   // already accepted, and the app opens straight into it.
@@ -300,15 +303,24 @@ class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserv
         BlocProvider(create: (_) => di.sl<SubscriptionBloc>()),
         BlocProvider(create: (_) => di.sl<ActivityBloc>()),
       ],
-      child: MaterialApp.router(
-        title: 'GraceMatch',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        routerConfig: AppRouter.router,
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-            child: OngoingCallLayer(child: child!),
+      child: ListenableBuilder(
+        listenable: MembershipTheme.instance,
+        builder: (context, _) {
+          return MaterialApp.router(
+            title: 'GraceMatch',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.dark,
+            routerConfig: AppRouter.router,
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+                child: AnimatedTheme(
+                  data: AppTheme.dark,
+                  duration: const Duration(milliseconds: 280),
+                  child: OngoingCallLayer(child: child!),
+                ),
+              );
+            },
           );
         },
       ),

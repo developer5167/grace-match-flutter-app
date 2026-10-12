@@ -125,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           appBar: AppBar(
             backgroundColor: AppColors.background,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: AppColors.gold),
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.gold),
               onPressed: () {
                 AppHaptics.selection();
                 context.pop();
@@ -291,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
               if (_busy)
-                const LinearProgressIndicator(
+                LinearProgressIndicator(
                   backgroundColor: AppColors.surfaceHighest,
                   color: AppColors.gold,
                   minHeight: 2,

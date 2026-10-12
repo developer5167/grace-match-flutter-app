@@ -245,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         return const Icon(Icons.done_all_rounded,
             size: 14, color: AppColors.textSecondary);
       case 'read':
-        return const Icon(Icons.done_all_rounded,
+        return Icon(Icons.done_all_rounded,
             size: 14, color: AppColors.gold);
       case 'failed':
         return const Icon(Icons.error_outline_rounded,
@@ -558,7 +558,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Widget _buildBody(ChatState state) {
     if (state is ChatLoading) {
-      return const Center(
+      return Center(
           child: CircularProgressIndicator(color: AppColors.gold));
     }
     if (state is ChatError) {
@@ -752,7 +752,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.add_photo_alternate_rounded,
+            icon: Icon(Icons.add_photo_alternate_rounded,
                 color: AppColors.gold),
             onPressed: () {},
           ),
@@ -790,7 +790,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(width: 8),
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.gold,
               shape: BoxShape.circle,
             ),

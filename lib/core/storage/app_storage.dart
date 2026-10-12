@@ -39,6 +39,7 @@ class AppStorage {
       await _prefs.delete(StorageKeys.onboardingStep);
       await _prefs.delete(StorageKeys.onboardingComplete);
       await _prefs.delete('review_status');
+      await _prefs.delete(StorageKeys.membershipPlan);
     }
   }
 
@@ -78,6 +79,12 @@ class AppStorage {
 
   static String? getSkippedUpdateVersion() =>
       _prefs.get(StorageKeys.skippedUpdateVersion) as String?;
+
+  static void saveMembershipPlan(String name) =>
+      _prefs.put(StorageKeys.membershipPlan, name);
+
+  static String? getMembershipPlan() =>
+      _prefs.get(StorageKeys.membershipPlan) as String?;
 
   /// Shared profile the guest opened (or tapped Get the app for) before login.
   static void setPendingShareProfile(String? userId) {

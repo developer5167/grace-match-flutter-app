@@ -197,7 +197,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           
           // Validation Checkmark
           if (_isValid)
-            const Icon(
+            Icon(
               Icons.check_circle_rounded,
               color: AppColors.gold,
             ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),

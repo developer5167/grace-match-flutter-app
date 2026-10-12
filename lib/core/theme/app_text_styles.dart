@@ -98,7 +98,7 @@ class AppTextStyles {
   );
 
   // ─── Special Styles ───────────────────────────────────────────
-  static TextStyle goldLabel = GoogleFonts.plusJakartaSans(
+  static TextStyle get goldLabel => GoogleFonts.plusJakartaSans(
     fontSize: 13,
     fontWeight: FontWeight.w600,
     color: AppColors.gold,
@@ -112,7 +112,7 @@ class AppTextStyles {
     letterSpacing: 0.3,
   );
 
-  static TextStyle buttonTextSecondary = GoogleFonts.plusJakartaSans(
+  static TextStyle get buttonTextSecondary => GoogleFonts.plusJakartaSans(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: AppColors.gold,

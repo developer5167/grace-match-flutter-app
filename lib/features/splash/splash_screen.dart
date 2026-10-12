@@ -6,6 +6,7 @@ import '../../core/notifications/push_center.dart';
 import 'package:dio/dio.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/membership_palette.dart';
 import '../../core/storage/app_storage.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/constants/app_constants.dart';
@@ -62,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
         final resp = await DioClient.instance.get(ApiEndpoints.appBootstrap);
         final data = resp.data['data'];
         if (data is Map) {
+          MembershipTheme.instance.applyFrom(data['subscription']);
           final user = data['user'];
           if (user is Map) {
             AppStorage.saveOnboardingComplete(
@@ -189,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
                     'GraceMatch',
                     style: AppTextStyles.displayMedium.copyWith(
                       foreground: Paint()
-                        ..shader = const LinearGradient(
+                        ..shader = LinearGradient(
                           colors: [
                             AppColors.gold,
                             AppColors.goldLight,
@@ -237,7 +239,7 @@ class _SplashScreenState extends State<SplashScreen>
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       backgroundColor: AppColors.surfaceHighest,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                      valueColor: AlwaysStoppedAnimation(AppColors.gold),
                     ),
                   ),
                 ),

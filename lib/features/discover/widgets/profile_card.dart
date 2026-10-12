@@ -243,7 +243,7 @@ class _ProfileCardState extends State<ProfileCard>
                         // Denomination + City
                         Row(
                           children: [
-                            const Icon(Icons.church_rounded,
+                            Icon(Icons.church_rounded,
                                 size: 14, color: AppColors.gold),
                             const SizedBox(width: 4),
                             Text(
@@ -408,7 +408,7 @@ class _ProfileCardState extends State<ProfileCard>
           height: double.infinity,
           placeholder: (_, __) => Container(
             color: AppColors.surfaceElevated,
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation(AppColors.gold),
                 strokeWidth: 2,
@@ -509,7 +509,7 @@ class _ProfileCardState extends State<ProfileCard>
           child: LinearProgressIndicator(
             value: score / 100,
             backgroundColor: AppColors.surfaceHighest,
-            valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+            valueColor: AlwaysStoppedAnimation(AppColors.gold),
             minHeight: 4,
           ),
         ),

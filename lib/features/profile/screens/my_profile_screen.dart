@@ -51,7 +51,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
         if (state is ProfileLoading) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );
@@ -125,12 +125,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   title: Text('My Profile', style: AppTextStyles.headlineLarge),
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.ios_share_rounded, color: AppColors.gold),
+                      icon: Icon(Icons.ios_share_rounded, color: AppColors.gold),
                       tooltip: 'Share Profile',
                       onPressed: () => _shareProfile(name),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.settings_rounded, color: AppColors.gold),
+                      icon: Icon(Icons.settings_rounded, color: AppColors.gold),
                       onPressed: () => context.push('/settings'),
                     ),
                   ],
@@ -227,7 +227,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                 label: const Text('Preview'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.gold,
-                                  side: const BorderSide(color: AppColors.goldMild),
+                                  side: BorderSide(color: AppColors.goldMild),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                                   minimumSize: const Size(0, 44),
@@ -242,7 +242,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                 label: const Text('Share'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.gold,
-                                  side: const BorderSide(color: AppColors.goldMild),
+                                  side: BorderSide(color: AppColors.goldMild),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                                   minimumSize: const Size(0, 44),
@@ -291,7 +291,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.videocam_rounded, color: AppColors.gold, size: 14),
+                                Icon(Icons.videocam_rounded, color: AppColors.gold, size: 14),
                                 const SizedBox(width: 4),
                                 Text('Video Identity Available', style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
                               ],
@@ -491,7 +491,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Row(
               children: [
-                const Icon(Icons.photo_library_rounded, color: AppColors.gold, size: 18),
+                Icon(Icons.photo_library_rounded, color: AppColors.gold, size: 18),
                 const SizedBox(width: 8),
                 Expanded(child: Text('My Photos', style: AppTextStyles.labelLarge)),
                 GestureDetector(
@@ -826,7 +826,7 @@ class _ProfileCompletionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.bar_chart_rounded, color: AppColors.gold, size: 18),
+              Icon(Icons.bar_chart_rounded, color: AppColors.gold, size: 18),
               const SizedBox(width: 8),
               Text('Profile $score% Complete', style: AppTextStyles.labelLarge),
               const Spacer(),
@@ -862,7 +862,7 @@ class _ProfileCompletionCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.add_rounded, color: AppColors.gold, size: 14),
+                    Icon(Icons.add_rounded, color: AppColors.gold, size: 14),
                     const SizedBox(width: 4),
                     Text(item.label, style: AppTextStyles.overline.copyWith(color: AppColors.gold)),
                   ],

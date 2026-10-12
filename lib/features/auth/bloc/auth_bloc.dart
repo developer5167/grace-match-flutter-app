@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/socket_service.dart';
+import '../../../core/theme/membership_palette.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../data/auth_repository.dart';
@@ -42,6 +43,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     _socket.disconnect();
     await _repository.logout();
+    MembershipTheme.instance.reset();
     emit(AuthInitial());
   }
 }

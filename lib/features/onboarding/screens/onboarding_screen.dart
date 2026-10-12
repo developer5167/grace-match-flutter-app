@@ -197,7 +197,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
       },
       builder: (context, state) {
         if (onboardingData == null && (state is OnboardingLoading || state is OnboardingInitial)) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );

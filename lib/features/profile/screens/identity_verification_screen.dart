@@ -234,7 +234,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         elevation: 0,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+          ? Center(child: CircularProgressIndicator(color: AppColors.gold))
           : RefreshIndicator(
               color: AppColors.gold,
               onRefresh: _refresh,
@@ -341,7 +341,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const Icon(Icons.bolt_rounded, color: AppColors.gold, size: 20),
+              Icon(Icons.bolt_rounded, color: AppColors.gold, size: 20),
               const SizedBox(width: 6),
               Text('Instant', style: AppTextStyles.overline.copyWith(color: AppColors.gold)),
             ]),
@@ -421,7 +421,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.add_a_photo_rounded, size: 40, color: AppColors.goldMild),
+                      Icon(Icons.add_a_photo_rounded, size: 40, color: AppColors.goldMild),
                       const SizedBox(height: 10),
                       Text(passportOnly ? 'Select passport photo' : 'Select ID photo',
                           style: AppTextStyles.labelMedium),

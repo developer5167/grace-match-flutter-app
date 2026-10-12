@@ -76,7 +76,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         } else if (_cachedConversations.isNotEmpty) {
           body = _buildConversationList(_cachedConversations);
         } else {
-          body = const Center(child: CircularProgressIndicator(color: AppColors.gold));
+          body = Center(child: CircularProgressIndicator(color: AppColors.gold));
         }
 
         return Scaffold(
@@ -87,7 +87,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             backgroundColor: AppColors.background,
             actions: [
               IconButton(
-                icon: const Icon(Icons.shield_rounded, color: AppColors.gold),
+                icon: Icon(Icons.shield_rounded, color: AppColors.gold),
                 onPressed: () {},
               )
             ],

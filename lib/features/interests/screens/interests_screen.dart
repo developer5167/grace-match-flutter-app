@@ -88,7 +88,7 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
             ),
           ),
           body: state is InterestsLoading 
-            ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+            ? Center(child: CircularProgressIndicator(color: AppColors.gold))
             : state is InterestsError
             ? Center(child: Text(state.message, style: const TextStyle(color: Colors.white)))
             : state is InterestsLoaded

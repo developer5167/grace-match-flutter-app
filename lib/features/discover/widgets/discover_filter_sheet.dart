@@ -429,7 +429,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                 borderSide: BorderSide.none,
               ),
               prefixIcon:
-                  const Icon(Icons.location_on_outlined, color: AppColors.gold),
+                  Icon(Icons.location_on_outlined, color: AppColors.gold),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/theme/membership_palette.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 import '../data/profile_repository.dart';
@@ -75,6 +76,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final profile = event.userId != null
           ? await _repository.fetchProfile(event.userId!)
           : await _repository.fetchMyProfile();
+      if (event.userId == null) {
+        MembershipTheme.instance.applyFrom(profile['subscription']);
+      }
       emit(ProfileLoaded(profile, userId: event.userId ?? previous?.userId));
     } catch (e) {
       if (silentOwnProfile && previous != null) {

@@ -152,7 +152,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              const Icon(Icons.favorite, color: AppColors.gold, size: 28),
+              Icon(Icons.favorite, color: AppColors.gold, size: 28),
               const SizedBox(height: 4),
               Text(
                 '✝',
@@ -187,11 +187,11 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                     placeholder: (_, __) =>
                         Container(color: AppColors.surfaceHighest),
                     errorWidget: (_, __, ___) =>
-                        const Icon(Icons.person, color: AppColors.gold),
+                        Icon(Icons.person, color: AppColors.gold),
                   )
                 : Container(
                     color: AppColors.surfaceHighest,
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
                       color: AppColors.gold,
                       size: 32,
@@ -254,7 +254,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                   color: AppColors.goldSubtle,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome,
                   color: AppColors.gold,
                   size: 20,
@@ -272,7 +272,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
             Column(
               children: [
                 const SizedBox(height: 8),
-                const LinearProgressIndicator(
+                LinearProgressIndicator(
                   color: AppColors.gold,
                   backgroundColor: AppColors.surfaceHighest,
                 ),
@@ -299,7 +299,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _fetchExplanation,
-                  child: const Text(
+                  child: Text(
                     'Retry',
                     style: TextStyle(color: AppColors.gold),
                   ),

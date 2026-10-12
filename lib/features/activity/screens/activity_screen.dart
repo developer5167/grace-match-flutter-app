@@ -78,7 +78,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                     AppHaptics.light();
                     context.read<ActivityBloc>().add(const MarkAllReadEvent());
                   },
-                  icon: const Icon(Icons.done_all_rounded, size: 18, color: AppColors.gold),
+                  icon: Icon(Icons.done_all_rounded, size: 18, color: AppColors.gold),
                   label: Text('Mark all read',
                       style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
                 ),
@@ -153,7 +153,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             ),
           ),
           body: state is ActivityLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+              ? Center(child: CircularProgressIndicator(color: AppColors.gold))
               : state is ActivityError
                   ? _buildError(state.message)
                   : TabBarView(
@@ -325,7 +325,7 @@ class _NotifTile extends StatelessWidget {
                   width: 8,
                   height: 8,
                   margin: const EdgeInsets.only(top: 4, left: 8),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.gold,
                     shape: BoxShape.circle,
                   ),
@@ -469,7 +469,7 @@ class _ViewsTab extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.visibility_rounded, color: AppColors.gold, size: 32),
+                Icon(Icons.visibility_rounded, color: AppColors.gold, size: 32),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -547,7 +547,7 @@ class _ShortlistsTab extends StatelessWidget {
           return _ProfileMiniCard(
             profile: p,
             trailing: IconButton(
-              icon: const Icon(Icons.star_rounded, color: AppColors.gold),
+              icon: Icon(Icons.star_rounded, color: AppColors.gold),
               onPressed: () {
                 AppHaptics.medium();
                 context.read<ActivityBloc>().add(ToggleShortlistEvent(p['user_id'].toString()));
@@ -673,7 +673,7 @@ class _PremiumGate extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.lock_rounded, color: AppColors.gold, size: 40),
+          Icon(Icons.lock_rounded, color: AppColors.gold, size: 40),
           const SizedBox(height: 12),
           Text('Premium Feature', style: AppTextStyles.headlineSmall),
           const SizedBox(height: 8),

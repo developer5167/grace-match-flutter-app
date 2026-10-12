@@ -67,7 +67,7 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
 
   Widget _buildBody() {
     if (_state == 'loading') {
-      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+      return Center(child: CircularProgressIndicator(color: AppColors.gold));
     }
     if (_state == 'error' || _profile == null) {
       return Padding(

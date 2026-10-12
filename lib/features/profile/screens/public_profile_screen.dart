@@ -287,7 +287,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
         if (state is ProfileLoading) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );
@@ -301,7 +301,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         }
 
         if (state is ProfileLoaded && state.userId != widget.userId) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
           );
@@ -352,7 +352,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     ? [
                         IconButton(
                           tooltip: 'Shortlist',
-                          icon: const Icon(Icons.star_border_rounded, color: AppColors.gold),
+                          icon: Icon(Icons.star_border_rounded, color: AppColors.gold),
                           onPressed: () {
                             AppHaptics.medium();
                             context
@@ -471,7 +471,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             child: SmoothPageIndicator(
                               controller: _headerPageController,
                               count: photos.length,
-                              effect: const ScrollingDotsEffect(
+                              effect: ScrollingDotsEffect(
                                 activeDotColor: AppColors.gold,
                                 dotColor: Colors.white54,
                                 dotHeight: 8,
@@ -774,7 +774,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.goldMild),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.check_rounded, color: AppColors.gold, size: 18),
@@ -893,13 +893,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       },
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.gold,
-        side: const BorderSide(color: AppColors.goldMild),
+        side: BorderSide(color: AppColors.goldMild),
         minimumSize: const Size(double.infinity, 44),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.auto_awesome, size: 16, color: AppColors.gold),
           SizedBox(width: 8),
           Text('Why We Match', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -1034,7 +1034,7 @@ class _ContactRevealTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.hourglass_top_rounded, color: AppColors.gold, size: 18),
+            Icon(Icons.hourglass_top_rounded, color: AppColors.gold, size: 18),
             const SizedBox(width: 10),
             Text('Contact request pending…', style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
           ],
@@ -1046,12 +1046,12 @@ class _ContactRevealTile extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: loading ? null : onRequest,
       icon: loading
-          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold))
+          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold))
           : const Icon(Icons.phone_in_talk_rounded, size: 18),
       label: Text(outStatus == 'rejected' ? 'Request Again' : 'Request Contact'),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.gold,
-        side: const BorderSide(color: AppColors.goldMild),
+        side: BorderSide(color: AppColors.goldMild),
         minimumSize: const Size(double.infinity, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -1071,7 +1071,7 @@ class _PublicProfilePhotoTile extends StatelessWidget {
       imageUrl: url,
       fit: BoxFit.cover,
       placeholder: (context, url) =>
-          const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+          Center(child: CircularProgressIndicator(color: AppColors.gold)),
       errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white),
     );
     if (!locked) return base;

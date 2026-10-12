@@ -12,7 +12,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.dark(
         primary: AppColors.gold,
         secondary: AppColors.rose,
         surface: AppColors.surface,
@@ -52,7 +52,7 @@ class AppTheme {
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColors.gold, size: 24);
+            return IconThemeData(color: AppColors.gold, size: 24);
           }
           return const IconThemeData(color: AppColors.textTertiary, size: 22);
         }),
@@ -81,7 +81,7 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.goldMild, width: 1),
+          borderSide: BorderSide(color: AppColors.goldMild, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -89,7 +89,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.gold, width: 1.5),
+          borderSide: BorderSide(color: AppColors.gold, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -118,7 +118,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.gold,
-          side: const BorderSide(color: AppColors.goldMild, width: 1.5),
+          side: BorderSide(color: AppColors.goldMild, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
           textStyle: AppTextStyles.buttonTextSecondary,

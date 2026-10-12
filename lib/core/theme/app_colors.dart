@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'membership_palette.dart';
 
-/// GraceMatch Brand Color System
-/// Inspired by luxury matrimony aesthetics — deep charcoals, warm golds, Telugu cultural warmth
+/// GraceMatch brand colors. Charcoal ground is shared by every plan.
+/// Metal accents ([gold], [goldenGradient], …) follow the live membership.
 class AppColors {
   AppColors._();
+
+  static MembershipPalette get membership => MembershipTheme.colors;
 
   // ─── Background Palette ───────────────────────────────────────
   static const Color background = Color(0xFF0A0A0F);       // Near-black charcoal
@@ -11,18 +14,18 @@ class AppColors {
   static const Color surfaceElevated = Color(0xFF1C1C26);  // Cards/panels
   static const Color surfaceHighest = Color(0xFF252535);   // Modals/sheets
 
-  // ─── Brand Accent — Warm Gold ─────────────────────────────────
-  static const Color gold = Color(0xFFC9A96E);             // Primary gold
-  static const Color goldLight = Color(0xFFDFC08A);        // Light gold (hover/glow)
-  static const Color goldDark = Color(0xFF9E7A47);         // Dark gold (pressed)
-  static const Color goldSubtle = Color(0x33C9A96E);       // Gold with 20% opacity (backgrounds)
-  static const Color goldMild = Color(0x66C9A96E);         // Gold with 40% opacity (borders)
+  // ─── Brand Accent — membership metal ──────────────────────────
+  static Color get gold => membership.metal;
+  static Color get goldLight => membership.metalLight;
+  static Color get goldDark => membership.metalDark;
+  static Color get goldSubtle => membership.subtle;
+  static Color get goldMild => membership.mild;
 
   // ─── Text Colors ──────────────────────────────────────────────
   static const Color textPrimary = Color(0xFFF5EDD8);      // Warm cream white
   static const Color textSecondary = Color(0xFFB8A99A);    // Muted warm gray
   static const Color textTertiary = Color(0xFF6B5E52);     // Very muted, hints
-  static const Color textOnGold = Color(0xFF0A0A0F);       // Dark text on gold buttons
+  static const Color textOnGold = Color(0xFF0A0A0F);       // Dark text on metal
 
   // ─── Accent Colors ────────────────────────────────────────────
   static const Color rose = Color(0xFFE8B4A0);             // Dusty rose (female accents)
@@ -42,11 +45,7 @@ class AppColors {
   static const Color info = Color(0xFF5A8AE0);
 
   // ─── Gradient Definitions ─────────────────────────────────────
-  static const LinearGradient goldenGradient = LinearGradient(
-    colors: [Color(0xFFC9A96E), Color(0xFFE8C98A)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get goldenGradient => membership.gradient;
 
   static const LinearGradient backgroundGradient = LinearGradient(
     colors: [Color(0xFF0A0A0F), Color(0xFF13131A)],
@@ -67,15 +66,7 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const RadialGradient goldGlow = RadialGradient(
-    colors: [Color(0x40C9A96E), Colors.transparent],
-    radius: 0.8,
-  );
+  static RadialGradient get goldGlow => membership.glow;
 
-  // ─── Card border gradients ─────────────────────────────────────
-  static const LinearGradient cardBorderGradient = LinearGradient(
-    colors: [Color(0x80C9A96E), Color(0x20C9A96E), Color(0x00C9A96E)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get cardBorderGradient => membership.cardBorder;
 }

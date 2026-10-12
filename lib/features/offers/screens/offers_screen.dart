@@ -54,7 +54,7 @@ class _OffersScreenState extends State<OffersScreen> {
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
             );
           }

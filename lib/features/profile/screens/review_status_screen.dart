@@ -136,7 +136,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: _loading && inbox == null
-            ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+            ? Center(child: CircularProgressIndicator(color: AppColors.gold))
             : RefreshIndicator(
                 color: AppColors.gold,
                 onRefresh: _reload,

@@ -166,7 +166,7 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline_rounded, color: AppColors.gold, size: 16),
+                Icon(Icons.info_outline_rounded, color: AppColors.gold, size: 16),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

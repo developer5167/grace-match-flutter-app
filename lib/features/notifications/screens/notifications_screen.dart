@@ -240,7 +240,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
       );
     }
@@ -281,7 +281,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         itemCount: _items.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, i) {
           if (i >= _items.length) {
-            return const Padding(
+            return Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: SizedBox(

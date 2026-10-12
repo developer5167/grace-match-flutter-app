@@ -131,8 +131,8 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
               _fieldLabel("Sibling Details"),
               TextButton.icon(
                 onPressed: () => setState(() => _siblings.add(SiblingInfo())),
-                icon: const Icon(Icons.add_circle_outline, size: 20, color: AppColors.gold),
-                label: const Text('Add Sibling', style: TextStyle(color: AppColors.gold)),
+                icon: Icon(Icons.add_circle_outline, size: 20, color: AppColors.gold),
+                label: Text('Add Sibling', style: TextStyle(color: AppColors.gold)),
               ),
             ],
           ),

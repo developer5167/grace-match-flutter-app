@@ -84,7 +84,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
   Widget build(BuildContext context) {
     super.build(context);
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+      return Center(child: CircularProgressIndicator(color: AppColors.gold));
     }
 
     if (_hobbies.isEmpty) {

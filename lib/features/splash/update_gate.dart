@@ -131,7 +131,7 @@ class _UpdateDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 28),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.goldMild),
+        side: BorderSide(color: AppColors.goldMild),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
@@ -145,7 +145,7 @@ class _UpdateDialog extends StatelessWidget {
                 color: AppColors.goldSubtle,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.system_update_alt_rounded,
+              child: Icon(Icons.system_update_alt_rounded,
                   color: AppColors.gold, size: 26),
             ),
             const SizedBox(height: 18),

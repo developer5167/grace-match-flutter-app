@@ -167,6 +167,7 @@ class StorageKeys {
   static const String onboardingStep = 'onboarding_step';
   static const String skippedUpdateVersion = 'skipped_update_version';
   static const String pendingShareProfileId = 'pending_share_profile_id';
+  static const String membershipPlan = 'membership_plan';
 }
 
 class AppDurations {

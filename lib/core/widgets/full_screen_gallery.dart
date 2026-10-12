@@ -62,7 +62,7 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                     imageUrl: widget.images[index],
                     fit: BoxFit.contain,
                     width: double.infinity,
-                    placeholder: (_, __) => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+                    placeholder: (_, __) => Center(child: CircularProgressIndicator(color: AppColors.gold)),
                     errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white, size: 50),
                   ),
                 ),
