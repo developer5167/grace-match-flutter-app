@@ -20,8 +20,6 @@ import '../../features/calls/screens/call_screen.dart';
 import '../../features/support/screens/support_screen.dart';
 import '../../features/support/screens/new_ticket_screen.dart';
 import '../../features/support/screens/ticket_screen.dart';
-import '../network/socket_service.dart';
-import '../di/injection.dart' as di;
 import '../../features/profile/screens/review_status_screen.dart';
 import '../../features/profile/screens/identity_verification_screen.dart';
 import '../storage/app_storage.dart';
@@ -37,10 +35,13 @@ class AppRouter {
 
   static late GoRouter router;
 
-  static Future<void> init() async {
+  /// [initialLocation] is `/call` when the app was launched by answering a
+  /// call on the lock screen: the member lands in the call, not on the splash
+  /// screen and then Discover with the call lost behind them.
+  static Future<void> init({String initialLocation = '/splash'}) async {
     router = GoRouter(
       navigatorKey: _rootKey,
-      initialLocation: '/splash',
+      initialLocation: initialLocation,
       redirect: (context, state) async {
         final isAuth = await AppStorage.getAccessToken() != null;
         final path = state.uri.path;
@@ -206,17 +207,15 @@ class AppRouter {
             userId: state.pathParameters['id']!,
           ),
         ),
-        // Outgoing when `call` is absent, incoming when it carries the id of a
-        // call that is already ringing.
+        // The live call, whichever direction. CallManager owns it; this only
+        // shows it. Older pushes link to /call/<conversation>.
+        GoRoute(
+          path: '/call',
+          builder: (_, __) => const CallScreen(),
+        ),
         GoRoute(
           path: '/call/:conversationId',
-          builder: (_, state) => CallScreen(
-            socket: di.sl<SocketService>(),
-            conversationId: state.pathParameters['conversationId']!,
-            peerName: state.uri.queryParameters['name'] ?? 'Member',
-            isVideo: state.uri.queryParameters['video'] != 'false',
-            incomingCallId: state.uri.queryParameters['call'],
-          ),
+          redirect: (_, __) => '/call',
         ),
         GoRoute(
           path: '/notifications',

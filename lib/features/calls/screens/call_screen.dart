@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../../../core/network/socket_service.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../data/call_manager.dart';
 import '../data/call_session.dart';
 
 /// The call.
@@ -18,164 +17,132 @@ import '../data/call_session.dart';
 /// everyone already knows, so nobody has to learn it during the one call that
 /// matters. Voice calls show a name and a status line instead of a black
 /// rectangle.
+///
+/// The screen only shows the call; [CallManager] owns it. Back or the
+/// minimise button leaves the call running, as on any phone, and the bar at
+/// the top of the app brings the member back here.
 class CallScreen extends StatefulWidget {
-  final SocketService socket;
-  final String conversationId;
-  final String peerName;
-  final bool isVideo;
-
-  /// Set when answering: the call already exists and is ringing.
-  final String? incomingCallId;
-
-  const CallScreen({
-    super.key,
-    required this.socket,
-    required this.conversationId,
-    required this.peerName,
-    this.isVideo = true,
-    this.incomingCallId,
-  });
+  const CallScreen({super.key});
 
   @override
   State<CallScreen> createState() => _CallScreenState();
 }
 
 class _CallScreenState extends State<CallScreen> {
-  late final CallSession _session = CallSession(widget.socket);
+  final _manager = CallManager.instance;
+  CallSession? _session;
   Timer? _ticker;
-  bool _starting = true;
   bool _left = false;
+  bool _endHandled = false;
 
   @override
   void initState() {
     super.initState();
-    _session.addListener(_onChange);
-    _begin();
+    _session = _manager.active.value;
+    _manager.screenOpen.value = true;
+    _session?.addListener(_onChange);
+    _manager.active.addListener(_onActiveChanged);
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && _session?.phase == CallPhase.connected) setState(() {});
+    });
+    if (_session == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _leave());
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _onChange());
+    }
   }
 
-  Future<void> _begin() async {
-    // Asked here rather than at app start: permission requested in context,
-    // for a reason the member can see, is permission that gets granted.
-    final needed = widget.isVideo
-        ? [Permission.microphone, Permission.camera]
-        : [Permission.microphone];
-    final statuses = await needed.request();
-
-    if (statuses.values.any((s) => !s.isGranted)) {
-      if (!mounted) return;
-      setState(() => _starting = false);
-      _fail(widget.isVideo
-          ? 'Camera and microphone access are needed for video calls.'
-          : 'Microphone access is needed for calls.');
-      return;
-    }
-
-    final failure = widget.incomingCallId != null
-        ? await _session.accept(
-            incomingCallId: widget.incomingCallId!,
-            peerDisplayName: widget.peerName,
-            video: widget.isVideo,
-          )
-        : await _session.dial(
-            conversationId: widget.conversationId,
-            peerDisplayName: widget.peerName,
-            video: widget.isVideo,
-          );
-
-    if (!mounted) return;
-    setState(() => _starting = false);
-    if (failure != null) _fail(failure);
+  /// A second call can replace the one on screen — answering while another
+  /// was still winding down.
+  void _onActiveChanged() {
+    final next = _manager.active.value;
+    if (next == null || next == _session) return;
+    _session?.removeListener(_onChange);
+    setState(() {
+      _session = next;
+      _endHandled = false;
+    });
+    next.addListener(_onChange);
   }
 
   void _leave() {
     if (_left || !mounted) return;
     _left = true;
-    final nav = Navigator.of(context, rootNavigator: true);
-    if (nav.canPop()) {
-      nav.pop();
-      return;
-    }
     final router = GoRouter.of(context);
     if (router.canPop()) {
       router.pop();
       return;
     }
-    router.go('/chat');
+    // Opened straight from the lock screen: there is nothing underneath, so
+    // go through the normal start-up instead.
+    router.go('/splash');
   }
 
-  void _fail(String message) {
-    final needsPlan = message.toLowerCase().contains('plan');
-    if (needsPlan) {
-      showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surfaceElevated,
-          title: Text('Upgrade to call', style: AppTextStyles.headlineMedium),
-          content: Text(message, style: AppTextStyles.bodyMedium),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                _leave();
-              },
-              child: const Text('Not now'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                _leave();
-                AppRouter.router.push('/subscription');
-              },
-              child: const Text('See plans'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.surfaceHighest),
-    );
-    Future.delayed(const Duration(milliseconds: 900), _leave);
+  void _minimise() {
+    AppHaptics.light();
+    _leave();
   }
 
   void _onChange() {
-    if (!mounted) return;
-    if (_session.phase == CallPhase.connected && _ticker == null) {
-      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() {});
-      });
-    }
-    if (_session.phase == CallPhase.ended) {
-      _ticker?.cancel();
-      final why = _session.error;
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (!mounted) return;
-        if (why != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(why), backgroundColor: AppColors.surfaceHighest),
-          );
-        }
-        _leave();
-      });
+    final session = _session;
+    if (!mounted || session == null) return;
+    if (session.phase == CallPhase.ended && !_endHandled) {
+      _endHandled = true;
+      final why = session.error;
+      if (session.needsPlan && why != null) {
+        _showPlanDialog(why);
+      } else {
+        Future.delayed(Duration(milliseconds: why == null ? 700 : 1600), _leave);
+      }
     }
     setState(() {});
   }
 
+  void _showPlanDialog(String message) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: Text('Upgrade to call', style: AppTextStyles.headlineMedium),
+        content: Text(message, style: AppTextStyles.bodyMedium),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _leave();
+            },
+            child: const Text('Not now'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _leave();
+              AppRouter.router.push('/subscription');
+            },
+            child: const Text('See plans'),
+          ),
+        ],
+      ),
+    );
+  }
+
   String get _status {
-    switch (_session.phase) {
+    final s = _session;
+    if (s == null) return '';
+    if (s.phase == CallPhase.ended) return s.error ?? 'Call ended';
+    if (s.reconnecting) return 'Reconnecting…';
+    switch (s.phase) {
+      case CallPhase.idle:
       case CallPhase.dialling:   return 'Calling…';
       case CallPhase.ringing:    return 'Ringing…';
       case CallPhase.connecting: return 'Connecting…';
       case CallPhase.connected:  return _elapsed;
       case CallPhase.ended:      return 'Call ended';
-      case CallPhase.idle:       return '';
     }
   }
 
   String get _elapsed {
-    final start = _session.connectedAt;
+    final start = _session?.connectedAt;
     if (start == null) return '00:00';
     final d = DateTime.now().difference(start);
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -186,45 +153,45 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void dispose() {
     _ticker?.cancel();
-    _session.removeListener(_onChange);
-    _session.dispose();
+    _session?.removeListener(_onChange);
+    _manager.active.removeListener(_onActiveChanged);
+    _manager.screenOpen.value = false;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final connected = _session.phase == CallPhase.connected;
-    final showVideo = _session.isVideo && _session.cameraOn;
+    final session = _session;
+    if (session == null) {
+      return const Scaffold(backgroundColor: Colors.black);
+    }
+    final connected = session.phase == CallPhase.connected;
+    final ended = session.phase == CallPhase.ended;
+    final showRemote = session.isVideo && connected && session.remoteRenderer.srcObject != null;
+    final showLocal = session.isVideo && session.cameraOn && !ended &&
+        session.localRenderer.srcObject != null;
+    final top = MediaQuery.of(context).padding.top;
 
     return PopScope(
-      // Leaving the screen must hang up. A call that keeps running behind a
-      // back-swipe is a live microphone the member thinks they closed.
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        // Captured before the await: the context from build() is not safe to
-        // reach across an async gap, and this one is a hang-up.
-        await _session.hangUp();
-        _leave();
-      },
+      // Back leaves the call running, like every phone does. Hanging up is
+      // the red button, and nothing else.
+      canPop: true,
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
           fit: StackFit.expand,
           children: [
-            if (_session.isVideo && connected && _session.remoteRenderer.srcObject != null)
+            if (showRemote)
               RTCVideoView(
-                _session.remoteRenderer,
+                session.remoteRenderer,
                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
               )
             else
-              _placeholder(),
+              _placeholder(session),
 
-            // Local preview — shown as soon as the camera is up, not only
-            // after the other side connects (same as the working Masthi Chat call).
-            if (showVideo)
+            if (showLocal)
               Positioned(
-                top: MediaQuery.of(context).padding.top + 16,
+                top: top + 72,
                 right: 16,
                 width: 108,
                 height: 152,
@@ -233,7 +200,7 @@ class _CallScreenState extends State<CallScreen> {
                   child: Container(
                     color: AppColors.surface,
                     child: RTCVideoView(
-                      _session.localRenderer,
+                      session.localRenderer,
                       mirror: true,
                       objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     ),
@@ -241,68 +208,73 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
 
-            // Name and status
+            // Minimise, name and status
             Positioned(
-              top: MediaQuery.of(context).padding.top + 24,
-              left: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              top: top + 8,
+              left: 8,
+              right: 16,
+              child: Row(
                 children: [
-                  Text(
-                    widget.peerName,
-                    style: AppTextStyles.headlineSmall.copyWith(color: Colors.white),
+                  IconButton(
+                    tooltip: 'Back to the app',
+                    onPressed: _minimise,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _status,
-                    style: AppTextStyles.labelMedium.copyWith(color: Colors.white70),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.peerName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.headlineSmall.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _status,
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: session.reconnecting ? AppColors.gold : Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
 
-            if (_starting)
-              const Center(
-                child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
-              ),
-
-            _controls(connected),
+            if (!ended) _controls(session),
           ],
         ),
       ),
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(CallSession session) {
     return Container(
       color: AppColors.background,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 96, height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.goldMild),
-              ),
-              child: Center(
-                child: Text(
-                  widget.peerName.isNotEmpty ? widget.peerName[0].toUpperCase() : '?',
-                  style: AppTextStyles.displaySmall.copyWith(color: AppColors.gold),
-                ),
+            CallAvatar(name: session.peerName, photo: session.peerPhoto, size: 112),
+            const SizedBox(height: 20),
+            Text(
+              _status,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: session.reconnecting ? AppColors.gold : AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 20),
-            Text(_status, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ),
     );
   }
 
-  Widget _controls(bool connected) {
+  Widget _controls(CallSession session) {
     return Positioned(
       left: 0, right: 0,
       bottom: MediaQuery.of(context).padding.bottom + 36,
@@ -310,38 +282,37 @@ class _CallScreenState extends State<CallScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _round(
-            icon: _session.micOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-            active: !_session.micOn,
-            onTap: () { AppHaptics.light(); _session.toggleMic(); },
+            icon: session.micOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+            active: !session.micOn,
+            onTap: () { AppHaptics.light(); session.toggleMic(); },
           ),
-          if (_session.isVideo) ...[
+          if (session.isVideo) ...[
             const SizedBox(width: 16),
             _round(
-              icon: _session.cameraOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
-              active: !_session.cameraOn,
-              onTap: () { AppHaptics.light(); _session.toggleCamera(); },
+              icon: session.cameraOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
+              active: !session.cameraOn,
+              onTap: () { AppHaptics.light(); session.toggleCamera(); },
             ),
             const SizedBox(width: 16),
             _round(
               icon: Icons.cameraswitch_rounded,
-              onTap: () { AppHaptics.light(); _session.switchCamera(); },
+              onTap: () { AppHaptics.light(); session.switchCamera(); },
             ),
           ],
           const SizedBox(width: 16),
           _round(
-            icon: _session.speakerOn ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-            active: _session.speakerOn,
-            onTap: () { AppHaptics.light(); _session.toggleSpeaker(); },
+            icon: session.speakerOn ? Icons.volume_up_rounded : Icons.hearing_rounded,
+            active: session.speakerOn,
+            onTap: () { AppHaptics.light(); session.toggleSpeaker(); },
           ),
           const SizedBox(width: 16),
           _round(
             icon: Icons.call_end_rounded,
             background: AppColors.error,
             iconColor: Colors.white,
-            onTap: () async {
+            onTap: () {
               AppHaptics.heavy();
-              await _session.hangUp();
-              _leave();
+              session.hangUp();
             },
           ),
         ],

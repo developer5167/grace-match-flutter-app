@@ -12,9 +12,11 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/injection.dart' as di;
 import 'core/network/socket_service.dart';
-import 'features/calls/data/incoming_call_notifications.dart';
-import 'features/calls/data/incoming_call_watcher.dart';
-import 'features/calls/screens/call_screen.dart';
+import 'package:flutter_callkit_incoming/entities/entities.dart' as ck;
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'features/calls/data/call_kit.dart';
+import 'features/calls/data/call_manager.dart';
+import 'features/calls/widgets/ongoing_call_bar.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/onboarding/bloc/onboarding_bloc.dart';
@@ -29,46 +31,33 @@ import 'firebase_options.dart';
 final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
 
-Future<void> _ensureCallChannel() async {
-  await _localNotifications
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(incomingCallChannel);
-}
-
-void _handleCallNotificationResponse(NotificationResponse response) {
-  final data = decodeCallPayload(response.payload);
-  if (data == null) return;
-  if (response.actionId == declineCallActionId) {
-    IncomingCallWatcher.instance?.declineFromNotification(data);
-    return;
-  }
-  if (response.actionId == acceptCallActionId) {
-    IncomingCallWatcher.presentOrQueue(data);
-    IncomingCallWatcher.instance?.acceptFromNotification(data);
-    return;
-  }
-  IncomingCallWatcher.presentOrQueue(data);
-}
-
-@pragma('vm:entry-point')
-void _notificationTapBackground(NotificationResponse response) {
-  _handleCallNotificationResponse(response);
-}
-
 // Background message handler — must be top-level, called when app is killed/background.
+//
+// Rings with the phone's call UI: full screen on the lock screen, a ringing
+// notification with Accept and Decline otherwise. Runs in its own isolate, so
+// it must not touch Hive or the service locator.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  if (isIncomingCallData(message.data)) {
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    await _localNotifications.initialize(
-      const InitializationSettings(android: android),
-      onDidReceiveNotificationResponse: _handleCallNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse: _notificationTapBackground,
-    );
-    await _ensureCallChannel();
-    await showIncomingCallNotification(_localNotifications, message.data);
+  final data = message.data;
+  if (CallKit.isIncoming(data)) {
+    final call = CallKit.parse(data);
+    if (call != null) await CallKit.ring(call);
+    return;
+  }
+  if (CallKit.isCancelled(data)) {
+    final id = data['call_id']?.toString();
+    if (id != null && id.isNotEmpty) await CallKit.dismissIfRinging(id);
+  }
+}
+
+// The call UI's buttons, pressed while the app is not running. Accept needs
+// nothing here: it launches the app, which picks the call up on start.
+@pragma('vm:entry-point')
+Future<void> _callKitBackgroundHandler(ck.CallEvent event) async {
+  if (event is ck.CallEventActionCallDecline) {
+    await CallKit.rejectOverHttp(event.callKitParams.id);
+  } else if (event is ck.CallEventActionCallEnded) {
+    await CallKit.endOverHttp(event.callKitParams.id);
   }
 }
 
@@ -107,12 +96,23 @@ await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   ); 
    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FlutterCallkitIncoming.onBackgroundMessage(_callKitBackgroundHandler);
 
   // Initialize DI
   di.init();
 
   // Init storage before any authenticated network calls (e.g. FCM token sync)
   await AppStorage.init();
+
+  // Answered on the lock screen while the app was closed: the call is
+  // already accepted, and the app opens straight into it.
+  final hasSession = await AppStorage.getAccessToken() != null;
+  final answeredOnLaunch = hasSession ? await CallKit.takeAcceptedOnLaunch() : null;
+
+  // Connect early: answering needs the socket, and every second here is a
+  // second the caller hears ringing after the member picked up.
+  di.sl<SocketService>().connect();
+  CallManager.instance.start(di.sl<SocketService>());
 
   // FCM Setup
   final messaging = FirebaseMessaging.instance;
@@ -127,8 +127,6 @@ await Firebase.initializeApp(
   const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
   await _localNotifications.initialize(
     const InitializationSettings(android: initializationSettingsAndroid),
-    onDidReceiveNotificationResponse: _handleCallNotificationResponse,
-    onDidReceiveBackgroundNotificationResponse: _notificationTapBackground,
   );
   const androidChannel = AndroidNotificationChannel(
     'gracematch_default',
@@ -139,16 +137,15 @@ await Firebase.initializeApp(
   await _localNotifications
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(androidChannel);
-  await _ensureCallChannel();
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    if (isIncomingCallData(message.data)) {
-      IncomingCallWatcher.presentOrQueue({
-        ...message.data,
-        if (message.data['caller_name'] == null)
-          'caller_name': message.notification?.title,
-      });
-      showIncomingCallNotification(_localNotifications, message.data);
+    if (CallKit.isIncoming(message.data)) {
+      CallManager.instance.onIncoming(message.data);
+      return;
+    }
+    if (CallKit.isCancelled(message.data)) {
+      final id = message.data['call_id']?.toString();
+      if (id != null && id.isNotEmpty) CallManager.instance.onCancelled(id);
       return;
     }
 
@@ -180,47 +177,26 @@ await Firebase.initializeApp(
     }
   });
 
-  // Sync FCM token for logged-in user on app start.
+  // Sync FCM token for logged-in user on app start. Not awaited: it is a
+  // network round trip, and start-up — an answered call included — should
+  // not wait on it.
   final authRepository = AuthRepository();
-  final startupToken = await FirebaseMessaging.instance.getToken();
-  if (startupToken != null && startupToken.isNotEmpty) {
-    debugPrint('FCM_TOKEN: $startupToken');
-    await authRepository.updateFcmToken(startupToken);
-  } else {
-    debugPrint('FCM_TOKEN: <null>');
-  }
+  FirebaseMessaging.instance.getToken().then((startupToken) async {
+    if (startupToken != null && startupToken.isNotEmpty) {
+      debugPrint('FCM_TOKEN: $startupToken');
+      await authRepository.updateFcmToken(startupToken);
+    } else {
+      debugPrint('FCM_TOKEN: <null>');
+    }
+  }).catchError((Object e) {
+    debugPrint('FCM_TOKEN failed: $e');
+  });
 
   // Keep backend token updated when FCM rotates token.
   FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
     debugPrint('FCM_TOKEN_REFRESHED: $token');
     await authRepository.updateFcmToken(token);
   });
-
-  // Connect Sockets
-  di.sl<SocketService>().connect();
-
-  // A call can arrive while the member is anywhere in the app, so the listener
-  // lives above the routes rather than on the call screen — otherwise the only
-  // place a call could be received is the screen you reach by making one.
-  CallScreenFactory.builder = ({
-    required socket,
-    required conversationId,
-    required peerName,
-    required isVideo,
-    incomingCallId,
-  }) =>
-      CallScreen(
-        socket: socket,
-        conversationId: conversationId,
-        peerName: peerName,
-        isVideo: isVideo,
-        incomingCallId: incomingCallId,
-      );
-
-  IncomingCallWatcher.start(
-    socket: di.sl<SocketService>(),
-    navigatorKey: AppRouter.rootNavigatorKey,
-  );
 
   // Screenshot & screen-recording protection (Android only via FLAG_SECURE).
   // Implemented natively in MainActivity.kt — no package needed.
@@ -243,12 +219,19 @@ await Firebase.initializeApp(
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // Init router (needs async for token check)
-  await AppRouter.init();
+  await AppRouter.init(initialLocation: answeredOnLaunch != null ? '/call' : '/splash');
+  if (answeredOnLaunch != null) {
+    CallManager.instance.acceptIncoming(
+      answeredOnLaunch,
+      fromCallKit: true,
+      navigate: false,
+    );
+  }
 
   void openFromPush(RemoteMessage message) {
     final data = message.data;
-    if (isIncomingCallData(data)) {
-      IncomingCallWatcher.presentOrQueue(data);
+    if (CallKit.isIncoming(data)) {
+      CallManager.instance.onIncoming(data);
       return;
     }
     final route = data['route']?.toString();
@@ -331,7 +314,7 @@ class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserv
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-            child: child!,
+            child: OngoingCallLayer(child: child!),
           );
         },
       ),

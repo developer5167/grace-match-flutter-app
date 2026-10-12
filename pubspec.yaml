@@ -1,7 +1,7 @@
 name: grace_match
 description: "GraceMatch – Premium Telugu Christian Matrimony"
 publish_to: 'none'
-version: 1.0.5+8
+version: 1.0.6+9
 
 environment:
   sdk: ^3.9.2
@@ -68,6 +68,7 @@ dependencies:
   socket_io_client: ^3.1.4
   flutter_webrtc: ^1.6.2+hotfix.3
   screen_protector: ^1.5.3
+  flutter_callkit_incoming: ^3.1.6
 
 dev_dependencies:
   flutter_test:

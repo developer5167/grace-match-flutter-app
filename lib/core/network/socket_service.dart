@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../storage/app_storage.dart';
 import '../constants/app_constants.dart';
+import 'dio_client.dart';
 
 class SocketService {
   io.Socket? _socket;
@@ -40,6 +41,10 @@ class SocketService {
 
   bool get isConnected => _socket?.connected == true;
 
+  /// The call this phone is in, reported on every connect so the server can
+  /// finish calls the app is no longer part of.
+  String? Function()? activeCallId;
+
   Future<bool>? _ensuring;
 
   String get _url => AppConstants.socketUrl.isNotEmpty
@@ -58,7 +63,7 @@ class SocketService {
 
     disconnect();
 
-    _socket = io.io(_url, {
+    final socket = io.io(_url, {
       'transports': ['websocket'],
       'autoConnect': true,
       'forceNew': true,
@@ -67,10 +72,38 @@ class SocketService {
       'reconnectionDelay': 400,
       'reconnectionDelayMax': 4000,
       'timeout': 10000,
-      'auth': {'token': token},
+      // Read on every handshake, reconnects included. A token captured once
+      // here expires after fifteen minutes, and every reconnect after that is
+      // refused until something else happens to refresh it — "You appear to
+      // be offline" on a phone that is plainly online.
+      'auth': (void Function(Map) send) {
+        DioClient.freshAccessToken().then(
+          (t) => send({'token': t ?? ''}),
+          onError: (_) => send({'token': ''}),
+        );
+      },
     });
+    _socket = socket;
 
-    _bindListeners(_socket!);
+    _bindListeners(socket);
+  }
+
+  DateTime? _lastAuthRetry;
+
+  /// The server refused the handshake. socket.io does not retry that on its
+  /// own, so refresh the token once and open a new connection.
+  Future<void> _onAuthRejected() async {
+    final last = _lastAuthRetry;
+    if (last != null && DateTime.now().difference(last) < const Duration(seconds: 10)) {
+      return;
+    }
+    _lastAuthRetry = DateTime.now();
+    try {
+      await DioClient.refreshTokens();
+    } catch (_) {
+      return;
+    }
+    await connect();
   }
 
   /// Razorpay (and any other native overlay) pauses the app and drops the
@@ -127,8 +160,17 @@ class SocketService {
     if (_listenersBound) return;
     _listenersBound = true;
 
-    socket.onConnect((_) {});
+    socket.onConnect((_) {
+      socket.emit('call:sync', {'active_call_id': activeCallId?.call()});
+    });
     socket.onDisconnect((_) {});
+    socket.onConnectError((err) {
+      final text = err is Map ? err['message']?.toString() : err?.toString();
+      if (text != null && text.contains('Authentication error')) {
+        if (text.contains('suspended') || text.contains('deactivated')) return;
+        _onAuthRejected();
+      }
+    });
 
     socket.on('new_message', (data) {
       _messageController.add(Map<String, dynamic>.from(data as Map));
@@ -183,10 +225,13 @@ class SocketService {
     required String conversationId,
     bool isVideo = true,
   }) =>
-      _ack('call:start', {'conversation_id': conversationId, 'is_video': isVideo});
+      _ack('call:start', {'conversation_id': conversationId, 'is_video': isVideo},
+          connectWithin: const Duration(seconds: 10));
 
+  /// Generous on purpose: answering from the lock screen cold-starts the app,
+  /// and the socket is still opening when the member taps Accept.
   Future<Map<String, dynamic>> answerCall(String callId) =>
-      _ack('call:answer', {'call_id': callId});
+      _ack('call:answer', {'call_id': callId}, connectWithin: const Duration(seconds: 15));
 
   Future<Map<String, dynamic>> rejectCall(String callId) =>
       _ack('call:reject', {'call_id': callId});
@@ -198,11 +243,19 @@ class SocketService {
     _socket?.emit('call:signal', {'call_id': callId, 'signal': signal});
   }
 
-  Future<Map<String, dynamic>> _ack(String event, Map<String, dynamic> payload) async {
-    final ready = await ensureConnected();
+  Future<Map<String, dynamic>> _ack(
+    String event,
+    Map<String, dynamic> payload, {
+    Duration connectWithin = const Duration(seconds: 6),
+  }) async {
+    final ready = await ensureConnected(timeout: connectWithin);
     final socket = _socket;
     if (!ready || socket == null || !socket.connected) {
-      return {'ok': false, 'error': 'You appear to be offline'};
+      return {
+        'ok': false,
+        'error': 'Could not reach GraceMatch. Check your connection and try again.',
+        'code': 'OFFLINE',
+      };
     }
 
     final completer = Completer<Map<String, dynamic>>();

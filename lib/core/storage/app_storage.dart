@@ -68,6 +68,11 @@ class AppStorage {
   static String? getReviewStatus() =>
       _prefs.get('review_status') as String?;
 
+  static bool wasCallScreenPermissionAsked() =>
+      _prefs.get('call_fsi_asked', defaultValue: false) as bool;
+
+  static void markCallScreenPermissionAsked() => _prefs.put('call_fsi_asked', true);
+
   static void saveSkippedUpdateVersion(String version) =>
       _prefs.put(StorageKeys.skippedUpdateVersion, version);
 

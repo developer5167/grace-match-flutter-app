@@ -6,6 +6,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/socket_service.dart';
+import 'call_kit.dart';
 
 enum CallPhase { idle, dialling, ringing, connecting, connected, ended }
 
@@ -17,11 +18,26 @@ enum CallPhase { idle, dialling, ringing, connecting, connected, ended }
 /// the callee has no peer connection yet, and a broadcast stream does not
 /// buffer `call:signal`.
 ///
+/// Owned by [CallManager], not by a screen: the member can leave the call
+/// screen and keep talking while they use the rest of the app.
+///
 /// Media never touches the API. Audio and video go phone-to-phone.
 class CallSession extends ChangeNotifier {
   final SocketService socket;
+  final String conversationId;
+  final String peerName;
+  final String peerPhoto;
+  final bool isVideo;
+  final bool isCaller;
 
-  CallSession(this.socket);
+  CallSession({
+    required this.socket,
+    required this.conversationId,
+    required this.peerName,
+    this.peerPhoto = '',
+    required this.isVideo,
+    required this.isCaller,
+  });
 
   RTCPeerConnection? _pc;
   MediaStream? _local;
@@ -29,78 +45,124 @@ class CallSession extends ChangeNotifier {
 
   final localRenderer = RTCVideoRenderer();
   final remoteRenderer = RTCVideoRenderer();
+  bool _renderersReady = false;
+  bool _disposed = false;
 
   CallPhase phase = CallPhase.idle;
   String? callId;
-  String? peerName;
-  bool isVideo = true;
-  bool isCaller = false;
   bool micOn = true;
   bool cameraOn = true;
   bool speakerOn = true;
+  bool reconnecting = false;
+  bool hasRemoteVideo = false;
+
+  /// Why the call ended, when it was not a normal hang-up.
   String? error;
+
+  /// A failure the member can fix by upgrading.
+  bool needsPlan = false;
   DateTime? connectedAt;
 
   final List<RTCIceCandidate> _pendingCandidates = [];
   final List<Map<String, dynamic>> _pendingSignals = [];
   bool _remoteReady = false;
   bool _offerWhenReady = false;
-  Timer? _connectTimeout;
+  bool _offerSent = false;
+  bool _hangUpRequested = false;
+  Timer? _phaseTimeout;
+  Timer? _reconnectGrace;
+  Timer? _iceRestartDelay;
+
+  bool get isLive => phase != CallPhase.ended && phase != CallPhase.idle;
+
+  IncomingCallData get identity => IncomingCallData(
+        callId: callId ?? '',
+        conversationId: conversationId,
+        callerName: peerName,
+        callerPhoto: peerPhoto,
+        isVideo: isVideo,
+        outgoing: isCaller,
+        shownAt: DateTime.now().millisecondsSinceEpoch,
+      );
 
   Future<void> _initRenderers() async {
+    if (_renderersReady) return;
     await localRenderer.initialize();
     await remoteRenderer.initialize();
+    _renderersReady = true;
   }
 
   /// Place a call. Returns null on success, or a reason to show the member.
-  Future<String?> dial({
-    required String conversationId,
-    required String peerDisplayName,
-    bool video = true,
-  }) async {
-    isCaller = true;
-    isVideo = video;
-    peerName = peerDisplayName;
+  Future<String?> dial() async {
     _set(CallPhase.dialling);
+    _listen();
 
-    final ack = await socket.startCall(conversationId: conversationId, isVideo: video);
+    final ack = await socket.startCall(conversationId: conversationId, isVideo: isVideo);
     if (ack['ok'] != true) {
-      error = ack['error']?.toString() ?? 'Could not start the call';
-      _set(CallPhase.ended);
-      return error;
+      needsPlan = ack['code'] == 'PLAN_REQUIRED';
+      return _fail(ack['error']?.toString() ?? 'Could not start the call');
     }
 
     callId = ack['call_id']?.toString();
-    _listen();
-    await _prepare(_iceFrom(ack['ice_servers']));
-    _set(CallPhase.ringing);
+    // The member pressed end while the server was still setting up.
+    if (_hangUpRequested || phase == CallPhase.ended) {
+      final id = callId;
+      if (id != null) await _endOnServer(id);
+      return null;
+    }
+
+    try {
+      await _prepare(_iceFrom(ack['ice_servers']));
+    } catch (e) {
+      debugPrint('call media failed: $e');
+      await hangUp(reason: _mediaError);
+      return error;
+    }
+    if (phase == CallPhase.dialling) _set(CallPhase.ringing);
     return null;
   }
 
   /// Accept an incoming call.
-  Future<String?> accept({
-    required String incomingCallId,
-    required String peerDisplayName,
-    bool video = true,
-  }) async {
-    isCaller = false;
-    isVideo = video;
+  Future<String?> accept(String incomingCallId) async {
     callId = incomingCallId;
-    peerName = peerDisplayName;
     _set(CallPhase.connecting);
 
     // Masthi Chat opens the peer connection on the incoming screen *before*
     // accept is emitted. Same here: media first, then tell the caller to offer.
     _listen();
-    await _prepare(await _loadIce());
-
-    final ack = await socket.answerCall(incomingCallId);
-    if (ack['ok'] != true) {
-      error = ack['error']?.toString() ?? 'Could not answer';
-      _set(CallPhase.ended);
+    try {
+      await _prepare(await _loadIce());
+    } catch (e) {
+      debugPrint('call media failed: $e');
+      await hangUp(reason: _mediaError);
       return error;
     }
+    if (phase == CallPhase.ended) return error;
+
+    // A cold start from the lock screen is still connecting its socket.
+    final ack = await socket.answerCall(incomingCallId);
+    if (phase == CallPhase.ended) return error;
+    if (ack['ok'] != true) {
+      final why = ack['code'] == 'CALL_OVER'
+          ? 'This call has already ended'
+          : ack['error']?.toString() ?? 'Could not answer';
+      await _teardown();
+      error = why;
+      _set(CallPhase.ended);
+      return why;
+    }
     return null;
+  }
+
+  String get _mediaError => isVideo
+      ? 'Could not start the camera or microphone'
+      : 'Could not start the microphone';
+
+  Future<String?> _fail(String message) async {
+    error = message;
+    await _teardown();
+    _set(CallPhase.ended);
+    return message;
   }
 
   /// Copied from masthiChatFlutter/lib/CallScreen.dart.
@@ -159,10 +221,16 @@ class CallSession extends ChangeNotifier {
             }
           : false,
     });
+    if (phase == CallPhase.ended) {
+      await _teardown();
+      return;
+    }
     localRenderer.srcObject = _local;
 
     speakerOn = isVideo;
-    await Helper.setSpeakerphoneOn(speakerOn);
+    try {
+      await Helper.setSpeakerphoneOn(speakerOn);
+    } catch (_) {}
 
     _pc = await createPeerConnection({
       'iceServers': iceServers ?? _masthiIceServers,
@@ -190,31 +258,15 @@ class CallSession extends ChangeNotifier {
     };
 
     _pc!.onTrack = (event) {
-      if (event.streams.isNotEmpty) {
-        remoteRenderer.srcObject = event.streams.first;
-        if (phase != CallPhase.connected) {
-          connectedAt = DateTime.now();
-          _set(CallPhase.connected);
-        } else {
-          notifyListeners();
-        }
-      }
+      if (event.streams.isEmpty) return;
+      remoteRenderer.srcObject = event.streams.first;
+      if (event.track.kind == 'video') hasRemoteVideo = true;
+      _markConnected();
     };
 
-    _pc!.onIceConnectionState = (state) {
-      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
-          state == RTCIceConnectionState.RTCIceConnectionStateCompleted) {
-        if (phase != CallPhase.connected) {
-          connectedAt = DateTime.now();
-          _set(CallPhase.connected);
-        }
-      } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
-        error = 'The connection dropped';
-        hangUp();
-      }
-    };
+    _pc!.onIceConnectionState = _onIceState;
 
-    notifyListeners();
+    _safeNotify();
 
     if (_offerWhenReady) {
       _offerWhenReady = false;
@@ -223,27 +275,106 @@ class CallSession extends ChangeNotifier {
     await _flushPendingSignals();
   }
 
-  Future<void> _sendOffer() async {
+  void _markConnected() {
+    if (phase == CallPhase.ended) return;
+    if (phase != CallPhase.connected) {
+      connectedAt ??= DateTime.now();
+      _set(CallPhase.connected);
+      final id = callId;
+      if (id != null) CallKit.markConnected(id);
+    } else {
+      _safeNotify();
+    }
+  }
+
+  /// Networks change mid-call — Wi-Fi to mobile data, a lift, a tunnel. The
+  /// call survives that if it is given a moment and a fresh route, so a
+  /// dropped path is "reconnecting", not "ended".
+  void _onIceState(RTCIceConnectionState state) {
+    if (phase == CallPhase.ended) return;
+    switch (state) {
+      case RTCIceConnectionState.RTCIceConnectionStateConnected:
+      case RTCIceConnectionState.RTCIceConnectionStateCompleted:
+        _iceRestartDelay?.cancel();
+        _reconnectGrace?.cancel();
+        _reconnectGrace = null;
+        if (reconnecting) {
+          reconnecting = false;
+          _safeNotify();
+        }
+        _markConnected();
+        break;
+      case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
+        _startReconnecting(restartAfter: const Duration(seconds: 3));
+        break;
+      case RTCIceConnectionState.RTCIceConnectionStateFailed:
+        _startReconnecting(restartAfter: Duration.zero);
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _startReconnecting({required Duration restartAfter}) {
+    // Before the first connection the phase timeout is in charge.
+    if (phase != CallPhase.connected) return;
+    if (!reconnecting) {
+      reconnecting = true;
+      _safeNotify();
+    }
+    _reconnectGrace ??= Timer(const Duration(seconds: 20), () {
+      if (reconnecting && phase != CallPhase.ended) {
+        hangUp(reason: 'The call was disconnected');
+      }
+    });
+    // Only the caller renegotiates, so the two sides never offer at once.
+    if (!isCaller) return;
+    _iceRestartDelay?.cancel();
+    _iceRestartDelay = Timer(restartAfter, () async {
+      if (!reconnecting || phase == CallPhase.ended) return;
+      try {
+        await socket.ensureConnected();
+        await _sendOffer(iceRestart: true);
+      } catch (e) {
+        debugPrint('ice restart failed: $e');
+      }
+    });
+  }
+
+  Future<void> _sendOffer({bool iceRestart = false}) async {
     final pc = _pc;
     final id = callId;
     if (pc == null || id == null) return;
-    final offer = await pc.createOffer({
-      'offerToReceiveAudio': true,
-      'offerToReceiveVideo': isVideo,
-    });
-    await pc.setLocalDescription(offer);
-    socket.sendSignal(id, {'type': 'offer', 'sdp': offer.sdp});
+    if (!iceRestart) {
+      if (_offerSent) return;
+      _offerSent = true;
+    }
+    try {
+      final offer = await pc.createOffer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': isVideo,
+        if (iceRestart) 'iceRestart': true,
+      });
+      await pc.setLocalDescription(offer);
+      socket.sendSignal(id, {'type': 'offer', 'sdp': offer.sdp});
+    } catch (e) {
+      if (!iceRestart) _offerSent = false;
+      debugPrint('offer failed: $e');
+    }
   }
 
   void _listen() {
     _sub?.cancel();
     _sub = socket.callStream.listen((event) async {
-      if (event.callId != null && callId != null && event.callId != callId) return;
+      if (phase == CallPhase.ended) return;
+      if (event.callId == null || callId == null || event.callId != callId) return;
 
       switch (event.name) {
         case 'call:answered':
           if (!isCaller) break;
-          if (phase == CallPhase.ringing) _set(CallPhase.connecting);
+          if (phase == CallPhase.ringing || phase == CallPhase.dialling) {
+            _set(CallPhase.connecting);
+          }
           if (_pc != null) {
             await _sendOffer();
           } else {
@@ -251,13 +382,14 @@ class CallSession extends ChangeNotifier {
           }
           break;
 
-        case 'call:ended':
         case 'call:cancelled':
-          final reason = event.data['reason']?.toString();
-          if (reason == 'rejected') error = '${peerName ?? 'They'} declined';
-          if (reason == 'missed') error = 'No answer';
-          await _teardown();
-          _set(CallPhase.ended);
+          // Sent to this member's other phones when this one picks up.
+          if (event.data['reason'] == 'answered_elsewhere') break;
+          await _endedRemotely(event.data['reason']?.toString());
+          break;
+
+        case 'call:ended':
+          await _endedRemotely(event.data['reason']?.toString());
           break;
 
         case 'call:signal':
@@ -268,6 +400,22 @@ class CallSession extends ChangeNotifier {
           break;
       }
     });
+  }
+
+  Future<void> _endedRemotely(String? reason) async {
+    switch (reason) {
+      case 'rejected':
+        error = '$peerName declined';
+        break;
+      case 'missed':
+        error = 'No answer';
+        break;
+      case 'disconnected':
+        error = 'The call was disconnected';
+        break;
+    }
+    await _teardown();
+    _set(CallPhase.ended);
   }
 
   Future<void> _onSignal(Map<String, dynamic> signal) async {
@@ -290,49 +438,59 @@ class CallSession extends ChangeNotifier {
     final pc = _pc;
     if (pc == null) return;
 
-    switch (signal['type']) {
-      case 'offer':
-        await pc.setRemoteDescription(
-          RTCSessionDescription(signal['sdp']?.toString(), 'offer'),
-        );
-        _remoteReady = true;
-        await _drainCandidates();
+    // One malformed or out-of-order message must not take the call down.
+    try {
+      switch (signal['type']) {
+        case 'offer':
+          await pc.setRemoteDescription(
+            RTCSessionDescription(signal['sdp']?.toString(), 'offer'),
+          );
+          _remoteReady = true;
+          await _drainCandidates();
 
-        final answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        if (callId != null) {
-          socket.sendSignal(callId!, {'type': 'answer', 'sdp': answer.sdp});
-        }
-        break;
+          final answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          if (callId != null) {
+            socket.sendSignal(callId!, {'type': 'answer', 'sdp': answer.sdp});
+          }
+          break;
 
-      case 'answer':
-        await pc.setRemoteDescription(
-          RTCSessionDescription(signal['sdp']?.toString(), 'answer'),
-        );
-        _remoteReady = true;
-        await _drainCandidates();
-        break;
+        case 'answer':
+          final state = await pc.getSignalingState();
+          if (state != RTCSignalingState.RTCSignalingStateHaveLocalOffer) break;
+          await pc.setRemoteDescription(
+            RTCSessionDescription(signal['sdp']?.toString(), 'answer'),
+          );
+          _remoteReady = true;
+          await _drainCandidates();
+          break;
 
-      case 'candidate':
-        final candidate = RTCIceCandidate(
-          signal['candidate']?.toString(),
-          signal['sdpMid']?.toString(),
-          (signal['sdpMLineIndex'] as num?)?.toInt(),
-        );
-        if (_remoteReady) {
-          await pc.addCandidate(candidate);
-        } else {
-          _pendingCandidates.add(candidate);
-        }
-        break;
+        case 'candidate':
+          final candidate = RTCIceCandidate(
+            signal['candidate']?.toString(),
+            signal['sdpMid']?.toString(),
+            (signal['sdpMLineIndex'] as num?)?.toInt(),
+          );
+          if (_remoteReady) {
+            await pc.addCandidate(candidate);
+          } else {
+            _pendingCandidates.add(candidate);
+          }
+          break;
+      }
+    } catch (e) {
+      debugPrint('signal ${signal['type']} failed: $e');
     }
   }
 
   Future<void> _drainCandidates() async {
-    for (final c in _pendingCandidates) {
-      await _pc?.addCandidate(c);
-    }
+    final pending = List<RTCIceCandidate>.from(_pendingCandidates);
     _pendingCandidates.clear();
+    for (final c in pending) {
+      try {
+        await _pc?.addCandidate(c);
+      } catch (_) {}
+    }
   }
 
   Future<void> toggleMic() async {
@@ -340,7 +498,7 @@ class CallSession extends ChangeNotifier {
     for (final t in _local?.getAudioTracks() ?? <MediaStreamTrack>[]) {
       t.enabled = micOn;
     }
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<void> toggleCamera() async {
@@ -348,75 +506,120 @@ class CallSession extends ChangeNotifier {
     for (final t in _local?.getVideoTracks() ?? <MediaStreamTrack>[]) {
       t.enabled = cameraOn;
     }
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<void> switchCamera() async {
     final tracks = _local?.getVideoTracks() ?? <MediaStreamTrack>[];
-    if (tracks.isNotEmpty) await Helper.switchCamera(tracks.first);
+    if (tracks.isEmpty) return;
+    try {
+      await Helper.switchCamera(tracks.first);
+    } catch (_) {}
   }
 
   Future<void> toggleSpeaker() async {
     speakerOn = !speakerOn;
-    await Helper.setSpeakerphoneOn(speakerOn);
-    notifyListeners();
+    try {
+      await Helper.setSpeakerphoneOn(speakerOn);
+    } catch (_) {}
+    _safeNotify();
   }
 
-  Future<void> hangUp() async {
+  /// End the call from this side. Safe to call more than once, and from any
+  /// state — including before the server has handed out a call id.
+  Future<void> hangUp({String? reason}) async {
+    if (phase == CallPhase.ended) return;
+    if (reason != null) error ??= reason;
     final id = callId;
+    if (id == null && phase == CallPhase.dialling) {
+      // dial() finishes the job once the server replies with an id.
+      _hangUpRequested = true;
+    }
     await _teardown();
     _set(CallPhase.ended);
-    if (id != null) await socket.endCall(id);
+    if (id != null) await _endOnServer(id);
   }
 
-  Future<void> decline(String incomingCallId) async {
-    await socket.rejectCall(incomingCallId);
-    await _teardown();
-    _set(CallPhase.ended);
+  Future<void> _endOnServer(String id) async {
+    final ack = await socket.endCall(id);
+    if (ack['ok'] != true) {
+      // No socket right now. Over HTTP instead, or the other phone keeps
+      // ringing — or keeps showing a frozen call — until it times out.
+      await CallKit.endOverHttp(id);
+    }
   }
 
   Future<void> _teardown() async {
-    _connectTimeout?.cancel();
-    _connectTimeout = null;
+    _phaseTimeout?.cancel();
+    _phaseTimeout = null;
+    _reconnectGrace?.cancel();
+    _reconnectGrace = null;
+    _iceRestartDelay?.cancel();
+    _iceRestartDelay = null;
+    reconnecting = false;
     await _sub?.cancel();
     _sub = null;
-    for (final t in _local?.getTracks() ?? <MediaStreamTrack>[]) {
-      await t.stop();
-    }
-    await _local?.dispose();
+    final local = _local;
     _local = null;
-    await _pc?.close();
+    for (final t in local?.getTracks() ?? <MediaStreamTrack>[]) {
+      try {
+        await t.stop();
+      } catch (_) {}
+    }
+    try {
+      await local?.dispose();
+    } catch (_) {}
+    final pc = _pc;
     _pc = null;
+    try {
+      await pc?.close();
+    } catch (_) {}
     _pendingCandidates.clear();
     _pendingSignals.clear();
     _remoteReady = false;
     _offerWhenReady = false;
-    localRenderer.srcObject = null;
-    remoteRenderer.srcObject = null;
+    if (_renderersReady && !_disposed) {
+      localRenderer.srcObject = null;
+      remoteRenderer.srcObject = null;
+    }
+    try {
+      await Helper.setSpeakerphoneOn(false);
+    } catch (_) {}
   }
 
   void _set(CallPhase next) {
+    if (phase == CallPhase.ended) return;
     phase = next;
-    if (next == CallPhase.connecting || next == CallPhase.ringing) {
-      _connectTimeout?.cancel();
-      _connectTimeout = Timer(const Duration(seconds: 40), () {
-        if (phase == CallPhase.connecting || phase == CallPhase.ringing) {
-          error = phase == CallPhase.ringing ? 'No answer' : 'Could not connect';
-          hangUp();
+    _phaseTimeout?.cancel();
+    _phaseTimeout = null;
+    // Backstops only: the server rings out at 45 seconds and says so.
+    if (next == CallPhase.ringing || next == CallPhase.dialling) {
+      _phaseTimeout = Timer(const Duration(seconds: 55), () {
+        if (phase == CallPhase.ringing || phase == CallPhase.dialling) {
+          hangUp(reason: 'No answer');
         }
       });
-    } else {
-      _connectTimeout?.cancel();
-      _connectTimeout = null;
+    } else if (next == CallPhase.connecting) {
+      _phaseTimeout = Timer(const Duration(seconds: 35), () {
+        if (phase == CallPhase.connecting) hangUp(reason: 'Could not connect');
+      });
     }
-    notifyListeners();
+    _safeNotify();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
   }
 
   @override
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
     _teardown();
-    localRenderer.dispose();
-    remoteRenderer.dispose();
+    if (_renderersReady) {
+      localRenderer.dispose();
+      remoteRenderer.dispose();
+    }
     super.dispose();
   }
 }

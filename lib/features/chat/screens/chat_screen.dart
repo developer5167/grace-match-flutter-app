@@ -12,6 +12,7 @@ import '../../../core/network/socket_service.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../calls/data/call_manager.dart';
 import '../data/chat_repository.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
@@ -44,11 +45,16 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isOnline = false;
   String? _lastSeenAt;
   StreamSubscription? _statusSubscription;
+  CallEntitlements? _calls = CallManager.instance.cachedEntitlements;
 
   @override
   void initState() {
     super.initState();
     _loadMyUserId();
+    _loadCallOptions();
+    // A chat left open in the background may have lost its socket; calling
+    // from it must not be the first thing to find that out.
+    di.sl<SocketService>().ensureConnected();
     ActiveChatState.conversationId = widget.conversationId;
     final bloc = context.read<ChatBloc>();
     bloc.add(SetCurrentConversationEvent(widget.conversationId));
@@ -299,16 +305,20 @@ class _ChatScreenState extends State<ChatScreen> {
         // Calling inside the app is the point of the feature: two people can
         // see and hear each other without either handing over a phone number
         // they cannot take back.
-        IconButton(
-          tooltip: 'Voice call',
-          icon: const Icon(Icons.call_rounded, size: 21),
-          onPressed: () => _startCall(video: false),
-        ),
-        IconButton(
-          tooltip: 'Video call',
-          icon: const Icon(Icons.videocam_rounded, size: 22),
-          onPressed: () => _startCall(video: true),
-        ),
+        //
+        // Only the kinds of call the member's plan includes are offered.
+        if (_calls?.voice == true)
+          IconButton(
+            tooltip: 'Voice call',
+            icon: const Icon(Icons.call_rounded, size: 21),
+            onPressed: () => _startCall(video: false),
+          ),
+        if (_calls?.video == true)
+          IconButton(
+            tooltip: 'Video call',
+            icon: const Icon(Icons.videocam_rounded, size: 22),
+            onPressed: () => _startCall(video: true),
+          ),
         IconButton(
           icon: const Icon(Icons.more_vert_rounded),
           onPressed: _openMenu,
@@ -317,12 +327,29 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _startCall({required bool video}) {
+  Future<void> _startCall({required bool video}) async {
     AppHaptics.selection();
-    context.push(
-      '/call/${widget.conversationId}'
-      '?name=${Uri.encodeComponent(widget.otherUserName)}&video=$video',
+    final messenger = ScaffoldMessenger.of(context);
+    final failure = await CallManager.instance.startOutgoing(
+      conversationId: widget.conversationId,
+      peerName: widget.otherUserName,
+      peerPhoto: widget.otherUserPhoto ?? '',
+      video: video,
     );
+    if (failure != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(failure), backgroundColor: AppColors.surfaceHighest),
+      );
+    }
+  }
+
+  Future<void> _loadCallOptions() async {
+    final calls = await CallManager.instance.entitlements();
+    if (!mounted) return;
+    setState(() => _calls = calls);
+    if (calls.voice || calls.video) {
+      await CallManager.instance.ensureRingingPermission(context);
+    }
   }
 
   void _openMenu() {
