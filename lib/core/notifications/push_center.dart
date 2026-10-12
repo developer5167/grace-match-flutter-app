@@ -106,6 +106,7 @@ class PushCenter {
         .contains(kind)) {
       return '/review-status';
     }
+    if (kind == 'app_update') return '/splash';
     return '/activity?tab=notifications';
   }
 
@@ -155,7 +156,7 @@ class PushCenter {
         final router = AppRouter.router;
         final path = Uri.parse(route).path;
         const tabs = ['/discover', '/interests', '/chat', '/activity', '/profile'];
-        if (tabs.contains(path)) {
+        if (tabs.contains(path) || path == '/splash') {
           router.go(route);
           return;
         }
