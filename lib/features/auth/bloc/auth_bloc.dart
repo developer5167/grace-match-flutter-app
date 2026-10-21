@@ -21,7 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.sendOtp(event.phone);
       emit(OtpSentSuccess(event.phone));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(_errorFrom(e));
     }
   }
 
@@ -35,8 +35,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         user: data['user'],
       ));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(_errorFrom(e));
     }
+  }
+
+  AuthError _errorFrom(Object e) {
+    if (e is AuthException) return AuthError(e.message, code: e.code);
+    return AuthError(e.toString());
   }
 
   Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {

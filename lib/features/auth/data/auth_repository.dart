@@ -103,19 +103,33 @@ class AuthRepository {
     await AppStorage.clearAll();
   }
 
-  String _handleError(DioException e) {
+  Exception _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
       if (data is Map<String, dynamic>) {
         if (data['errors'] != null && data['errors'] is List) {
           final errors = data['errors'] as List;
           if (errors.isNotEmpty) {
-            return errors.map((err) => '• ${err['message']}').join('\n');
+            return AuthException(errors.map((err) => '• ${err['message']}').join('\n'));
           }
         }
-        return data['message'] ?? 'An error occurred';
+        return AuthException(
+          data['message']?.toString() ?? 'An error occurred',
+          code: data['code']?.toString(),
+        );
       }
     }
-    return 'Detailed network error. Please try again.';
+    return AuthException('Detailed network error. Please try again.');
   }
+}
+
+class AuthException implements Exception {
+  final String message;
+  final String? code;
+  AuthException(this.message, {this.code});
+
+  bool get isSuspended => code == 'ACCOUNT_SUSPENDED';
+
+  @override
+  String toString() => message;
 }

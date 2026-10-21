@@ -3,14 +3,29 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>GraceMatch needs your camera so you can make video calls to your matches before sharing personal contact details.</string>
+	<string>GraceMatch needs your camera so you can take profile photos and make video calls to your matches before sharing personal contact details.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>GraceMatch needs your microphone so you can speak to your matches on voice and video calls.</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>GraceMatch needs access to your photo library so you can choose a profile photo.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>GraceMatch may save a photo you take for your profile.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
+		<string>mailto</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>voip</string>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

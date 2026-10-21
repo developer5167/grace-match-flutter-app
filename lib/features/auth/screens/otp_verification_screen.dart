@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../../core/support/contact_support.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/membership_sync.dart';
@@ -109,6 +110,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             pinputController.clear();
           });
           AppHaptics.error();
+          if (state.isSuspended) {
+            ContactSupport.showSuspendedDialog(context, message: state.message);
+            return;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message, style: const TextStyle(color: Colors.white)),
