@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,17 @@ class PushCenter {
   PushCenter._();
 
   static final plugin = FlutterLocalNotificationsPlugin();
+
+  /// Cold-start push handling. The splash screen waits on this before it
+  /// picks a route, so a notification tap is not lost. It is completed from
+  /// the first frame — requesting permission before the window exists hangs
+  /// a fresh iOS install on the white launch screen.
+  static final Completer<void> _launchReady = Completer<void>();
+  static Future<void> get launchReady => _launchReady.future;
+
+  static void markLaunchReady() {
+    if (!_launchReady.isCompleted) _launchReady.complete();
+  }
 
   /// A route from a tap that arrived before the app was ready to show it —
   /// a cold start, where the splash screen is still deciding where to go.
@@ -43,20 +55,33 @@ class PushCenter {
     await plugin.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // Firebase Messaging already asks for permission during startup.
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
       ),
       onDidReceiveNotificationResponse: (r) {
         if (extraResponseHandler?.call(r) == true) return;
         final data = decode(r.payload);
         if (data != null) open(data);
       },
-      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
+      // Android only. The iOS callback is a no-op, and registering it makes
+      // initialize wait on a second engine that never answers in debug.
+      onDidReceiveBackgroundNotificationResponse:
+          defaultTargetPlatform == TargetPlatform.android
+              ? notificationTapBackground
+              : null,
     );
     _pluginReady = true;
   }
 
   static Future<void> init() async {
     await ensurePlugin();
-    // App killed after a local notification was shown, then tapped.
+    // iOS reports the notification that opened the app through Firebase.
+    // This plugin call does not answer on the scene lifecycle.
+    if (defaultTargetPlatform == TargetPlatform.iOS) return;
     final launch = await plugin.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp == true) {
       final data = decode(launch?.notificationResponse?.payload);
@@ -207,6 +232,7 @@ class PushCenter {
     final tag = data['tag']?.toString();
     final hasTag = tag != null && tag.isNotEmpty;
     final id = hasTag ? _id(tag) : data.hashCode & 0x7fffffff;
+    final quiet = data['kind']?.toString() == 'typing' || data['type']?.toString() == 'typing';
     await plugin.show(
       id,
       title,
@@ -218,13 +244,18 @@ class PushCenter {
           channelDescription: _channel.channelDescription,
           importance: _channel.importance,
           priority: _channel.priority,
-          playSound: data['kind']?.toString() != 'typing' && data['type']?.toString() != 'typing',
-          enableVibration: data['kind']?.toString() != 'typing' && data['type']?.toString() != 'typing',
+          playSound: !quiet,
+          enableVibration: !quiet,
           tag: hasTag ? tag : null,
           // Typing is a hint, not a demand: no sound, and it goes away on its own.
-          timeoutAfter: (data['kind']?.toString() == 'typing' || data['type']?.toString() == 'typing')
-              ? 15000
-              : null,
+          timeoutAfter: quiet ? 15000 : null,
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBanner: true,
+          presentList: true,
+          presentSound: !quiet,
+          presentBadge: !quiet,
         ),
       ),
       payload: jsonEncode(data),

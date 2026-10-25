@@ -11,6 +11,7 @@ import '../../core/storage/app_storage.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/rings_mark.dart';
+import 'maintenance_screen.dart';
 import 'update_gate.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -52,6 +53,10 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigate() async {
+    // Permission and the cold-start notification are handled after the first
+    // frame. Waiting here keeps that tap from losing the race with Discover.
+    final maintenanceCheck = MaintenanceGate.blocked();
+    await PushCenter.launchReady;
     final startTime = DateTime.now();
     
     final token = await AppStorage.getAccessToken();
@@ -87,6 +92,14 @@ class _SplashScreenState extends State<SplashScreen>
     }
     
     if (!mounted) return;
+
+    final blocked = await maintenanceCheck;
+    if (!mounted) return;
+    if (blocked) {
+      PushCenter.finishStartupDiscarding();
+      context.go('/maintenance');
+      return;
+    }
 
     // Admin-controlled update gate. Fail-open: if the check cannot run,
     // members still get into the app.

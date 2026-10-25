@@ -36,14 +36,63 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     context.read<ProfileBloc>().add(FetchProfileEvent());
   }
 
-  Future<void> _shareProfile(String name) async {
-    final userId = await AppStorage.getUserId();
-    if (userId == null) return;
-    final url = '${AppConstants.siteUrl}/p/$userId';
-    await Share.share(
-      'Hey! Check out $name\'s profile on GraceMatch — the Telugu Christian Matrimony app 🙏✝\n$url',
-      subject: 'GraceMatch – $name',
+  String? _idFromProfile(Map<String, dynamic> data) {
+    final user = data['user'];
+    if (user is Map && user['id'] != null) {
+      final id = user['id'].toString().trim();
+      if (id.isNotEmpty) return id;
+    }
+    return null;
+  }
+
+  Rect _shareOrigin(BuildContext anchor) {
+    final box = anchor.findRenderObject();
+    if (box is RenderBox && box.hasSize && !box.size.isEmpty) {
+      final rect = box.localToGlobal(Offset.zero) & box.size;
+      if (rect.width > 0 && rect.height > 0) return rect;
+    }
+    final size = MediaQuery.sizeOf(anchor);
+    return Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: 2,
+      height: 2,
     );
+  }
+
+  Future<void> _shareProfile(String name, String? profileUserId) async {
+    var userId = profileUserId?.trim();
+    if (userId == null || userId.isEmpty) {
+      userId = (await AppStorage.getUserId())?.trim();
+    } else {
+      await AppStorage.saveUserId(userId);
+    }
+    if (!mounted) return;
+    if (userId == null || userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Your profile link is not ready yet. Pull to refresh and try again.'),
+        ),
+      );
+      return;
+    }
+
+    final url = '${AppConstants.siteUrl}/p/$userId';
+    try {
+      await Share.share(
+        'Hey! Check out $name\'s profile on GraceMatch — the Telugu Christian Matrimony app 🙏✝\n$url',
+        subject: 'GraceMatch – $name',
+        sharePositionOrigin: _shareOrigin(context),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Could not open the share sheet. Try again.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -65,6 +114,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         }
 
         final data = state is ProfileLoaded ? state.profile : <String, dynamic>{};
+        final accountId = _idFromProfile(data);
         final profile = data['profile'] as Map<String, dynamic>? ?? {};
         
         final name = profile['first_name'] ?? profile['full_name'] ?? 'User';
@@ -127,7 +177,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     IconButton(
                       icon: Icon(Icons.ios_share_rounded, color: AppColors.gold),
                       tooltip: 'Share Profile',
-                      onPressed: () => _shareProfile(name),
+                      onPressed: () => _shareProfile(name, accountId),
                     ),
                     IconButton(
                       icon: Icon(Icons.settings_rounded, color: AppColors.gold),
@@ -237,7 +287,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                             const SizedBox(width: 12),
                             Flexible(
                               child: OutlinedButton.icon(
-                                onPressed: () => _shareProfile(name),
+                                onPressed: () => _shareProfile(name, accountId),
                                 icon: const Icon(Icons.ios_share_rounded, size: 18),
                                 label: const Text('Share'),
                                 style: OutlinedButton.styleFrom(
@@ -453,7 +503,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           Icons.ios_share_rounded,
                           'Share My Profile',
                           'Invite someone via link',
-                          onTap: () => _shareProfile(name),
+                          onTap: () => _shareProfile(name, accountId),
                         ),
                         
                         const SizedBox(height: 100),

@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../auth/delete_account.dart';
 import '../data/review_repository.dart';
 
 /// After onboarding the member used to sit on a dead "under review" screen.
@@ -200,6 +201,14 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         'Contact support',
                         style: AppTextStyles.labelLarge
                             .copyWith(color: AppColors.gold),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _working ? null : () => confirmDeleteAccount(context),
+                      child: Text(
+                        'Delete account',
+                        style: AppTextStyles.labelLarge
+                            .copyWith(color: AppColors.error),
                       ),
                     ),
                     TextButton(

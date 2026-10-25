@@ -18,6 +18,10 @@ class AppUpdatePolicy {
     required this.message,
     this.androidUrl,
     this.iosUrl,
+    this.androidMaintenance = false,
+    this.iosMaintenance = false,
+    this.maintenanceMessage =
+        'GraceMatch is temporarily unavailable. Please try again shortly.',
   });
 
   final bool enabled;
@@ -27,8 +31,12 @@ class AppUpdatePolicy {
   final String message;
   final String? androidUrl;
   final String? iosUrl;
+  final bool androidMaintenance;
+  final bool iosMaintenance;
+  final String maintenanceMessage;
 
   factory AppUpdatePolicy.fromJson(Map<String, dynamic> json) {
+    final note = (json['maintenance_message'] ?? '').toString().trim();
     return AppUpdatePolicy(
       enabled: json['enabled'] == true,
       latestVersion: (json['latest_version'] ?? '').toString(),
@@ -39,7 +47,20 @@ class AppUpdatePolicy {
           .toString(),
       androidUrl: json['android_url']?.toString(),
       iosUrl: json['ios_url']?.toString(),
+      androidMaintenance: json['android_maintenance'] == true,
+      iosMaintenance: json['ios_maintenance'] == true,
+      maintenanceMessage: note.isEmpty
+          ? 'GraceMatch is temporarily unavailable. Please try again shortly.'
+          : note,
     );
+  }
+
+  /// The switch for the phone this build is running on.
+  bool get maintenanceForDevice {
+    if (kIsWeb) return false;
+    if (defaultTargetPlatform == TargetPlatform.iOS) return iosMaintenance;
+    if (defaultTargetPlatform == TargetPlatform.android) return androidMaintenance;
+    return false;
   }
 
   String? get storeUrl {
@@ -70,9 +91,10 @@ class UpdateGate {
   }
 
   /// After splash. Returns once the member may continue (or never, if mandatory
-  /// and they have not updated).
-  static Future<void> maybePrompt(BuildContext context) async {
-    final policy = await fetch();
+  /// and they have not updated). [fetched] skips a second request when splash
+  /// already loaded the policy.
+  static Future<void> maybePrompt(BuildContext context, {AppUpdatePolicy? fetched}) async {
+    final policy = fetched ?? await fetch();
     if (policy == null || !policy.enabled || policy.latestVersion.isEmpty) {
       return;
     }

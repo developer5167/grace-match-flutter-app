@@ -103,6 +103,20 @@ class AuthRepository {
     await AppStorage.clearAll();
   }
 
+  /// Permanently erases the signed-in account. The server requires the
+  /// confirmation word; the caller shows that to the member first.
+  Future<void> deleteAccount() async {
+    try {
+      await _dio.delete(
+        ApiEndpoints.deleteAccount,
+        data: const {'confirm': 'DELETE'},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+    await AppStorage.clearAll();
+  }
+
   Exception _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;

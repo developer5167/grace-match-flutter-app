@@ -58,13 +58,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   bool get _payOnWebsite => !kIsWeb && Platform.isIOS;
 
-  Future<void> _openWebsiteCheckout(Map<String, dynamic> plan) async {
-    final slug = plan['name']?.toString() ?? '';
-    final uri = Uri.parse('${AppConstants.siteUrl}/pricing').replace(
-      queryParameters: {
-        if (slug.isNotEmpty) 'plan': slug,
-      },
-    );
+  Future<void> _openWebsite() async {
+    final uri = Uri.parse(AppConstants.siteUrl);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!mounted) return;
     if (!ok) {
@@ -582,7 +577,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ? null
                       : () {
                           if (_payOnWebsite) {
-                            _openWebsiteCheckout(plan);
+                            _openWebsite();
                             return;
                           }
                           final planId = plan['id'].toString();
@@ -613,18 +608,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               : isCurrentActive
                                   ? 'Current Plan'
                                   : _payOnWebsite
-                                      ? 'Continue on website'
+                                      ? 'Open website'
                                       : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
                         ),
                 ),
-                if (canPurchase && _payOnWebsite) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Complete this purchase on the GraceMatch website. Sign in there with the same mobile number.',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
               ],
             ),
           ),

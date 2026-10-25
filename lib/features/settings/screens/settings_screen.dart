@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/network/socket_service.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../auth/delete_account.dart';
 import '../../profile/bloc/profile_bloc.dart';
 import '../../profile/bloc/profile_event.dart';
 import '../../profile/bloc/profile_state.dart';
@@ -277,6 +278,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               style: AppTextStyles.labelLarge.copyWith(color: AppColors.error),
                             ),
                             const Spacer(),
+                            const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: _busy ? null : () => confirmDeleteAccount(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.error.withAlpha(120)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete_forever_rounded, color: AppColors.error),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Delete account',
+                                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.error),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Permanently erase your profile, photos, and messages',
+                                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                                  ),
+                                ],
+                              ),
+                            ),
                             const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
                           ],
                         ),

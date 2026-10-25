@@ -22,6 +22,7 @@ import '../../features/support/screens/new_ticket_screen.dart';
 import '../../features/support/screens/ticket_screen.dart';
 import '../../features/profile/screens/review_status_screen.dart';
 import '../../features/profile/screens/identity_verification_screen.dart';
+import '../../features/splash/maintenance_screen.dart';
 import '../storage/app_storage.dart';
 import '../../core/widgets/app_shell.dart';
 
@@ -46,7 +47,9 @@ class AppRouter {
         final isAuth = await AppStorage.getAccessToken() != null;
         final path = state.uri.path;
 
-        if (path == '/splash') return null;
+        if (path == '/splash' || path == '/maintenance') return null;
+
+        if (await MaintenanceGate.blocked()) return '/maintenance';
 
         if (!isAuth) {
           if (path.startsWith('/auth')) return null;
@@ -55,7 +58,7 @@ class AppRouter {
         }
 
         if (!AppStorage.isOnboardingComplete()) {
-          if (path == '/onboarding') return null;
+          if (path == '/onboarding' || path == '/settings') return null;
           return '/onboarding';
         }
 
@@ -65,6 +68,7 @@ class AppRouter {
         if (reviewStatus != 'approved') {
           final fixing = path == '/review-status' ||
               path == '/onboarding' ||
+              path == '/settings' ||
               path == '/verify-identity' ||
               path == '/notifications' ||
               path.startsWith('/support') ||
@@ -83,6 +87,10 @@ class AppRouter {
         GoRoute(
           path: '/splash',
           builder: (_, __) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/maintenance',
+          builder: (_, __) => const MaintenanceScreen(),
         ),
 
         // ─── Auth Routes ──────────────────────────────────────
