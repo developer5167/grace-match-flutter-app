@@ -48,7 +48,9 @@ class _DeviceTiltState extends State<DeviceTilt>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final visible = TickerMode.valuesOf(context).enabled;
+    // TickerMode.of, not valuesOf: CI builds on Flutter 3.35, which predates it.
+    // ignore: deprecated_member_use
+    final visible = TickerMode.of(context);
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     _setActive(visible && !reduceMotion);
   }
