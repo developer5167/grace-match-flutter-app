@@ -25,6 +25,7 @@ import '../../features/profile/screens/identity_verification_screen.dart';
 import '../../features/splash/maintenance_screen.dart';
 import '../storage/app_storage.dart';
 import '../../core/widgets/app_shell.dart';
+import '../utils/store_policy.dart';
 
 class AppRouter {
   static final _rootKey = GlobalKey<NavigatorState>();
@@ -66,7 +67,8 @@ class AppRouter {
         // support, or wait. Discover/chat stay closed until approval.
         final reviewStatus = AppStorage.getReviewStatus();
         if (reviewStatus != 'approved') {
-          final fixing = path == '/review-status' ||
+          final fixing =
+              path == '/review-status' ||
               path == '/onboarding' ||
               path == '/settings' ||
               path == '/verify-identity' ||
@@ -84,10 +86,7 @@ class AppRouter {
           path: '/review-status',
           builder: (_, __) => const ReviewStatusScreen(),
         ),
-        GoRoute(
-          path: '/splash',
-          builder: (_, __) => const SplashScreen(),
-        ),
+        GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
         GoRoute(
           path: '/maintenance',
           builder: (_, __) => const MaintenanceScreen(),
@@ -113,7 +112,9 @@ class AppRouter {
           path: '/onboarding',
           builder: (_, state) {
             final extraStep = state.extra is int ? state.extra as int : null;
-            final queryStep = int.tryParse(state.uri.queryParameters['step'] ?? '');
+            final queryStep = int.tryParse(
+              state.uri.queryParameters['step'] ?? '',
+            );
             return OnboardingScreen(
               initialStep: extraStep ?? queryStep,
               fixAction: state.uri.queryParameters['action'],
@@ -136,7 +137,8 @@ class AppRouter {
             ),
             GoRoute(
               path: '/interests',
-              builder: (_, state) => InterestsScreen(tab: state.uri.queryParameters['tab']),
+              builder: (_, state) =>
+                  InterestsScreen(tab: state.uri.queryParameters['tab']),
             ),
             GoRoute(
               path: '/chat',
@@ -144,7 +146,8 @@ class AppRouter {
             ),
             GoRoute(
               path: '/activity',
-              builder: (_, state) => ActivityScreen(tab: state.uri.queryParameters['tab']),
+              builder: (_, state) =>
+                  ActivityScreen(tab: state.uri.queryParameters['tab']),
             ),
             GoRoute(
               path: '/profile',
@@ -185,10 +188,7 @@ class AppRouter {
             );
           },
         ),
-        GoRoute(
-          path: '/settings',
-          builder: (_, __) => const SettingsScreen(),
-        ),
+        GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
         GoRoute(
           path: '/subscription',
           // ?coupon= arrives when the member tapped "Use offer", so the code
@@ -199,6 +199,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/offers',
+          // Offers are discount codes for buying a plan, which iOS does not sell.
+          redirect: (_, __) => canSellPlansHere ? null : '/subscription',
           builder: (_, __) => const OffersScreen(),
         ),
         // Shared https://…/p/<userId> links. Guests see the public preview;
@@ -214,20 +216,13 @@ class AppRouter {
             }
             return null;
           },
-          builder: (_, state) => SharePreviewScreen(
-            userId: state.pathParameters['id']!,
-          ),
+          builder: (_, state) =>
+              SharePreviewScreen(userId: state.pathParameters['id']!),
         ),
         // The live call, whichever direction. CallManager owns it; this only
         // shows it. Older pushes link to /call/<conversation>.
-        GoRoute(
-          path: '/call',
-          builder: (_, __) => const CallScreen(),
-        ),
-        GoRoute(
-          path: '/call/:conversationId',
-          redirect: (_, __) => '/call',
-        ),
+        GoRoute(path: '/call', builder: (_, __) => const CallScreen()),
+        GoRoute(path: '/call/:conversationId', redirect: (_, __) => '/call'),
         GoRoute(
           path: '/notifications',
           builder: (_, __) => const NotificationsScreen(),
@@ -235,10 +230,7 @@ class AppRouter {
         // Support. /support/new is declared before /support/:id so the literal
         // wins — otherwise "new" is matched as a ticket id and the member gets
         // a not-found instead of the compose screen.
-        GoRoute(
-          path: '/support',
-          builder: (_, __) => const SupportScreen(),
-        ),
+        GoRoute(path: '/support', builder: (_, __) => const SupportScreen()),
         GoRoute(
           path: '/support/new',
           builder: (_, state) => NewTicketScreen(
@@ -247,7 +239,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/support/:id',
-          builder: (_, state) => TicketScreen(ticketId: state.pathParameters['id']!),
+          builder: (_, state) =>
+              TicketScreen(ticketId: state.pathParameters['id']!),
         ),
       ],
     );

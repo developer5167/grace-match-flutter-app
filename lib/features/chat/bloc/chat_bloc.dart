@@ -40,33 +40,42 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     });
 
     _deliveredSubscription = _socketService.deliveredStream.listen((data) {
-      add(MessageDeliveredEvent(
-        messageId: data['message_id']?.toString() ?? '',
-        conversationId: data['conversation_id']?.toString() ?? '',
-      ));
+      add(
+        MessageDeliveredEvent(
+          messageId: data['message_id']?.toString() ?? '',
+          conversationId: data['conversation_id']?.toString() ?? '',
+        ),
+      );
     });
 
     _readSubscription = _socketService.readReceiptStream.listen((data) {
       final ids = List<String>.from(
         (data['message_ids'] as List? ?? []).map((e) => e.toString()),
       );
-      add(MessagesReadEvent(
-        messageIds: ids,
-        conversationId: data['conversation_id']?.toString() ?? '',
-      ));
+      add(
+        MessagesReadEvent(
+          messageIds: ids,
+          conversationId: data['conversation_id']?.toString() ?? '',
+        ),
+      );
     });
   }
 
   // ── Set which conversation is currently open ──────────────────
   void _onSetCurrentConversation(
-      SetCurrentConversationEvent event, Emitter<ChatState> emit) {
-    _currentConversationId =
-        event.conversationId.isEmpty ? null : event.conversationId;
+    SetCurrentConversationEvent event,
+    Emitter<ChatState> emit,
+  ) {
+    _currentConversationId = event.conversationId.isEmpty
+        ? null
+        : event.conversationId;
   }
 
   // ── Conversations list ────────────────────────────────────────
   Future<void> _onFetchConversations(
-      FetchConversationsEvent event, Emitter<ChatState> emit) async {
+    FetchConversationsEvent event,
+    Emitter<ChatState> emit,
+  ) async {
     emit(ChatLoading());
     try {
       final conversations = await _repository.fetchConversations();
@@ -79,7 +88,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   // ── Initial messages load ─────────────────────────────────────
   Future<void> _onFetchMessages(
-      FetchMessagesEvent event, Emitter<ChatState> emit) async {
+    FetchMessagesEvent event,
+    Emitter<ChatState> emit,
+  ) async {
     emit(ChatLoading());
     try {
       final messages = await _repository.fetchMessages(event.conversationId);
@@ -93,8 +104,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           '_status': isRead
               ? 'read'
               : isDelivered
-                  ? 'delivered'
-                  : 'sent',
+              ? 'delivered'
+              : 'sent',
         };
       }).toList();
       emit(MessagesLoaded(tagged));
@@ -108,11 +119,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   // ── Send message (optimistic) ─────────────────────────────────
   Future<void> _onSendMessage(
-      SendMessageEvent event, Emitter<ChatState> emit) async {
+    SendMessageEvent event,
+    Emitter<ChatState> emit,
+  ) async {
     if (state is! MessagesLoaded) return;
 
-    final currentMessages =
-        List<Map<String, dynamic>>.from((state as MessagesLoaded).messages);
+    final currentMessages = List<Map<String, dynamic>>.from(
+      (state as MessagesLoaded).messages,
+    );
 
     // 1. Optimistically add the message with a temp ID
     final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
@@ -130,12 +144,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     try {
       // 2. Persist to backend
-      final sentMsg = await _repository.sendMessage(event.conversationId, event.text);
+      final sentMsg = await _repository.sendMessage(
+        event.conversationId,
+        event.text,
+      );
       final realId = sentMsg['id']?.toString() ?? '';
       if (realId.isNotEmpty) _sentMessageIds.add(realId);
 
       // Check if a delivered receipt arrived while HTTP was in-flight
-      final wasDelivered = realId.isNotEmpty && _pendingDelivered.remove(realId);
+      final wasDelivered =
+          realId.isNotEmpty && _pendingDelivered.remove(realId);
 
       // 3. Replace optimistic entry with confirmed message from server
       if (state is! MessagesLoaded) return;
@@ -156,7 +174,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           'content': sentMsg['content'] ?? event.text,
           'message_type': sentMsg['message_type'] ?? 'text',
           'sender_id': sentMsg['sender_id'] ?? event.myUserId,
-          'created_at': sentMsg['created_at'] ?? DateTime.now().toUtc().toIso8601String(),
+          'created_at':
+              sentMsg['created_at'] ?? DateTime.now().toUtc().toIso8601String(),
           'is_read': false,
         },
         incrementUnread: false,
@@ -176,18 +195,22 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   // ── Incoming socket message ───────────────────────────────────
   void _onNewMessageReceived(
-      NewMessageReceivedEvent event, Emitter<ChatState> emit) {
+    NewMessageReceivedEvent event,
+    Emitter<ChatState> emit,
+  ) {
     final msg = event.message;
     final msgConvId = msg['conversation_id']?.toString();
     final msgId = msg['id']?.toString();
 
     if (state is MessagesLoaded && msgConvId == _currentConversationId) {
-      final currentMessages =
-          List<Map<String, dynamic>>.from((state as MessagesLoaded).messages);
+      final currentMessages = List<Map<String, dynamic>>.from(
+        (state as MessagesLoaded).messages,
+      );
 
       // Skip if already in list (prevents duplicates)
       if (msgId != null &&
-          currentMessages.any((m) => m['id']?.toString() == msgId)) return;
+          currentMessages.any((m) => m['id']?.toString() == msgId))
+        return;
 
       // Skip own messages echoed back from socket (handled optimistically)
       if (msgId != null && _sentMessageIds.contains(msgId)) {
@@ -196,10 +219,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
 
       // Add incoming message — receiver sees it as delivered immediately
-      emit(MessagesLoaded([
-        <String, dynamic>{...msg, '_status': 'delivered'},
-        ...currentMessages,
-      ]));
+      emit(
+        MessagesLoaded([
+          <String, dynamic>{...msg, '_status': 'delivered'},
+          ...currentMessages,
+        ]),
+      );
 
       // User is viewing this chat → mark as read silently so sender gets gold ticks
       if (msgConvId != null) {
@@ -257,13 +282,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     _conversationCache = convs;
 
     if (state is ConversationsLoaded) {
-      emit(ConversationsLoaded(List<Map<String, dynamic>>.from(_conversationCache)));
+      emit(
+        ConversationsLoaded(
+          List<Map<String, dynamic>>.from(_conversationCache),
+        ),
+      );
     }
   }
 
   // ── Delivered receipt (receiver was online when we sent) ──────
   void _onMessageDelivered(
-      MessageDeliveredEvent event, Emitter<ChatState> emit) {
+    MessageDeliveredEvent event,
+    Emitter<ChatState> emit,
+  ) {
     if (event.messageId.isEmpty) return;
     if (event.conversationId != _currentConversationId) return;
     if (state is! MessagesLoaded) {

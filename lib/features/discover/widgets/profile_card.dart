@@ -125,176 +125,200 @@ class _ProfileCardState extends State<ProfileCard>
 
     return Transform.scale(
       scale: widget.scale,
-      child: GestureDetector(
-        onPanStart: widget.onSwipeLeft != null ? _onPanStart : null,
-        onPanUpdate: widget.onSwipeLeft != null ? _onPanUpdate : null,
-        onPanEnd: widget.onSwipeLeft != null ? _onPanEnd : null,
-        onTap: () {
-          final id = widget.profile['id'] ?? widget.profile['user_id'];
-          if (id != null) {
-            AppHaptics.light();
-            context.push('/profile/$id');
-          } else {
-            debugPrint('Error: Profile ID is null for ${widget.profile['name']}');
-          }
-        },
-        child: AnimatedContainer(
-          duration: _isDragging
-              ? Duration.zero
-              : const Duration(milliseconds: 300),
-          transform: Matrix4.translationValues(_dragOffset.dx, _dragOffset.dy * 0.3, 0)
-            ..rotateZ(_rotation * 0.3),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Stack(
-              children: [
-                // ── Background Photo ─────────────────────────
-                _buildPhoto(),
-
-                // ── Photo Navigation Taps ────────────────────
-                // Only covers the upper 70% to allow tapping the bottom info area to open profile
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 120,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _prevPhoto,
-                          behavior: HitTestBehavior.translucent,
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _nextPhoto,
-                          behavior: HitTestBehavior.translucent,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Photo Indicator ──────────────────────────
-                _buildPhotoIndicator(),
-
-                // ── Gradient Overlay ─────────────────────────
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.profileCardGradient,
-                  ),
-                ),
-
-                // ── LIKE/PASS Overlay indicators ─────────────
-                Positioned(
-                  top: 40,
-                  left: 24,
-                  child: Opacity(
-                    opacity: likeOpacity,
-                    child: Transform.rotate(
-                      angle: -0.3,
-                      child: _stampBadge('INTEREST', AppColors.blessing),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 24,
-                  child: Opacity(
-                    opacity: passOpacity,
-                    child: Transform.rotate(
-                      angle: 0.3,
-                      child: _stampBadge('PASS', AppColors.error),
-                    ),
-                  ),
-                ),
-
-                // ── Profile Info ─────────────────────────────
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+      child:
+          GestureDetector(
+                onPanStart: widget.onSwipeLeft != null ? _onPanStart : null,
+                onPanUpdate: widget.onSwipeLeft != null ? _onPanUpdate : null,
+                onPanEnd: widget.onSwipeLeft != null ? _onPanEnd : null,
+                onTap: () {
+                  final id = widget.profile['id'] ?? widget.profile['user_id'];
+                  if (id != null) {
+                    AppHaptics.light();
+                    context.push('/profile/$id');
+                  } else {
+                    debugPrint(
+                      'Error: Profile ID is null for ${widget.profile['name']}',
+                    );
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: _isDragging
+                      ? Duration.zero
+                      : const Duration(milliseconds: 300),
+                  transform: Matrix4.translationValues(
+                    _dragOffset.dx,
+                    _dragOffset.dy * 0.3,
+                    0,
+                  )..rotateZ(_rotation * 0.3),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: Stack(
                       children: [
-                        // Name + Age + Trust badge
-                        Row(
-                          children: [
-                            Text(
-                              '${widget.profile['name']}, ${widget.profile['age']}',
-                              style: AppTextStyles.profileName,
-                            ),
-                            if (widget.profile['trust_badge'] == true) ...[
-                              const SizedBox(width: 8),
-                              _trustBadge(),
+                        // ── Background Photo ─────────────────────────
+                        _buildPhoto(),
+
+                        // ── Photo Navigation Taps ────────────────────
+                        // Only covers the upper 70% to allow tapping the bottom info area to open profile
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 120,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: _prevPhoto,
+                                  behavior: HitTestBehavior.translucent,
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: _nextPhoto,
+                                  behavior: HitTestBehavior.translucent,
+                                ),
+                              ),
                             ],
-                          ],
+                          ),
                         ),
-                        if (widget.profile['is_photo_verified'] == true) ...[
-                          const SizedBox(height: 4),
-                          const PhotoVerifiedLabel(),
-                        ],
-                        const SizedBox(height: 6),
 
-                        // Denomination + City
-                        Row(
-                          children: [
-                            Icon(Icons.church_rounded,
-                                size: 14, color: AppColors.gold),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.profile['denomination'] ?? '',
-                              style: AppTextStyles.profileMeta
-                                  .copyWith(color: AppColors.gold),
-                            ),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.location_on_rounded,
-                                size: 14,
-                                color: AppColors.textTertiary),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.profile['city'] ?? '',
-                              style: AppTextStyles.profileMeta,
-                            ),
-                          ],
+                        // ── Photo Indicator ──────────────────────────
+                        _buildPhotoIndicator(),
+
+                        // ── Gradient Overlay ─────────────────────────
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: AppColors.profileCardGradient,
+                          ),
                         ),
-                        const SizedBox(height: 6),
 
-                        // Profession
-                        Row(
-                          children: [
-                            const Icon(Icons.work_rounded,
-                                size: 14, color: AppColors.textTertiary),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.profile['profession'] ?? '',
-                              style: AppTextStyles.profileMeta,
+                        // ── LIKE/PASS Overlay indicators ─────────────
+                        Positioned(
+                          top: 40,
+                          left: 24,
+                          child: Opacity(
+                            opacity: likeOpacity,
+                            child: Transform.rotate(
+                              angle: -0.3,
+                              child: _stampBadge(
+                                'INTEREST',
+                                AppColors.blessing,
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        Positioned(
+                          top: 40,
+                          right: 24,
+                          child: Opacity(
+                            opacity: passOpacity,
+                            child: Transform.rotate(
+                              angle: 0.3,
+                              child: _stampBadge('PASS', AppColors.error),
+                            ),
+                          ),
+                        ),
 
-                        // Compatibility score
-                        _compatibilityBar(
-                            widget.profile['compatibility'] as int? ?? 0),
+                        // ── Profile Info ─────────────────────────────
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Name + Age + Trust badge
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${widget.profile['name']}, ${widget.profile['age']}',
+                                      style: AppTextStyles.profileName,
+                                    ),
+                                    if (widget.profile['trust_badge'] ==
+                                        true) ...[
+                                      const SizedBox(width: 8),
+                                      _trustBadge(),
+                                    ],
+                                  ],
+                                ),
+                                if (widget.profile['is_photo_verified'] ==
+                                    true) ...[
+                                  const SizedBox(height: 4),
+                                  const PhotoVerifiedLabel(),
+                                ],
+                                const SizedBox(height: 6),
+
+                                // Denomination + City
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.church_rounded,
+                                      size: 14,
+                                      color: AppColors.gold,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      widget.profile['denomination'] ?? '',
+                                      style: AppTextStyles.profileMeta.copyWith(
+                                        color: AppColors.gold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Icon(
+                                      Icons.location_on_rounded,
+                                      size: 14,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      widget.profile['city'] ?? '',
+                                      style: AppTextStyles.profileMeta,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+
+                                // Profession
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.work_rounded,
+                                      size: 14,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      widget.profile['profession'] ?? '',
+                                      style: AppTextStyles.profileMeta,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Compatibility score
+                                _compatibilityBar(
+                                  widget.profile['compatibility'] as int? ?? 0,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ).animate().scale(
-        begin: const Offset(0.92, 0.92),
-        end: const Offset(1.0, 1.0),
-        duration: 400.ms,
-        curve: Curves.easeOutCubic,
-      ).fadeIn(duration: 300.ms),
+              )
+              .animate()
+              .scale(
+                begin: const Offset(0.92, 0.92),
+                end: const Offset(1.0, 1.0),
+                duration: 400.ms,
+                curve: Curves.easeOutCubic,
+              )
+              .fadeIn(duration: 300.ms),
     );
   }
 
@@ -383,7 +407,9 @@ class _ProfileCardState extends State<ProfileCard>
                 const SizedBox(height: 12),
                 Text(
                   'Photos hidden until you connect',
-                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
               ],
             ],
@@ -417,7 +443,10 @@ class _ProfileCardState extends State<ProfileCard>
           ),
           errorWidget: (context, url, error) => Container(
             color: AppColors.surfaceElevated,
-            child: const Icon(Icons.broken_image_rounded, color: AppColors.textTertiary),
+            child: const Icon(
+              Icons.broken_image_rounded,
+              color: AppColors.textTertiary,
+            ),
           ),
           fadeInDuration: const Duration(milliseconds: 300),
         );
@@ -439,7 +468,8 @@ class _ProfileCardState extends State<ProfileCard>
 
       if (photo is Map) {
         final photoMap = photo.cast<dynamic, dynamic>();
-        final url = photoMap['url']?.toString() ??
+        final url =
+            photoMap['url']?.toString() ??
             photoMap['photo_url']?.toString() ??
             photoMap['image_url']?.toString() ??
             photoMap['secure_url']?.toString() ??
@@ -462,12 +492,16 @@ class _ProfileCardState extends State<ProfileCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.verified_rounded,
-              color: AppColors.blessing, size: 12),
+          const Icon(
+            Icons.verified_rounded,
+            color: AppColors.blessing,
+            size: 12,
+          ),
           const SizedBox(width: 3),
-          Text('Verified',
-              style: AppTextStyles.labelSmall
-                  .copyWith(color: AppColors.blessing)),
+          Text(
+            'Verified',
+            style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing),
+          ),
         ],
       ),
     );
@@ -483,7 +517,9 @@ class _ProfileCardState extends State<ProfileCard>
       child: Text(
         label,
         style: AppTextStyles.headlineSmall.copyWith(
-            color: color, fontWeight: FontWeight.w900),
+          color: color,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }
@@ -494,13 +530,20 @@ class _ProfileCardState extends State<ProfileCard>
       children: [
         Row(
           children: [
-            Text('Match Score',
-                style: AppTextStyles.labelSmall
-                    .copyWith(color: AppColors.textTertiary)),
+            Text(
+              'Match Score',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
             const Spacer(),
-            Text('$score%',
-                style: AppTextStyles.labelSmall
-                    .copyWith(color: AppColors.gold, fontWeight: FontWeight.w700)),
+            Text(
+              '$score%',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.gold,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -528,10 +571,16 @@ class PhotoVerifiedLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.face_retouching_natural_rounded, color: AppColors.blessing, size: 13),
+        const Icon(
+          Icons.face_retouching_natural_rounded,
+          color: AppColors.blessing,
+          size: 13,
+        ),
         const SizedBox(width: 4),
-        Text('Photo verified',
-            style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing)),
+        Text(
+          'Photo verified',
+          style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing),
+        ),
       ],
     );
   }

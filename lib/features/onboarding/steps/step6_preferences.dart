@@ -52,7 +52,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
 
   void _loadData([Map<String, dynamic>? data]) {
     if (_hasLoaded && data == null) return;
-    
+
     final parent = context.findAncestorStateOfType<OnboardingScreenState>();
     final prefs = (data ?? parent?.onboardingData)?['partner_preferences'];
     if (prefs != null && mounted) {
@@ -85,7 +85,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
         if (prefs['preferred_denominations'] != null) {
           dynamic denoms = prefs['preferred_denominations'];
           List<dynamic> denomList = [];
-          
+
           if (denoms is List) {
             denomList = denoms;
           } else if (denoms is String && denoms.isNotEmpty) {
@@ -105,7 +105,8 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
               orElse: () => 'Any',
             );
             _selectedDenom = key;
-            _denominationFlexible = (key == 'Any' || (prefs['denomination_flexible'] ?? false));
+            _denominationFlexible =
+                (key == 'Any' || (prefs['denomination_flexible'] ?? false));
           } else {
             _selectedDenom = 'Any';
             _denominationFlexible = true;
@@ -121,9 +122,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
   @override
   Map<String, dynamic>? getStepData() {
     final bool isAny = _selectedDenom == 'Any';
-    final apiDenoms = isAny
-        ? <String>[]
-        : [_denomMap[_selectedDenom]!];
+    final apiDenoms = isAny ? <String>[] : [_denomMap[_selectedDenom]!];
 
     return {
       'age_min': _ageRange.start.round(),
@@ -157,106 +156,131 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
         }
       },
       child: SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _fieldLabel('Age Range (Years)'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${_ageRange.start.round()}',
-                  style: AppTextStyles.labelLarge),
-              Text('${_ageRange.end.round()}', style: AppTextStyles.labelLarge),
-            ],
-          ),
-          RangeSlider(
-            values: _ageRange,
-            min: 18,
-            max: 60,
-            activeColor: AppColors.gold,
-            inactiveColor: AppColors.surfaceHighest,
-            onChanged: (values) => setState(() => _ageRange = values),
-          ),
-          const SizedBox(height: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _fieldLabel('Age Range (Years)'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_ageRange.start.round()}',
+                  style: AppTextStyles.labelLarge,
+                ),
+                Text(
+                  '${_ageRange.end.round()}',
+                  style: AppTextStyles.labelLarge,
+                ),
+              ],
+            ),
+            RangeSlider(
+              values: _ageRange,
+              min: 18,
+              max: 60,
+              activeColor: AppColors.gold,
+              inactiveColor: AppColors.surfaceHighest,
+              onChanged: (values) => setState(() => _ageRange = values),
+            ),
+            const SizedBox(height: 24),
 
-          _fieldLabel('Height Range (cm)'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${_heightRange.start.round()}',
-                  style: AppTextStyles.labelLarge),
-              Text('${_heightRange.end.round()}',
-                  style: AppTextStyles.labelLarge),
-            ],
-          ),
-          RangeSlider(
-            values: _heightRange,
-            min: 140,
-            max: 220,
-            activeColor: AppColors.gold,
-            inactiveColor: AppColors.surfaceHighest,
-            onChanged: (values) => setState(() => _heightRange = values),
-          ),
-          const SizedBox(height: 24),
+            _fieldLabel('Height Range (cm)'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_heightRange.start.round()}',
+                  style: AppTextStyles.labelLarge,
+                ),
+                Text(
+                  '${_heightRange.end.round()}',
+                  style: AppTextStyles.labelLarge,
+                ),
+              ],
+            ),
+            RangeSlider(
+              values: _heightRange,
+              min: 140,
+              max: 220,
+              activeColor: AppColors.gold,
+              inactiveColor: AppColors.surfaceHighest,
+              onChanged: (values) => setState(() => _heightRange = values),
+            ),
+            const SizedBox(height: 24),
 
-          _fieldLabel('Preferred Denominations'),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _denomMap.keys
-                .map((d) => _multiSelectChip(
-                    d, _selectedDenom == d,
-                    () => _toggleDenomination(d)))
-                .toList(),
-          ),
-          const SizedBox(height: 16),
-          // Flexibility checkbox removed as per single-select requirement
-          const SizedBox(height: 24),
+            _fieldLabel('Preferred Denominations'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _denomMap.keys
+                  .map(
+                    (d) => _multiSelectChip(
+                      d,
+                      _selectedDenom == d,
+                      () => _toggleDenomination(d),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 16),
+            // Flexibility checkbox removed as per single-select requirement
+            const SizedBox(height: 24),
 
-          _fieldLabel('Profession Preference'),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _professionOptions.keys
-                .map((p) => _selectChip(
-                    p, _professionPreference,
-                    (v) => setState(() => _professionPreference = v)))
-                .toList(),
-          ),
-          const SizedBox(height: 24),
+            _fieldLabel('Profession Preference'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _professionOptions.keys
+                  .map(
+                    (p) => _selectChip(
+                      p,
+                      _professionPreference,
+                      (v) => setState(() => _professionPreference = v),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 24),
 
-          _fieldLabel('Annual Salary Range (Lakhs)'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${_salaryRange.start.round()}L',
-                  style: AppTextStyles.labelLarge),
-              Text('${_salaryRange.end.round()}L+',
-                  style: AppTextStyles.labelLarge),
-            ],
-          ),
-          RangeSlider(
-            values: _salaryRange,
-            min: 0,
-            max: 100,
-            activeColor: AppColors.gold,
-            inactiveColor: AppColors.surfaceHighest,
-            onChanged: (values) => setState(() => _salaryRange = values),
-          ),
-          const SizedBox(height: 40),
-        ],
+            _fieldLabel('Annual Salary Range (Lakhs)'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_salaryRange.start.round()}L',
+                  style: AppTextStyles.labelLarge,
+                ),
+                Text(
+                  '${_salaryRange.end.round()}L+',
+                  style: AppTextStyles.labelLarge,
+                ),
+              ],
+            ),
+            RangeSlider(
+              values: _salaryRange,
+              min: 0,
+              max: 100,
+              activeColor: AppColors.gold,
+              inactiveColor: AppColors.surfaceHighest,
+              onChanged: (values) => setState(() => _salaryRange = values),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
-    ),
     );
   }
 
   Widget _fieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(label, style: AppTextStyles.labelMedium),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(label, style: AppTextStyles.labelMedium),
+  );
 
-  Widget _selectChip(String label, String? selected, ValueChanged<String> onTap) {
+  Widget _selectChip(
+    String label,
+    String? selected,
+    ValueChanged<String> onTap,
+  ) {
     final isSelected = selected == label;
     return GestureDetector(
       onTap: () => onTap(label),
@@ -271,9 +295,12 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
@@ -292,9 +319,12 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

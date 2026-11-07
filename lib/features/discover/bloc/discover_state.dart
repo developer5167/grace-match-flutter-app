@@ -44,7 +44,13 @@ class DiscoverLoaded extends DiscoverState {
   }
 
   @override
-  List<Object?> get props => [profiles, hasReachedMax, activeFilters, dailyMatches, limitReached];
+  List<Object?> get props => [
+    profiles,
+    hasReachedMax,
+    activeFilters,
+    dailyMatches,
+    limitReached,
+  ];
 }
 
 class DiscoverError extends DiscoverState {

@@ -62,7 +62,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     // Whatever brought them here, the notifications about this chat are read.
     PushCenter.clearChat(widget.conversationId);
     di.sl<SocketService>().setViewingChat(widget.conversationId);
-    _typingSubscription = di.sl<SocketService>().typingStream.listen(_onPeerTyping);
+    _typingSubscription = di.sl<SocketService>().typingStream.listen(
+      _onPeerTyping,
+    );
     _loadMyUserId();
     _loadCallOptions();
     // A chat left open in the background may have lost its socket; calling
@@ -75,7 +77,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     // Fetch initial status then keep updated via socket
     _fetchStatus();
-    _statusSubscription = di.sl<SocketService>().userStatusStream.listen((data) {
+    _statusSubscription = di.sl<SocketService>().userStatusStream.listen((
+      data,
+    ) {
       if (data['user_id']?.toString() == widget.otherUserId) {
         if (mounted) {
           setState(() {
@@ -96,7 +100,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Future<void> _fetchStatus() async {
     if (widget.otherUserId == null) return;
-    final data = await di.sl<ChatRepository>().fetchUserStatus(widget.otherUserId!);
+    final data = await di.sl<ChatRepository>().fetchUserStatus(
+      widget.otherUserId!,
+    );
     if (mounted) {
       setState(() {
         _isOnline = data['is_online'] == true;
@@ -138,7 +144,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       return;
     }
     final last = _typingSentAt;
-    if (!_iAmTyping || last == null || DateTime.now().difference(last) > const Duration(seconds: 3)) {
+    if (!_iAmTyping ||
+        last == null ||
+        DateTime.now().difference(last) > const Duration(seconds: 3)) {
       socket.sendTyping(widget.conversationId, typing: true);
       _typingSentAt = DateTime.now();
       _iAmTyping = true;
@@ -173,11 +181,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void _sendMessage() {
     final text = _msgCtrl.text.trim();
     if (text.isEmpty) return;
-    context.read<ChatBloc>().add(SendMessageEvent(
-          conversationId: widget.conversationId,
-          text: text,
-          myUserId: _myUserId,
-        ));
+    context.read<ChatBloc>().add(
+      SendMessageEvent(
+        conversationId: widget.conversationId,
+        text: text,
+        myUserId: _myUserId,
+      ),
+    );
     _msgCtrl.clear();
     _stopTyping();
     _scrollToNewest();
@@ -236,20 +246,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Widget _buildStatusIcon(String status) {
     switch (status) {
       case 'sending':
-        return const Icon(Icons.access_time_rounded,
-            size: 12, color: AppColors.textTertiary);
+        return const Icon(
+          Icons.access_time_rounded,
+          size: 12,
+          color: AppColors.textTertiary,
+        );
       case 'sent':
-        return const Icon(Icons.check_rounded,
-            size: 14, color: AppColors.textSecondary);
+        return const Icon(
+          Icons.check_rounded,
+          size: 14,
+          color: AppColors.textSecondary,
+        );
       case 'delivered':
-        return const Icon(Icons.done_all_rounded,
-            size: 14, color: AppColors.textSecondary);
+        return const Icon(
+          Icons.done_all_rounded,
+          size: 14,
+          color: AppColors.textSecondary,
+        );
       case 'read':
-        return Icon(Icons.done_all_rounded,
-            size: 14, color: AppColors.gold);
+        return Icon(Icons.done_all_rounded, size: 14, color: AppColors.gold);
       case 'failed':
-        return const Icon(Icons.error_outline_rounded,
-            size: 14, color: AppColors.error);
+        return const Icon(
+          Icons.error_outline_rounded,
+          size: 14,
+          color: AppColors.error,
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -315,58 +336,65 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.surfaceHighest,
-                  image: widget.otherUserPhoto != null &&
+                  image:
+                      widget.otherUserPhoto != null &&
                           widget.otherUserPhoto!.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(widget.otherUserPhoto!),
+                          image: CachedNetworkImageProvider(
+                            widget.otherUserPhoto!,
+                          ),
                           fit: BoxFit.cover,
                         )
                       : null,
                 ),
-                child: widget.otherUserPhoto == null ||
+                child:
+                    widget.otherUserPhoto == null ||
                         widget.otherUserPhoto!.isEmpty
-                    ? const Icon(Icons.person,
-                        color: AppColors.textTertiary, size: 20)
+                    ? const Icon(
+                        Icons.person,
+                        color: AppColors.textTertiary,
+                        size: 20,
+                      )
                     : null,
               ),
               const SizedBox(width: 12),
-          Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.otherUserName,
-                        style: AppTextStyles.labelLarge,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _isOnline
-                                  ? const Color(0xFF4CAF50)
-                                  : AppColors.textTertiary,
-                            ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.otherUserName,
+                      style: AppTextStyles.labelLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _isOnline
+                                ? const Color(0xFF4CAF50)
+                                : AppColors.textTertiary,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatLastSeen(),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: _isOnline
-                                  ? const Color(0xFF4CAF50)
-                                  : AppColors.textTertiary,
-                            ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatLastSeen(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: _isOnline
+                                ? const Color(0xFF4CAF50)
+                                : AppColors.textTertiary,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
@@ -408,7 +436,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
     if (failure != null) {
       messenger.showSnackBar(
-        SnackBar(content: Text(failure), backgroundColor: AppColors.surfaceHighest),
+        SnackBar(
+          content: Text(failure),
+          backgroundColor: AppColors.surfaceHighest,
+        ),
       );
     }
   }
@@ -436,7 +467,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           children: [
             const SizedBox(height: 8),
             Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: AppColors.surfaceHighest,
                 borderRadius: BorderRadius.circular(100),
@@ -447,12 +479,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             // journeys, and someone being harassed right now is the least
             // likely person to go and find the second one.
             ListTile(
-              leading: const Icon(Icons.flag_rounded, color: AppColors.error, size: 20),
-              title: Text('Report and stop contact',
-                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.error)),
+              leading: const Icon(
+                Icons.flag_rounded,
+                color: AppColors.error,
+                size: 20,
+              ),
+              title: Text(
+                'Report and stop contact',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
               subtitle: Text(
                 'They will not be able to message or call you again.',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
               onTap: () {
                 Navigator.of(sheet).pop();
@@ -478,8 +520,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: AppColors.surfaceElevated,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          title: Text('Report ${widget.otherUserName}?', style: AppTextStyles.labelLarge),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            'Report ${widget.otherUserName}?',
+            style: AppTextStyles.labelLarge,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,7 +534,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               Text(
                 'Our team will review this. They will not be told who reported '
                 'them, and they will not be able to reach you again.',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -496,11 +545,26 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 style: AppTextStyles.bodyMedium,
                 decoration: const InputDecoration(isDense: true),
                 items: const [
-                  DropdownMenuItem(value: 'harassment', child: Text('Harassment or abuse')),
-                  DropdownMenuItem(value: 'fake_profile', child: Text('Fake profile')),
-                  DropdownMenuItem(value: 'inappropriate', child: Text('Inappropriate content')),
-                  DropdownMenuItem(value: 'money_request', child: Text('Asked me for money')),
-                  DropdownMenuItem(value: 'other', child: Text('Something else')),
+                  DropdownMenuItem(
+                    value: 'harassment',
+                    child: Text('Harassment or abuse'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'fake_profile',
+                    child: Text('Fake profile'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'inappropriate',
+                    child: Text('Inappropriate content'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'money_request',
+                    child: Text('Asked me for money'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'other',
+                    child: Text('Something else'),
+                  ),
                 ],
                 onChanged: (v) => setLocal(() => reason = v ?? reason),
               ),
@@ -512,7 +576,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 style: AppTextStyles.bodySmall,
                 decoration: InputDecoration(
                   hintText: 'What happened? (optional)',
-                  hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
               ),
             ],
@@ -520,13 +586,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text('Cancel',
-                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text('Report and block',
-                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+              child: Text(
+                'Report and block',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
             ),
           ],
         ),
@@ -538,33 +612,39 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     try {
-      await DioClient.instance.post(ApiEndpoints.reportAndExit, data: {
-        'reported_user_id': otherId,
-        'reason': reason,
-        if (details.text.trim().isNotEmpty) 'details': details.text.trim(),
-      });
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Reported. You will not hear from them again.'),
-        backgroundColor: AppColors.surfaceHighest,
-      ));
+      await DioClient.instance.post(
+        ApiEndpoints.reportAndExit,
+        data: {
+          'reported_user_id': otherId,
+          'reason': reason,
+          if (details.text.trim().isNotEmpty) 'details': details.text.trim(),
+        },
+      );
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Reported. You will not hear from them again.'),
+          backgroundColor: AppColors.surfaceHighest,
+        ),
+      );
       router.go('/chat');
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Could not send the report. Please try again.'),
-        backgroundColor: AppColors.error,
-      ));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Could not send the report. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   Widget _buildBody(ChatState state) {
     if (state is ChatLoading) {
-      return Center(
-          child: CircularProgressIndicator(color: AppColors.gold));
+      return Center(child: CircularProgressIndicator(color: AppColors.gold));
     }
     if (state is ChatError) {
       return Center(
-          child:
-              Text(state.message, style: const TextStyle(color: Colors.white)));
+        child: Text(state.message, style: const TextStyle(color: Colors.white)),
+      );
     }
     if (state is MessagesLoaded) {
       return _buildMessageList(state.messages);
@@ -594,7 +674,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         // Group header: show date separator if this message is on a different
         // day than the next one (index + 1 is older since list is reversed).
         final showDate =
-            index == messages.length - 1 || _isDifferentDay(msg, messages[index + 1]);
+            index == messages.length - 1 ||
+            _isDifferentDay(msg, messages[index + 1]);
         return Column(
           children: [
             if (showDate) _buildDateSeparator(msg['created_at']),
@@ -639,8 +720,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               label,
-              style: AppTextStyles.labelSmall
-                  .copyWith(color: AppColors.textTertiary),
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
             ),
           ),
           const Expanded(child: Divider(color: AppColors.surfaceHighest)),
@@ -651,8 +733,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   String _monthName(int m) {
     const names = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return names[m - 1];
   }
@@ -665,8 +757,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) const SizedBox(width: 4),
@@ -680,7 +773,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
                 decoration: BoxDecoration(
                   // Sent: goldSubtle — matches the Message button in the Matches tab
-                  color: isMe ? AppColors.goldSubtle : AppColors.surfaceElevated,
+                  color: isMe
+                      ? AppColors.goldSubtle
+                      : AppColors.surfaceElevated,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(18),
                     topRight: const Radius.circular(18),
@@ -752,8 +847,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.add_photo_alternate_rounded,
-                color: AppColors.gold),
+            icon: Icon(
+              Icons.add_photo_alternate_rounded,
+              color: AppColors.gold,
+            ),
             onPressed: () {},
           ),
           Expanded(
@@ -795,8 +892,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send_rounded,
-                  color: AppColors.textOnGold, size: 20),
+              icon: const Icon(
+                Icons.send_rounded,
+                color: AppColors.textOnGold,
+                size: 20,
+              ),
               onPressed: _sendMessage,
             ),
           ),

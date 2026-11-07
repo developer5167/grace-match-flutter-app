@@ -19,13 +19,18 @@ class InterestsScreen extends StatefulWidget {
   State<InterestsScreen> createState() => _InterestsScreenState();
 }
 
-class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProviderStateMixin {
+class _InterestsScreenState extends State<InterestsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: _indexFor(widget.tab));
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: _indexFor(widget.tab),
+    );
     PushCenter.clear(const ['interests']);
     context.read<InterestsBloc>().add(FetchInterestsEvent());
   }
@@ -87,47 +92,69 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
               ],
             ),
           ),
-          body: state is InterestsLoading 
-            ? Center(child: CircularProgressIndicator(color: AppColors.gold))
-            : state is InterestsError
-            ? Center(child: Text(state.message, style: const TextStyle(color: Colors.white)))
-            : state is InterestsLoaded
-            ? TabBarView(
-                controller: _tabController,
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<InterestsBloc>().add(FetchInterestsEvent());
-                    },
-                    color: AppColors.gold,
-                    child: _buildInterestList(state.received, isReceived: true),
+          body: state is InterestsLoading
+              ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+              : state is InterestsError
+              ? Center(
+                  child: Text(
+                    state.message,
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<InterestsBloc>().add(FetchInterestsEvent());
-                    },
-                    color: AppColors.gold,
-                    child: _buildInterestList(state.matches, isMatch: true),
-                  ),
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<InterestsBloc>().add(FetchInterestsEvent());
-                    },
-                    color: AppColors.gold,
-                    child: _buildInterestList(state.sent),
-                  ),
-                ],
-              )
-            : const SizedBox.shrink(),
+                )
+              : state is InterestsLoaded
+              ? TabBarView(
+                  controller: _tabController,
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<InterestsBloc>().add(
+                          FetchInterestsEvent(),
+                        );
+                      },
+                      color: AppColors.gold,
+                      child: _buildInterestList(
+                        state.received,
+                        isReceived: true,
+                      ),
+                    ),
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<InterestsBloc>().add(
+                          FetchInterestsEvent(),
+                        );
+                      },
+                      color: AppColors.gold,
+                      child: _buildInterestList(state.matches, isMatch: true),
+                    ),
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<InterestsBloc>().add(
+                          FetchInterestsEvent(),
+                        );
+                      },
+                      color: AppColors.gold,
+                      child: _buildInterestList(state.sent),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         );
       },
     );
   }
 
-  Widget _buildInterestList(List<Map<String, dynamic>> items, {bool isReceived = false, bool isMatch = false}) {
+  Widget _buildInterestList(
+    List<Map<String, dynamic>> items, {
+    bool isReceived = false,
+    bool isMatch = false,
+  }) {
     if (items.isEmpty) {
-      String title = isMatch ? 'No matches yet' : (isReceived ? 'No interests received' : 'No interests sent');
-      String desc = isMatch ? 'Keep exploring the discover feed.' : 'You haven\'t received any likes recently.';
+      String title = isMatch
+          ? 'No matches yet'
+          : (isReceived ? 'No interests received' : 'No interests sent');
+      String desc = isMatch
+          ? 'Keep exploring the discover feed.'
+          : 'You haven\'t received any likes recently.';
       return LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -176,15 +203,21 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
                         color: AppColors.surfaceHighest,
                         border: Border.all(color: AppColors.goldMild, width: 2),
                         image: profile['photo_url'] != null
-                          ? DecorationImage(
-                              image: CachedNetworkImageProvider(profile['photo_url']),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
+                            ? DecorationImage(
+                                image: CachedNetworkImageProvider(
+                                  profile['photo_url'],
+                                ),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
                       child: profile['photo_url'] == null
-                        ? const Icon(Icons.person, color: AppColors.textTertiary, size: 28)
-                        : null,
+                          ? const Icon(
+                              Icons.person,
+                              color: AppColors.textTertiary,
+                              size: 28,
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -192,7 +225,8 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${profile['name'] ?? 'Member'}, ${profile['age'] ?? ''}'.trim(),
+                            '${profile['name'] ?? 'Member'}, ${profile['age'] ?? ''}'
+                                .trim(),
                             style: AppTextStyles.labelLarge,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -216,10 +250,12 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            context.read<InterestsBloc>().add(InterestActionEvent(
-                              interestId: profile['interest_id'].toString(),
-                              accept: true,
-                            ));
+                            context.read<InterestsBloc>().add(
+                              InterestActionEvent(
+                                interestId: profile['interest_id'].toString(),
+                                accept: true,
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.gold,
@@ -236,14 +272,18 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            context.read<InterestsBloc>().add(InterestActionEvent(
-                              interestId: profile['interest_id'].toString(),
-                              accept: false,
-                            ));
+                            context.read<InterestsBloc>().add(
+                              InterestActionEvent(
+                                interestId: profile['interest_id'].toString(),
+                                accept: false,
+                              ),
+                            );
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.textSecondary,
-                            side: const BorderSide(color: AppColors.surfaceHighest),
+                            side: const BorderSide(
+                              color: AppColors.surfaceHighest,
+                            ),
                             minimumSize: const Size(0, 36),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -267,11 +307,14 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
                               profile['profile_id']?.toString() ??
                               profile['user_id']?.toString() ??
                               profile['id']?.toString();
-                          context.push('/chat/$convId', extra: {
-                            'name': profile['name'],
-                            'photo': profile['photo_url'],
-                            'userId': profileId,
-                          });
+                          context.push(
+                            '/chat/$convId',
+                            extra: {
+                              'name': profile['name'],
+                              'photo': profile['photo_url'],
+                              'userId': profileId,
+                            },
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -299,7 +342,11 @@ class _InterestsScreenState extends State<InterestsScreen> with SingleTickerProv
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.favorite_outline_rounded, size: 64, color: AppColors.surfaceHighest),
+          const Icon(
+            Icons.favorite_outline_rounded,
+            size: 64,
+            color: AppColors.surfaceHighest,
+          ),
           const SizedBox(height: 16),
           Text(title, style: AppTextStyles.headlineSmall),
           const SizedBox(height: 8),

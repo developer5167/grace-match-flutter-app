@@ -28,7 +28,10 @@ class ActivityRepository {
 
   Future<Map<String, dynamic>> fetchNotifications({int page = 1}) async {
     try {
-      final res = await _dio.get(ApiEndpoints.notifications, queryParameters: {'page': page});
+      final res = await _dio.get(
+        ApiEndpoints.notifications,
+        queryParameters: {'page': page},
+      );
       return Map<String, dynamic>.from(res.data['data'] ?? {});
     } on DioException catch (e) {
       throw _handleError(e);
@@ -53,7 +56,10 @@ class ActivityRepository {
 
   Future<Map<String, dynamic>> fetchViews({int page = 1}) async {
     try {
-      final res = await _dio.get(ApiEndpoints.activityViews, queryParameters: {'page': page});
+      final res = await _dio.get(
+        ApiEndpoints.activityViews,
+        queryParameters: {'page': page},
+      );
       return Map<String, dynamic>.from(res.data['data'] ?? {});
     } on DioException catch (e) {
       throw _handleError(e);
@@ -62,7 +68,10 @@ class ActivityRepository {
 
   Future<Map<String, dynamic>> fetchShortlists({int page = 1}) async {
     try {
-      final res = await _dio.get(ApiEndpoints.activityShortlists, queryParameters: {'page': page});
+      final res = await _dio.get(
+        ApiEndpoints.activityShortlists,
+        queryParameters: {'page': page},
+      );
       return Map<String, dynamic>.from(res.data['data'] ?? {});
     } on DioException catch (e) {
       throw _handleError(e);
@@ -98,7 +107,10 @@ class ActivityRepository {
       final res = await _dio.get(ApiEndpoints.contactRequestsIncoming);
       final data = res.data['data'];
       if (data is List) {
-        return data.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+        return data
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
       }
       return [];
     } on DioException catch (e) {

@@ -79,7 +79,9 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
             const SizedBox(height: 12),
             Text(
               'This profile is private, or the link has expired.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -93,7 +95,10 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
     final photo = p['primary_photo']?.toString();
     final location = p['location']?.toString();
     final profession = p['profession']?.toString();
-    final faith = [p['denomination'], p['church_name']].where((e) => e != null && e.toString().isNotEmpty).join(' · ');
+    final faith = [
+      p['denomination'],
+      p['church_name'],
+    ].where((e) => e != null && e.toString().isNotEmpty).join(' · ');
     final bio = p['bio']?.toString();
 
     return ListView(
@@ -114,15 +119,30 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
         ),
         if (location != null && location.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Text(location, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            location,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
         if (profession != null && profession.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text(profession, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            profession,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
         if (faith.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text(faith, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(
+            faith,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
         if (bio != null && bio.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -131,7 +151,9 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
         const SizedBox(height: 24),
         Text(
           'Full profile, photos and contact details are available after you log in.',
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
@@ -141,9 +163,14 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
             backgroundColor: AppColors.gold,
             foregroundColor: AppColors.textOnGold,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
-          child: const Text('Log in to continue', style: TextStyle(fontWeight: FontWeight.w800)),
+          child: const Text(
+            'Log in to continue',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
         ),
       ],
     );

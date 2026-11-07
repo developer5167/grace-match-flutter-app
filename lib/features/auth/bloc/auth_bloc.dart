@@ -25,15 +25,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onVerifyOtp(VerifyOtpEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onVerifyOtp(
+    VerifyOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final data = await _repository.verifyOtp(event.phone, event.otp);
       await _socket.connect();
-      emit(AuthAuthenticated(
-        isNewUser: data['is_new_user'],
-        user: data['user'],
-      ));
+      emit(
+        AuthAuthenticated(isNewUser: data['is_new_user'], user: data['user']),
+      );
     } catch (e) {
       emit(_errorFrom(e));
     }

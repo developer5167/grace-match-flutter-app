@@ -28,7 +28,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(const FetchProfileEvent(silentRefresh: true));
+    context.read<ProfileBloc>().add(
+      const FetchProfileEvent(silentRefresh: true),
+    );
   }
 
   Future<void> _patch(Map<String, dynamic> body) async {
@@ -38,7 +40,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await di.sl<ProfileRepository>().updateSettings(body);
       if (!mounted) return;
-      context.read<ProfileBloc>().add(const FetchProfileEvent(silentRefresh: true));
+      context.read<ProfileBloc>().add(
+        const FetchProfileEvent(silentRefresh: true),
+      );
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         const SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -68,7 +72,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text('Log out?', style: AppTextStyles.headlineSmall),
         content: Text(
           'You will be signed out from this device.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
@@ -77,7 +83,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Log out', style: TextStyle(color: AppColors.error)),
+            child: const Text(
+              'Log out',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -115,7 +124,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (p is Map<String, dynamic>) profile = p;
         }
 
-        final visibility = profile['profile_visibility']?.toString() ?? 'everyone';
+        final visibility =
+            profile['profile_visibility']?.toString() ?? 'everyone';
         final whoChat = profile['who_can_chat']?.toString() ?? 'interests_only';
         final contactOk = profile['is_contact_sharing_allowed'] != false;
         final imagesLocked = profile['is_images_locked'] == true;
@@ -132,7 +142,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context.pop();
               },
             ),
-            title: Text('Privacy & settings', style: AppTextStyles.headlineMedium),
+            title: Text(
+              'Privacy & settings',
+              style: AppTextStyles.headlineMedium,
+            ),
           ),
           body: Stack(
             children: [
@@ -141,28 +154,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     'Control who discovers you, how members reach you, and your photos.',
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   _sectionTitle('Who can see your profile'),
                   const SizedBox(height: 12),
                   _radioTile<String>(
                     title: 'Everyone on GraceMatch',
-                    subtitle: 'Your profile can appear in Discover for suitable matches.',
+                    subtitle:
+                        'Your profile can appear in Discover for suitable matches.',
                     value: 'everyone',
                     group: visibility,
                     onPick: (_) => _patch({'profile_visibility': 'everyone'}),
                   ),
                   _radioTile<String>(
                     title: 'Interest & connections',
-                    subtitle: 'Only people you have interacted with (sent/received interest) can open your full profile.',
+                    subtitle:
+                        'Only people you have interacted with (sent/received interest) can open your full profile.',
                     value: 'interests_only',
                     group: visibility,
-                    onPick: (_) => _patch({'profile_visibility': 'interests_only'}),
+                    onPick: (_) =>
+                        _patch({'profile_visibility': 'interests_only'}),
                   ),
                   _radioTile<String>(
                     title: 'Hidden',
-                    subtitle: 'Your profile stays off Discover until you switch back.',
+                    subtitle:
+                        'Your profile stays off Discover until you switch back.',
                     value: 'hidden',
                     group: visibility,
                     onPick: (_) => _patch({'profile_visibility': 'hidden'}),
@@ -172,14 +191,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 12),
                   _radioTile<String>(
                     title: 'Matched connections',
-                    subtitle: 'Only after both sides accept interest can chat open (recommended).',
+                    subtitle:
+                        'Only after both sides accept interest can chat open (recommended).',
                     value: 'interests_only',
                     group: whoChat,
                     onPick: (_) => _patch({'who_can_chat': 'interests_only'}),
                   ),
                   _radioTile<String>(
                     title: 'Open to messages',
-                    subtitle: 'Stored for your preference; chat still unlocks when you connect in the app.',
+                    subtitle:
+                        'Stored for your preference; chat still unlocks when you connect in the app.',
                     value: 'everyone',
                     group: whoChat,
                     onPick: (_) => _patch({'who_can_chat': 'everyone'}),
@@ -219,7 +240,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _linkTile(
                     icon: Icons.support_agent_rounded,
                     title: 'Help & support',
-                    subtitle: 'Payments, your account, verification, safety — ask us anything.',
+                    subtitle:
+                        'Payments, your account, verification, safety — ask us anything.',
                     onTap: () {
                       AppHaptics.selection();
                       context.push('/support');
@@ -250,7 +272,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           behavior: SnackBarBehavior.floating,
                           content: Text(
                             'Use ⋮ or report on any profile screen to block.',
-                            style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       );
@@ -263,22 +287,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(18),
                       onTap: _busy ? null : _logout,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceElevated,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: AppColors.error.withAlpha(120)),
+                          border: Border.all(
+                            color: AppColors.error.withAlpha(120),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.logout_rounded, color: AppColors.error),
+                            const Icon(
+                              Icons.logout_rounded,
+                              color: AppColors.error,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               'Log out',
-                              style: AppTextStyles.labelLarge.copyWith(color: AppColors.error),
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.error,
+                              ),
                             ),
                             const Spacer(),
-                            const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.textTertiary,
+                            ),
                           ],
                         ),
                       ),
@@ -291,15 +328,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(18),
                       onTap: _busy ? null : () => confirmDeleteAccount(context),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceElevated,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: AppColors.error.withAlpha(120)),
+                          border: Border.all(
+                            color: AppColors.error.withAlpha(120),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.delete_forever_rounded, color: AppColors.error),
+                            const Icon(
+                              Icons.delete_forever_rounded,
+                              color: AppColors.error,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -307,17 +352,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 children: [
                                   Text(
                                     'Delete account',
-                                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.error),
+                                    style: AppTextStyles.labelLarge.copyWith(
+                                      color: AppColors.error,
+                                    ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Permanently erase your profile, photos, and messages',
-                                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.textTertiary,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.textTertiary,
+                            ),
                           ],
                         ),
                       ),
@@ -326,7 +378,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'Notifications use your device permissions. Critical alerts still reach you inside the app.',
-                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ],
               ),
@@ -343,8 +397,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _sectionTitle(String t) =>
-      Text(t, style: AppTextStyles.headlineSmall.copyWith(color: AppColors.gold));
+  Widget _sectionTitle(String t) => Text(
+    t,
+    style: AppTextStyles.headlineSmall.copyWith(color: AppColors.gold),
+  );
 
   Widget _radioTile<T>({
     required String title,
@@ -368,7 +424,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                  selected
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_off_rounded,
                   color: selected ? AppColors.gold : AppColors.textTertiary,
                   size: 22,
                 ),
@@ -379,8 +437,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Text(title, style: AppTextStyles.labelLarge),
                       const SizedBox(height: 4),
-                      Text(subtitle,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -413,8 +475,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(title, style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
-                Text(subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -453,12 +519,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Text(title, style: AppTextStyles.labelLarge),
                     const SizedBox(height: 4),
-                    Text(subtitle,
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textTertiary,
+              ),
             ],
           ),
         ),

@@ -21,68 +21,91 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
   // ── Fetch everything via single bootstrap call ──────────────
   // Server uses Promise.allSettled so partial data is returned even
   // when one section fails. We never show a full-screen error here.
-  Future<void> _onFetchAll(FetchActivityEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onFetchAll(
+    FetchActivityEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     emit(ActivityLoading());
     try {
       final d = await _repository.fetchBootstrap();
 
-      emit(ActivityLoaded(
-        notifications:       _asList(d['notifications']),
-        unreadNotifications: (d['unread_count'] as num?)?.toInt() ?? 0,
-        viewers:             _asList(d['viewers']),
-        totalViews:          (d['total_views'] as num?)?.toInt() ?? 0,
-        viewsPremiumRequired: d['is_premium_views'] != true,
-        shortlists:          _asList(d['shortlists']),
-        contactRequests:     _asList(d['contact_requests']),
-      ));
+      emit(
+        ActivityLoaded(
+          notifications: _asList(d['notifications']),
+          unreadNotifications: (d['unread_count'] as num?)?.toInt() ?? 0,
+          viewers: _asList(d['viewers']),
+          totalViews: (d['total_views'] as num?)?.toInt() ?? 0,
+          viewsPremiumRequired: d['is_premium_views'] != true,
+          shortlists: _asList(d['shortlists']),
+          contactRequests: _asList(d['contact_requests']),
+        ),
+      );
     } catch (e) {
       emit(ActivityError(e.toString()));
     }
   }
 
   // Individual section refreshes — keep the rest of the screen intact
-  Future<void> _onFetchNotifications(FetchNotificationsEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onFetchNotifications(
+    FetchNotificationsEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       final data = await _repository.fetchNotifications();
       final notifs = _asList(data['notifications']);
       final unread = notifs.where((n) => n['is_read'] != true).length;
-      emit((prev ?? const ActivityLoaded()).copyWith(
-        notifications: notifs,
-        unreadNotifications: unread,
-      ));
+      emit(
+        (prev ?? const ActivityLoaded()).copyWith(
+          notifications: notifs,
+          unreadNotifications: unread,
+        ),
+      );
     } catch (_) {
       if (prev != null) emit(prev);
     }
   }
 
-  Future<void> _onFetchViews(FetchViewsEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onFetchViews(
+    FetchViewsEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       final data = await _repository.fetchViews();
-      emit((prev ?? const ActivityLoaded()).copyWith(
-        viewers: _asList(data['viewers']),
-        totalViews: (data['total_views'] as num?)?.toInt() ?? 0,
-        viewsPremiumRequired: data['is_premium_required'] == true,
-      ));
+      emit(
+        (prev ?? const ActivityLoaded()).copyWith(
+          viewers: _asList(data['viewers']),
+          totalViews: (data['total_views'] as num?)?.toInt() ?? 0,
+          viewsPremiumRequired: data['is_premium_required'] == true,
+        ),
+      );
     } catch (_) {
       if (prev != null) emit(prev);
     }
   }
 
-  Future<void> _onFetchShortlists(FetchShortlistsEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onFetchShortlists(
+    FetchShortlistsEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       final data = await _repository.fetchShortlists();
-      emit((prev ?? const ActivityLoaded()).copyWith(
-        shortlists: _asList(data['profiles']),
-      ));
+      emit(
+        (prev ?? const ActivityLoaded()).copyWith(
+          shortlists: _asList(data['profiles']),
+        ),
+      );
     } catch (_) {
       if (prev != null) emit(prev);
     }
   }
 
-  Future<void> _onMarkAllRead(MarkAllReadEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onMarkAllRead(
+    MarkAllReadEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       await _repository.markAllRead();
@@ -95,7 +118,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     } catch (_) {}
   }
 
-  Future<void> _onMarkOneRead(MarkOneReadEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onMarkOneRead(
+    MarkOneReadEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     if (prev == null) return;
     try {
@@ -109,7 +135,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     } catch (_) {}
   }
 
-  Future<void> _onToggleShortlist(ToggleShortlistEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onToggleShortlist(
+    ToggleShortlistEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       await _repository.toggleShortlist(event.targetUserId);
@@ -120,7 +149,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     }
   }
 
-  Future<void> _onFetchContactRequests(FetchContactRequestsEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onFetchContactRequests(
+    FetchContactRequestsEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       final data = await _repository.fetchIncomingContactRequests();
@@ -130,7 +162,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     }
   }
 
-  Future<void> _onRespondContactRequest(RespondContactRequestEvent event, Emitter<ActivityState> emit) async {
+  Future<void> _onRespondContactRequest(
+    RespondContactRequestEvent event,
+    Emitter<ActivityState> emit,
+  ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     try {
       await _repository.respondContactRequest(event.requestId, event.action);
@@ -143,7 +178,10 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
 
   List<Map<String, dynamic>> _asList(dynamic raw) {
     if (raw is List) {
-      return raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      return raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     }
     return [];
   }

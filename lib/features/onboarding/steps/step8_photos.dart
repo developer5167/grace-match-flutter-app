@@ -138,7 +138,10 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
       left: 4,
       child: Container(
         padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(color: AppColors.background, shape: BoxShape.circle),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          shape: BoxShape.circle,
+        ),
         child: Icon(icon, color: color, size: 16),
       ),
     );
@@ -166,12 +169,18 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded, color: AppColors.gold, size: 16),
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: AppColors.gold,
+                  size: 16,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Photos will be uploaded when you tap Continue. New photos need admin approval before becoming visible.',
-                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold),
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.gold,
+                    ),
                   ),
                 ),
               ],
@@ -234,7 +243,11 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                           color: AppColors.error,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                        child: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -249,7 +262,9 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                         child: Text(
                           'Primary',
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.overline.copyWith(color: AppColors.gold),
+                          style: AppTextStyles.overline.copyWith(
+                            color: AppColors.gold,
+                          ),
                         ),
                       ),
                     ),
@@ -261,12 +276,19 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                   children: [
                     Icon(
                       Icons.add_a_photo_rounded,
-                      color: index == 0 ? AppColors.gold : AppColors.textTertiary,
+                      color: index == 0
+                          ? AppColors.gold
+                          : AppColors.textTertiary,
                       size: 28,
                     ),
                     if (index == 0) ...[
                       const SizedBox(height: 4),
-                      Text('Required', style: AppTextStyles.overline.copyWith(color: AppColors.gold)),
+                      Text(
+                        'Required',
+                        style: AppTextStyles.overline.copyWith(
+                          color: AppColors.gold,
+                        ),
+                      ),
                     ],
                   ],
                 ),

@@ -8,8 +8,7 @@ class SocketService {
   io.Socket? _socket;
   bool _listenersBound = false;
 
-  final _messageController =
-      StreamController<Map<String, dynamic>>.broadcast();
+  final _messageController = StreamController<Map<String, dynamic>>.broadcast();
   final _deliveredController =
       StreamController<Map<String, dynamic>>.broadcast();
   final _readReceiptController =
@@ -22,6 +21,7 @@ class SocketService {
       _deliveredController.stream;
   Stream<Map<String, dynamic>> get readReceiptStream =>
       _readReceiptController.stream;
+
   /// Emits `{ user_id, type: 'online'|'offline', last_seen_at? }`
   Stream<Map<String, dynamic>> get userStatusStream =>
       _userStatusController.stream;
@@ -39,7 +39,10 @@ class SocketService {
   void sendTyping(String conversationId, {required bool typing}) {
     final socket = _socket;
     if (socket == null || !socket.connected) return;
-    socket.emit('typing', {'conversation_id': conversationId, 'typing': typing});
+    socket.emit('typing', {
+      'conversation_id': conversationId,
+      'typing': typing,
+    });
   }
 
   String? _viewingChat;
@@ -120,7 +123,8 @@ class SocketService {
   /// own, so refresh the token once and open a new connection.
   Future<void> _onAuthRejected() async {
     final last = _lastAuthRetry;
-    if (last != null && DateTime.now().difference(last) < const Duration(seconds: 10)) {
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 10)) {
       return;
     }
     _lastAuthRetry = DateTime.now();
@@ -189,7 +193,8 @@ class SocketService {
     socket.onConnect((_) {
       socket.emit('call:sync', {'active_call_id': activeCallId?.call()});
       final viewing = _viewingChat;
-      if (viewing != null) socket.emit('chat:open', {'conversation_id': viewing});
+      if (viewing != null)
+        socket.emit('chat:open', {'conversation_id': viewing});
     });
     socket.onDisconnect((_) {});
     socket.onConnectError((err) {
@@ -232,10 +237,12 @@ class SocketService {
 
     _socket?.on('support:message', (data) {
       final map = Map<String, dynamic>.from(data as Map);
-      _supportController.add(SupportEvent(
-        ticketId: map['ticket_id']?.toString() ?? '',
-        status: map['status']?.toString(),
-      ));
+      _supportController.add(
+        SupportEvent(
+          ticketId: map['ticket_id']?.toString() ?? '',
+          status: map['status']?.toString(),
+        ),
+      );
     });
 
     for (final name in const [
@@ -256,14 +263,18 @@ class SocketService {
   Future<Map<String, dynamic>> startCall({
     required String conversationId,
     bool isVideo = true,
-  }) =>
-      _ack('call:start', {'conversation_id': conversationId, 'is_video': isVideo},
-          connectWithin: const Duration(seconds: 10));
+  }) => _ack('call:start', {
+    'conversation_id': conversationId,
+    'is_video': isVideo,
+  }, connectWithin: const Duration(seconds: 10));
 
   /// Generous on purpose: answering from the lock screen cold-starts the app,
   /// and the socket is still opening when the member taps Accept.
-  Future<Map<String, dynamic>> answerCall(String callId) =>
-      _ack('call:answer', {'call_id': callId}, connectWithin: const Duration(seconds: 15));
+  Future<Map<String, dynamic>> answerCall(String callId) => _ack(
+    'call:answer',
+    {'call_id': callId},
+    connectWithin: const Duration(seconds: 15),
+  );
 
   Future<Map<String, dynamic>> rejectCall(String callId) =>
       _ack('call:reject', {'call_id': callId});
@@ -285,18 +296,25 @@ class SocketService {
     if (!ready || socket == null || !socket.connected) {
       return {
         'ok': false,
-        'error': 'Could not reach GraceMatch. Check your connection and try again.',
+        'error':
+            'Could not reach GraceMatch. Check your connection and try again.',
         'code': 'OFFLINE',
       };
     }
 
     final completer = Completer<Map<String, dynamic>>();
-    socket.emitWithAck(event, payload, ack: (res) {
-      if (completer.isCompleted) return;
-      completer.complete(
-        res is Map ? Map<String, dynamic>.from(res) : {'ok': false, 'error': 'No response'},
-      );
-    });
+    socket.emitWithAck(
+      event,
+      payload,
+      ack: (res) {
+        if (completer.isCompleted) return;
+        completer.complete(
+          res is Map
+              ? Map<String, dynamic>.from(res)
+              : {'ok': false, 'error': 'No response'},
+        );
+      },
+    );
 
     return completer.future.timeout(
       const Duration(seconds: 10),

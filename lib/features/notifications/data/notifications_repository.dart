@@ -21,19 +21,25 @@ class AppNotification {
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> j) => AppNotification(
-        id: j['id'].toString(),
-        type: j['type']?.toString() ?? 'system',
-        title: j['title']?.toString() ?? '',
-        body: j['body']?.toString() ?? '',
-        data: j['data'] is Map ? Map<String, dynamic>.from(j['data']) : const {},
-        isRead: j['is_read'] == true,
-        createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
-      );
+    id: j['id'].toString(),
+    type: j['type']?.toString() ?? 'system',
+    title: j['title']?.toString() ?? '',
+    body: j['body']?.toString() ?? '',
+    data: j['data'] is Map ? Map<String, dynamic>.from(j['data']) : const {},
+    isRead: j['is_read'] == true,
+    createdAt:
+        DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
+  );
 
   AppNotification copyWith({bool? isRead}) => AppNotification(
-        id: id, type: type, title: title, body: body, data: data,
-        isRead: isRead ?? this.isRead, createdAt: createdAt,
-      );
+    id: id,
+    type: type,
+    title: title,
+    body: body,
+    data: data,
+    isRead: isRead ?? this.isRead,
+    createdAt: createdAt,
+  );
 }
 
 class NotificationPage {
@@ -61,9 +67,11 @@ class NotificationsRepository {
     return NotificationPage(
       items: raw is List
           ? raw
-              .whereType<Map>()
-              .map((e) => AppNotification.fromJson(Map<String, dynamic>.from(e)))
-              .toList()
+                .whereType<Map>()
+                .map(
+                  (e) => AppNotification.fromJson(Map<String, dynamic>.from(e)),
+                )
+                .toList()
           : const [],
       unreadCount: (d['unread_count'] as num?)?.toInt() ?? 0,
       hasMore: d['has_more'] == true,

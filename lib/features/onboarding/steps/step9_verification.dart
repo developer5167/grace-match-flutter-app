@@ -53,10 +53,18 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.goldMild),
             ),
-            child: Icon(Icons.face_retouching_natural_rounded, size: 48, color: AppColors.gold),
+            child: Icon(
+              Icons.face_retouching_natural_rounded,
+              size: 48,
+              color: AppColors.gold,
+            ),
           ),
           const SizedBox(height: 24),
-          Text('Show it\'s really you', style: AppTextStyles.headlineMedium, textAlign: TextAlign.center),
+          Text(
+            'Show it\'s really you',
+            style: AppTextStyles.headlineMedium,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           Text(
             'Take a quick selfie. Our team compares it with your profile photo and adds a '
@@ -73,7 +81,10 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
               decoration: BoxDecoration(
                 color: taken ? AppColors.goldSubtle : AppColors.surfaceHighest,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: taken ? AppColors.gold : AppColors.goldMild, width: 2),
+                border: Border.all(
+                  color: taken ? AppColors.gold : AppColors.goldMild,
+                  width: 2,
+                ),
               ),
               child: taken
                   ? ClipRRect(
@@ -83,10 +94,18 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.photo_camera_front_rounded, size: 56, color: AppColors.textTertiary),
+                        const Icon(
+                          Icons.photo_camera_front_rounded,
+                          size: 56,
+                          color: AppColors.textTertiary,
+                        ),
                         const SizedBox(height: 14),
-                        Text('Tap to take a selfie',
-                            style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                        Text(
+                          'Tap to take a selfie',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.gold,
+                          ),
+                        ),
                       ],
                     ),
             ),
@@ -96,12 +115,16 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
               onPressed: _takeSelfie,
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Retake'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+              ),
             ),
           const SizedBox(height: 12),
           Text(
             'Face the camera in good light, without sunglasses. You can also skip this and do it later.',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),

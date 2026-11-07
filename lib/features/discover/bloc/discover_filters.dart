@@ -7,14 +7,14 @@ class DiscoverFilters extends Equatable {
   final int ageMax;
   final int heightMin;
   final int heightMax;
-  final String denomination;       // single value; 'Any' = flexible
+  final String denomination; // single value; 'Any' = flexible
   final bool denominationFlexible;
   final String? location;
   final bool locationFlexible;
   final bool casteFlexible;
   final String professionPreference; // 'any' | 'pvt' | 'govt' | 'other'
-  final int salaryMin;              // in Lakhs
-  final int salaryMax;              // in Lakhs
+  final int salaryMin; // in Lakhs
+  final int salaryMax; // in Lakhs
 
   const DiscoverFilters({
     this.ageMin = 18,
@@ -78,9 +78,17 @@ class DiscoverFilters extends Equatable {
 
   @override
   List<Object?> get props => [
-        ageMin, ageMax, heightMin, heightMax,
-        denomination, denominationFlexible,
-        location, locationFlexible, casteFlexible,
-        professionPreference, salaryMin, salaryMax,
-      ];
+    ageMin,
+    ageMax,
+    heightMin,
+    heightMax,
+    denomination,
+    denominationFlexible,
+    location,
+    locationFlexible,
+    casteFlexible,
+    professionPreference,
+    salaryMin,
+    salaryMax,
+  ];
 }

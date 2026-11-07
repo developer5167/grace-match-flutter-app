@@ -102,7 +102,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     if (!mounted) return;
     if (failure != null) {
       messenger.showSnackBar(
-        SnackBar(content: Text(failure), backgroundColor: AppColors.surfaceHighest),
+        SnackBar(
+          content: Text(failure),
+          backgroundColor: AppColors.surfaceHighest,
+        ),
       );
     }
   }
@@ -116,7 +119,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       final dio = DioClient.instance;
       final resp = await dio.get(ApiEndpoints.contactStatus(widget.userId!));
       if (mounted) {
-        setState(() => _contactStatus = Map<String, dynamic>.from(resp.data['data'] ?? {}));
+        setState(
+          () => _contactStatus = Map<String, dynamic>.from(
+            resp.data['data'] ?? {},
+          ),
+        );
       }
     } catch (_) {
       // Non-fatal — contact reveal section just won't show
@@ -138,9 +145,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   String _apiMessage(Object e) {
     if (e is DioException) {
       final data = e.response?.data;
-      if (data is Map && data['message'] != null) return data['message'].toString();
+      if (data is Map && data['message'] != null)
+        return data['message'].toString();
     }
-    return e.toString().replaceFirst('DioException: ', '').replaceFirst('Exception: ', '');
+    return e
+        .toString()
+        .replaceFirst('DioException: ', '')
+        .replaceFirst('Exception: ', '');
   }
 
   Future<void> _requestContact() async {
@@ -148,7 +159,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     setState(() => _contactRequesting = true);
     try {
       final dio = DioClient.instance;
-      final resp = await dio.post(ApiEndpoints.contactRequest, data: {'target_user_id': widget.userId});
+      final resp = await dio.post(
+        ApiEndpoints.contactRequest,
+        data: {'target_user_id': widget.userId},
+      );
       final payload = resp.data is Map ? resp.data['data'] : null;
       if (payload is Map) {
         if (mounted) {
@@ -169,7 +183,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_apiMessage(e)), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(_apiMessage(e)),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -209,7 +226,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     }
   }
 
-  Future<void> _openGallery(List<String> photos, {required bool imagesLocked}) async {
+  Future<void> _openGallery(
+    List<String> photos, {
+    required bool imagesLocked,
+  }) async {
     if (imagesLocked) {
       if (!mounted) return;
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
@@ -226,10 +246,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     final selectedIndex = await Navigator.push<int>(
       context,
       MaterialPageRoute(
-        builder: (_) => FullScreenGallery(
-          images: photos,
-          initialIndex: _currentPhotoIndex,
-        ),
+        builder: (_) =>
+            FullScreenGallery(images: photos, initialIndex: _currentPhotoIndex),
       ),
     );
     if (!mounted || selectedIndex == null) return;
@@ -239,7 +257,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     }
   }
 
-  List<String> _extractPhotoUrls(Map<String, dynamic> data, Map<String, dynamic> profile) {
+  List<String> _extractPhotoUrls(
+    Map<String, dynamic> data,
+    Map<String, dynamic> profile,
+  ) {
     List<dynamic> pickPhotoList(dynamic value) {
       if (value is List) return value;
       if (value is String && value.contains(',')) {
@@ -263,11 +284,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       ...pickPhotoList(profile['gallery']),
       ...pickPhotoList(profile['photo_urls']),
       ...pickPhotoList(profile['images']),
-      if (data['user'] is Map) ...pickPhotoList((data['user'] as Map)['photos']),
-      if (data['user'] is Map) ...pickPhotoList((data['user'] as Map)['profile_photos']),
-      if (data['user'] is Map) ...pickPhotoList((data['user'] as Map)['gallery']),
-      if (data['user'] is Map) ...pickPhotoList((data['user'] as Map)['photo_urls']),
-      if (data['user'] is Map) ...pickPhotoList((data['user'] as Map)['images']),
+      if (data['user'] is Map)
+        ...pickPhotoList((data['user'] as Map)['photos']),
+      if (data['user'] is Map)
+        ...pickPhotoList((data['user'] as Map)['profile_photos']),
+      if (data['user'] is Map)
+        ...pickPhotoList((data['user'] as Map)['gallery']),
+      if (data['user'] is Map)
+        ...pickPhotoList((data['user'] as Map)['photo_urls']),
+      if (data['user'] is Map)
+        ...pickPhotoList((data['user'] as Map)['images']),
     ];
 
     final photos = <String>[];
@@ -280,7 +306,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
       if (photo is Map) {
         final photoMap = photo.cast<dynamic, dynamic>();
-        final url = photoMap['photo_url']?.toString() ??
+        final url =
+            photoMap['photo_url']?.toString() ??
             photoMap['url']?.toString() ??
             photoMap['image_url']?.toString() ??
             photoMap['secure_url']?.toString() ??
@@ -319,25 +346,36 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         if (state is ProfileLoading) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         }
 
         if (state is ProfileError) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: Text(state.message, style: const TextStyle(color: Colors.white))),
+            body: Center(
+              child: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
           );
         }
 
         if (state is ProfileLoaded && state.userId != widget.userId) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         }
 
-        final data = state is ProfileLoaded ? state.profile : <String, dynamic>{};
+        final data = state is ProfileLoaded
+            ? state.profile
+            : <String, dynamic>{};
         final profile = data['profile'] as Map<String, dynamic>? ?? {};
         final family = data['family'] as Map<String, dynamic>? ?? {};
         final imagesLocked = data['is_images_locked'] == true;
@@ -345,28 +383,46 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         if (_currentPhotoIndex >= photos.length && photos.isNotEmpty) {
           _currentPhotoIndex = photos.length - 1;
         }
-        
+
         final name = profile['first_name'] ?? 'User';
-        final dob = profile['date_of_birth'] != null ? DateTime.parse(profile['date_of_birth'].toString()) : null;
+        final dob = profile['date_of_birth'] != null
+            ? DateTime.parse(profile['date_of_birth'].toString())
+            : null;
         final age = dob != null ? (DateTime.now().year - dob.year) : 26;
         final bio = profile['bio'] ?? 'No bio provided yet.';
-        final hobbies = (data['hobbies'] as List?)?.map((h) {
-          if (h is Map) return h['name']?.toString() ?? h['hobby_name']?.toString() ?? '';
-          return h.toString();
-        }).where((s) => s.isNotEmpty).toList() ?? [];
+        final hobbies =
+            (data['hobbies'] as List?)
+                ?.map((h) {
+                  if (h is Map)
+                    return h['name']?.toString() ??
+                        h['hobby_name']?.toString() ??
+                        '';
+                  return h.toString();
+                })
+                .where((s) => s.isNotEmpty)
+                .toList() ??
+            [];
 
         String formatValue(String? val) {
           if (val == null) return 'Not specified';
-          return val.replaceAll('_', ' ').split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '').join(' ');
+          return val
+              .replaceAll('_', ' ')
+              .split(' ')
+              .map(
+                (s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : '',
+              )
+              .join(' ');
         }
 
         String formatCurrency(dynamic value) {
           if (value == null) return '0';
           String s = value.toString();
           if (s.length <= 3) return s;
-          return s.replaceAllMapped(RegExp(r'(\d+)(\d{3})'), (Match m) => '${m[1]},${m[2]}');
+          return s.replaceAllMapped(
+            RegExp(r'(\d+)(\d{3})'),
+            (Match m) => '${m[1]},${m[2]}',
+          );
         }
-
 
         final viewedUserId = widget.userId;
 
@@ -382,12 +438,15 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     ? [
                         IconButton(
                           tooltip: 'Shortlist',
-                          icon: Icon(Icons.star_border_rounded, color: AppColors.gold),
+                          icon: Icon(
+                            Icons.star_border_rounded,
+                            color: AppColors.gold,
+                          ),
                           onPressed: () {
                             AppHaptics.medium();
-                            context
-                                .read<ActivityBloc>()
-                                .add(ToggleShortlistEvent(viewedUserId));
+                            context.read<ActivityBloc>().add(
+                              ToggleShortlistEvent(viewedUserId),
+                            );
                             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                               const SnackBar(
                                 behavior: SnackBarBehavior.floating,
@@ -411,7 +470,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  imagesLocked ? Icons.lock_rounded : Icons.person_rounded,
+                                  imagesLocked
+                                      ? Icons.lock_rounded
+                                      : Icons.person_rounded,
                                   color: AppColors.textTertiary,
                                   size: 64,
                                 ),
@@ -419,7 +480,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                   const SizedBox(height: 10),
                                   Text(
                                     'Photos hidden until you connect',
-                                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.textTertiary,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -437,7 +500,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 setState(() => _currentPhotoIndex = index);
                               },
                               itemBuilder: (context, index) => GestureDetector(
-                                onTap: () => _openGallery(photos, imagesLocked: false),
+                                onTap: () =>
+                                    _openGallery(photos, imagesLocked: false),
                                 child: _PublicProfilePhotoTile(
                                   url: photos[index],
                                   locked: false,
@@ -458,8 +522,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                       backgroundColor: Colors.black38,
                                       child: IconButton(
                                         visualDensity: VisualDensity.compact,
-                                        onPressed: _currentPhotoIndex > 0 ? _prevPhoto : null,
-                                        icon: const Icon(Icons.chevron_left_rounded, color: Colors.white),
+                                        onPressed: _currentPhotoIndex > 0
+                                            ? _prevPhoto
+                                            : null,
+                                        icon: const Icon(
+                                          Icons.chevron_left_rounded,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -471,17 +540,25 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 bottom: 0,
                                 child: Center(
                                   child: AnimatedOpacity(
-                                    opacity: _currentPhotoIndex < photos.length - 1 ? 1 : 0.35,
+                                    opacity:
+                                        _currentPhotoIndex < photos.length - 1
+                                        ? 1
+                                        : 0.35,
                                     duration: const Duration(milliseconds: 150),
                                     child: CircleAvatar(
                                       radius: 18,
                                       backgroundColor: Colors.black38,
                                       child: IconButton(
                                         visualDensity: VisualDensity.compact,
-                                        onPressed: _currentPhotoIndex < photos.length - 1
+                                        onPressed:
+                                            _currentPhotoIndex <
+                                                photos.length - 1
                                             ? () => _nextPhoto(photos.length)
                                             : null,
-                                        icon: const Icon(Icons.chevron_right_rounded, color: Colors.white),
+                                        icon: const Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -515,7 +592,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           top: 56,
                           right: 16,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black45,
                               borderRadius: BorderRadius.circular(100),
@@ -536,7 +616,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.transparent, AppColors.background],
+                              colors: [
+                                Colors.transparent,
+                                Colors.transparent,
+                                AppColors.background,
+                              ],
                             ),
                           ),
                         ),
@@ -547,16 +631,26 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text('$name, $age', style: AppTextStyles.headlineLarge),
+                          Text(
+                            '$name, $age',
+                            style: AppTextStyles.headlineLarge,
+                          ),
                           const SizedBox(width: 8),
                           if (profile['trust_badge'] == true)
-                            const Icon(Icons.verified_rounded, color: AppColors.blessing, size: 24),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.blessing,
+                              size: 24,
+                            ),
                         ],
                       ),
                       if (profile['is_photo_verified'] == true) ...[
@@ -564,12 +658,20 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         const PhotoVerifiedLabel(),
                       ],
                       const SizedBox(height: 8),
-                      Text('${profile['denomination'] ?? 'CSI'} • ${profile['location_city'] ?? 'Unknown'}', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.gold)),
+                      Text(
+                        '${profile['denomination'] ?? 'CSI'} • ${profile['location_city'] ?? 'Unknown'}',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.gold,
+                        ),
+                      ),
                       const SizedBox(height: 24),
-                      
+
                       _sectionTitle('About Me'),
                       const SizedBox(height: 12),
-                      Text(bio, style: AppTextStyles.bodyMedium.copyWith(height: 1.5)),
+                      Text(
+                        bio,
+                        style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                      ),
                       const SizedBox(height: 32),
 
                       if (hobbies.isNotEmpty) ...[
@@ -578,15 +680,27 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: hobbies.map((h) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceElevated,
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(color: AppColors.surfaceHighest),
-                            ),
-                            child: Text(h, style: AppTextStyles.labelSmall),
-                          )).toList(),
+                          children: hobbies
+                              .map(
+                                (h) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceElevated,
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(
+                                      color: AppColors.surfaceHighest,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    h,
+                                    style: AppTextStyles.labelSmall,
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                         const SizedBox(height: 32),
                       ],
@@ -594,35 +708,85 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       _sectionTitle('Faith & Lifestyle'),
                       const SizedBox(height: 16),
                       _infoGrid([
-                        _infoTile(Icons.church_rounded, 'Church', profile['church_name'] ?? 'Not specified'),
-                        _infoTile(Icons.auto_awesome_rounded, 'Church Involvement', formatValue(profile['church_involvement'])),
-                        _infoTile(Icons.smoking_rooms_rounded, 'Smoking', formatValue(profile['smoking'])),
-                        _infoTile(Icons.local_bar_rounded, 'Drinking', formatValue(profile['drinking'])),
-                        _infoTile(Icons.restaurant_rounded, 'Diet', formatValue(profile['diet'])),
+                        _infoTile(
+                          Icons.church_rounded,
+                          'Church',
+                          profile['church_name'] ?? 'Not specified',
+                        ),
+                        _infoTile(
+                          Icons.auto_awesome_rounded,
+                          'Church Involvement',
+                          formatValue(profile['church_involvement']),
+                        ),
+                        _infoTile(
+                          Icons.smoking_rooms_rounded,
+                          'Smoking',
+                          formatValue(profile['smoking']),
+                        ),
+                        _infoTile(
+                          Icons.local_bar_rounded,
+                          'Drinking',
+                          formatValue(profile['drinking']),
+                        ),
+                        _infoTile(
+                          Icons.restaurant_rounded,
+                          'Diet',
+                          formatValue(profile['diet']),
+                        ),
                       ]),
                       const SizedBox(height: 32),
 
                       _sectionTitle('Profession & Education'),
                       const SizedBox(height: 16),
                       _infoGrid([
-                        _infoTile(Icons.work_rounded, 'Profession', profile['profession'] ?? 'Professional'),
-                        _infoTile(Icons.school_rounded, 'Education', profile['education'] ?? 'Degree'),
-                        _infoTile(Icons.payments_rounded, 'Annual Income', '₹ ${formatCurrency(profile['annual_income_min'])} - ${formatCurrency(profile['annual_income_max'])}'),
-                        _infoTile(Icons.height_rounded, 'Height', '${profile['height_cm'] ?? 170} cm'),
+                        _infoTile(
+                          Icons.work_rounded,
+                          'Profession',
+                          profile['profession'] ?? 'Professional',
+                        ),
+                        _infoTile(
+                          Icons.school_rounded,
+                          'Education',
+                          profile['education'] ?? 'Degree',
+                        ),
+                        _infoTile(
+                          Icons.payments_rounded,
+                          'Annual Income',
+                          '₹ ${formatCurrency(profile['annual_income_min'])} - ${formatCurrency(profile['annual_income_max'])}',
+                        ),
+                        _infoTile(
+                          Icons.height_rounded,
+                          'Height',
+                          '${profile['height_cm'] ?? 170} cm',
+                        ),
                       ]),
                       const SizedBox(height: 32),
 
                       _sectionTitle('Family Background'),
                       const SizedBox(height: 16),
                       _infoGrid([
-                        _infoTile(Icons.family_restroom_rounded, 'Father', family['father_occupation'] ?? 'Not specified'),
-                        _infoTile(Icons.face_retouching_natural_rounded, 'Mother', family['mother_occupation'] ?? 'Not specified'),
+                        _infoTile(
+                          Icons.family_restroom_rounded,
+                          'Father',
+                          family['father_occupation'] ?? 'Not specified',
+                        ),
+                        _infoTile(
+                          Icons.face_retouching_natural_rounded,
+                          'Mother',
+                          family['mother_occupation'] ?? 'Not specified',
+                        ),
                       ]),
                       const SizedBox(height: 20),
-                      if (family['sibling_details'] != null && (family['sibling_details'] as List).isNotEmpty) ...[
+                      if (family['sibling_details'] != null &&
+                          (family['sibling_details'] as List).isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.only(left: 4, bottom: 12),
-                          child: Text('Siblings', style: AppTextStyles.labelLarge.copyWith(color: AppColors.goldMild)),
+                          child: Text(
+                            'Siblings',
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: AppColors.goldMild,
+                            ),
+                          ),
                         ),
                         ...(family['sibling_details'] as List).map((sib) {
                           final s = sib as Map<String, dynamic>;
@@ -632,37 +796,53 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.surfaceElevated,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.surfaceHighest),
+                              border: Border.all(
+                                color: AppColors.surfaceHighest,
+                              ),
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: s['type'] == 'Brother' ? Colors.blue.withOpacity(0.1) : Colors.pink.withOpacity(0.1),
+                                    color: s['type'] == 'Brother'
+                                        ? Colors.blue.withOpacity(0.1)
+                                        : Colors.pink.withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    s['type'] == 'Brother' ? Icons.boy_rounded : Icons.girl_rounded,
-                                    color: s['type'] == 'Brother' ? Colors.blue : Colors.pink,
+                                    s['type'] == 'Brother'
+                                        ? Icons.boy_rounded
+                                        : Icons.girl_rounded,
+                                    color: s['type'] == 'Brother'
+                                        ? Colors.blue
+                                        : Colors.pink,
                                     size: 24,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '${s['type']} • ${formatValue(s['marital_status'])}',
                                         style: AppTextStyles.labelLarge,
                                       ),
-                                      if (s['education'] != null && s['education'].toString().isNotEmpty)
+                                      if (s['education'] != null &&
+                                          s['education'].toString().isNotEmpty)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 4),
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
                                           child: Text(
                                             s['education'].toString(),
-                                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
                                           ),
                                         ),
                                     ],
@@ -673,9 +853,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           );
                         }).toList(),
                       ] else ...[
-                        _infoTile(Icons.people_rounded, 'Siblings', '${family['brothers_count'] ?? 0} Brothers, ${family['sisters_count'] ?? 0} Sisters'),
+                        _infoTile(
+                          Icons.people_rounded,
+                          'Siblings',
+                          '${family['brothers_count'] ?? 0} Brothers, ${family['sisters_count'] ?? 0} Sisters',
+                        ),
                       ],
-                      
+
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -722,20 +906,30 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   AppHaptics.heavy();
-                  context.read<ProfileBloc>().add(SendInterestEvent(userId: widget.userId!));
+                  context.read<ProfileBloc>().add(
+                    SendInterestEvent(userId: widget.userId!),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.textOnGold,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.favorite_rounded),
                     SizedBox(width: 8),
-                    Text('SEND INTEREST', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    Text(
+                      'SEND INTEREST',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -749,23 +943,32 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       if (isReceiver && interestId != null) {
         return Container(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          decoration: BoxDecoration(color: AppColors.background.withOpacity(0.8)),
+          decoration: BoxDecoration(
+            color: AppColors.background.withOpacity(0.8),
+          ),
           child: Row(
             children: [
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
                     AppHaptics.light();
-                    context.read<ProfileBloc>().add(RejectInterestEvent(interestId));
+                    context.read<ProfileBloc>().add(
+                      RejectInterestEvent(interestId),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.surfaceElevated,
                     foregroundColor: AppColors.error,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     side: const BorderSide(color: AppColors.surfaceHighest),
                   ),
-                  child: const Text('DECLINE', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'DECLINE',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -773,15 +976,22 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     AppHaptics.heavy();
-                    context.read<ProfileBloc>().add(AcceptInterestEvent(interestId));
+                    context.read<ProfileBloc>().add(
+                      AcceptInterestEvent(interestId),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,
                     foregroundColor: AppColors.textOnGold,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text('ACCEPT', style: TextStyle(fontWeight: FontWeight.w900)),
+                  child: const Text(
+                    'ACCEPT',
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                  ),
                 ),
               ),
             ],
@@ -793,7 +1003,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         // Center then expands to fill the entire screen.
         return Container(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          decoration: BoxDecoration(color: AppColors.background.withOpacity(0.8)),
+          decoration: BoxDecoration(
+            color: AppColors.background.withOpacity(0.8),
+          ),
           child: Row(
             children: [
               Expanded(
@@ -807,7 +1019,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_rounded, color: AppColors.gold, size: 18),
+                      Icon(
+                        Icons.check_rounded,
+                        color: AppColors.gold,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'INTEREST SENT',
@@ -831,7 +1047,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       // Prefer embedded contact_status (avoids a second HTTP call).
       // Fall back to the dedicated endpoint only when not available.
       if (_contactStatus == null && !_contactLoading) {
-        if (data.containsKey('contact_status') && data['contact_status'] != null) {
+        if (data.containsKey('contact_status') &&
+            data['contact_status'] != null) {
           Future.microtask(() => _maybeApplyEmbeddedContactStatus(data));
         } else {
           Future.microtask(_loadContactStatus);
@@ -839,7 +1056,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       }
 
       final outgoing = _contactStatus?['outgoing'] as Map?;
-      final phone    = _contactStatus?['phone'] as String?;
+      final phone = _contactStatus?['phone'] as String?;
       final outStatus = outgoing?['status'] as String?;
 
       final otherName = data['profile'] is Map
@@ -858,7 +1075,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
       return Container(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-        decoration: BoxDecoration(color: AppColors.background.withOpacity(0.97)),
+        decoration: BoxDecoration(
+          color: AppColors.background.withOpacity(0.97),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -871,11 +1090,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         onPressed: conversationId == null
                             ? null
                             : () => _startCall(
-                                  conversationId: conversationId,
-                                  peerName: otherName,
-                                  peerPhoto: otherPhoto,
-                                  video: false,
-                                ),
+                                conversationId: conversationId,
+                                peerName: otherName,
+                                peerPhoto: otherPhoto,
+                                video: false,
+                              ),
                         icon: const Icon(Icons.call_rounded, size: 18),
                         label: const Text('Voice'),
                         style: OutlinedButton.styleFrom(
@@ -883,7 +1102,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           side: BorderSide(color: AppColors.goldMild),
                           minimumSize: const Size(0, 48),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                       ),
                     ),
@@ -895,11 +1115,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         onPressed: conversationId == null
                             ? null
                             : () => _startCall(
-                                  conversationId: conversationId,
-                                  peerName: otherName,
-                                  peerPhoto: otherPhoto,
-                                  video: true,
-                                ),
+                                conversationId: conversationId,
+                                peerName: otherName,
+                                peerPhoto: otherPhoto,
+                                video: true,
+                              ),
                         icon: const Icon(Icons.videocam_rounded, size: 18),
                         label: const Text('Video'),
                         style: ElevatedButton.styleFrom(
@@ -907,7 +1127,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           foregroundColor: AppColors.textOnGold,
                           minimumSize: const Size(0, 48),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                       ),
                     ),
@@ -923,10 +1144,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   final otherName = data['profile'] is Map
                       ? (data['profile'] as Map)['first_name']?.toString()
                       : null;
-                  context.push('/chat/$conversationId', extra: {
-                    'name': otherName ?? 'Match',
-                    'userId': widget.userId,
-                  });
+                  context.push(
+                    '/chat/$conversationId',
+                    extra: {
+                      'name': otherName ?? 'Match',
+                      'userId': widget.userId,
+                    },
+                  );
                 } else {
                   context.go('/chat');
                 }
@@ -935,14 +1159,22 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 backgroundColor: AppColors.gold,
                 foregroundColor: AppColors.textOnGold,
                 minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.chat_bubble_rounded, size: 20),
                   SizedBox(width: 10),
-                  Text('SEND MESSAGE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                  Text(
+                    'SEND MESSAGE',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -966,11 +1198,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Widget _buildWhyWeMatchButton(Map<String, dynamic> data) {
-    final profile = data['profile'] is Map ? data['profile'] as Map<String, dynamic> : data;
+    final profile = data['profile'] is Map
+        ? data['profile'] as Map<String, dynamic>
+        : data;
     final name = profile['first_name']?.toString() ?? 'your match';
     final photos = data['photos'] as List?;
     final primaryPhoto = photos != null && photos.isNotEmpty
-        ? photos.firstWhere((p) => p['is_primary'] == true, orElse: () => photos.first)
+        ? photos.firstWhere(
+            (p) => p['is_primary'] == true,
+            orElse: () => photos.first,
+          )
         : null;
     final photoUrl = primaryPhoto is Map
         ? (primaryPhoto['url'] ?? primaryPhoto['photo_url'])?.toString()
@@ -979,14 +1216,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
     return OutlinedButton(
       onPressed: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => MatchExplanationScreen(
-            targetUserId: widget.userId!,
-            targetName: name,
-            targetPhoto: photoUrl,
-            compatibility: compat,
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MatchExplanationScreen(
+              targetUserId: widget.userId!,
+              targetName: name,
+              targetPhoto: photoUrl,
+              compatibility: compat,
+            ),
           ),
-        ));
+        );
       },
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.gold,
@@ -1005,7 +1244,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     );
   }
 
-  Widget _actionButton({required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _actionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1021,15 +1264,36 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Widget _sectionTitle(String title) {
-    return Text(title, style: AppTextStyles.headlineSmall.copyWith(color: AppColors.textPrimary));
+    return Text(
+      title,
+      style: AppTextStyles.headlineSmall.copyWith(color: AppColors.textPrimary),
+    );
   }
 
+  /// Two cards per row. Both cards in a row take the taller one's height, so
+  /// a value that wraps onto a second line keeps the row even.
   Widget _infoGrid(List<Widget> children) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      children: children.map((w) => SizedBox(width: (MediaQuery.of(context).size.width - 64) / 2, child: w)).toList(),
-    );
+    final rows = <Widget>[];
+    for (var i = 0; i < children.length; i += 2) {
+      if (rows.isNotEmpty) rows.add(const SizedBox(height: 16));
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: children[i]),
+              const SizedBox(width: 16),
+              Expanded(
+                child: i + 1 < children.length
+                    ? children[i + 1]
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(children: rows);
   }
 
   Widget _infoTile(IconData icon, String label, String value) {
@@ -1045,9 +1309,15 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         children: [
           Icon(icon, size: 20, color: AppColors.gold),
           const SizedBox(height: 8),
-          Text(label, style: AppTextStyles.labelSmall.copyWith(color: AppColors.textTertiary)),
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.textTertiary,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: AppTextStyles.labelLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+          // Full value, wrapped: church names and income ranges are long.
+          Text(value, style: AppTextStyles.labelLarge),
         ],
       ),
     );
@@ -1087,8 +1357,18 @@ class _ContactRevealTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Contact Number', style: AppTextStyles.overline.copyWith(color: Colors.green.shade300)),
-                  Text(phone!, style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+                  Text(
+                    'Contact Number',
+                    style: AppTextStyles.overline.copyWith(
+                      color: Colors.green.shade300,
+                    ),
+                  ),
+                  Text(
+                    phone!,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1107,12 +1387,18 @@ class _ContactRevealTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.phonelink_erase_rounded, color: AppColors.textTertiary, size: 18),
+            const Icon(
+              Icons.phonelink_erase_rounded,
+              color: AppColors.textTertiary,
+              size: 18,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'Sharing stopped. This reveal still counts on your plan.',
-                style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ],
@@ -1133,7 +1419,10 @@ class _ContactRevealTile extends StatelessWidget {
           children: [
             Icon(Icons.hourglass_top_rounded, color: AppColors.gold, size: 18),
             const SizedBox(width: 10),
-            Text('Contact request pending…', style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
+            Text(
+              'Contact request pending…',
+              style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold),
+            ),
           ],
         ),
       );
@@ -1143,9 +1432,18 @@ class _ContactRevealTile extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: loading ? null : onRequest,
       icon: loading
-          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold))
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.gold,
+              ),
+            )
           : const Icon(Icons.phone_in_talk_rounded, size: 18),
-      label: Text(outStatus == 'rejected' ? 'Request Again' : 'Request Contact'),
+      label: Text(
+        outStatus == 'rejected' ? 'Request Again' : 'Request Contact',
+      ),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.gold,
         side: BorderSide(color: AppColors.goldMild),
@@ -1169,7 +1467,8 @@ class _PublicProfilePhotoTile extends StatelessWidget {
       fit: BoxFit.cover,
       placeholder: (context, url) =>
           Center(child: CircularProgressIndicator(color: AppColors.gold)),
-      errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white),
+      errorWidget: (context, url, error) =>
+          const Icon(Icons.broken_image, color: Colors.white),
     );
     if (!locked) return base;
     return Stack(
@@ -1189,9 +1488,16 @@ class _PublicProfilePhotoTile extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.lock_rounded, color: Colors.white.withOpacity(0.9), size: 16),
+                Icon(
+                  Icons.lock_rounded,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
-                Text('Locked', style: AppTextStyles.labelSmall.copyWith(color: Colors.white)),
+                Text(
+                  'Locked',
+                  style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+                ),
               ],
             ),
           ),

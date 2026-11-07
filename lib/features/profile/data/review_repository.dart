@@ -23,14 +23,14 @@ class ReviewActionItem {
   bool get isOpen => status == 'open';
 
   factory ReviewActionItem.fromJson(Map<String, dynamic> j) => ReviewActionItem(
-        id: j['id']?.toString(),
-        actionType: j['action_type']?.toString() ?? '',
-        status: j['status']?.toString() ?? 'open',
-        title: j['title']?.toString() ?? 'Update needed',
-        hint: j['hint']?.toString() ?? '',
-        route: j['route']?.toString() ?? '/onboarding',
-        source: j['source']?.toString() ?? 'requested',
-      );
+    id: j['id']?.toString(),
+    actionType: j['action_type']?.toString() ?? '',
+    status: j['status']?.toString() ?? 'open',
+    title: j['title']?.toString() ?? 'Update needed',
+    hint: j['hint']?.toString() ?? '',
+    route: j['route']?.toString() ?? '/onboarding',
+    source: j['source']?.toString() ?? 'requested',
+  );
 }
 
 class ReviewInbox {
@@ -51,17 +51,18 @@ class ReviewInbox {
   List<ReviewActionItem> get open => actions.where((a) => a.isOpen).toList();
 
   factory ReviewInbox.fromJson(Map<String, dynamic> j) => ReviewInbox(
-        reviewStatus: j['review_status']?.toString(),
-        reviewNote: j['review_note']?.toString(),
-        actions: (j['actions'] as List? ?? [])
-            .whereType<Map>()
-            .map((e) => ReviewActionItem.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-        resubmitted: j['resubmitted'] == true,
-        photoCount: (j['photo_count'] as num?)?.toInt() ??
-            (j['usable_photos'] as num?)?.toInt() ??
-            0,
-      );
+    reviewStatus: j['review_status']?.toString(),
+    reviewNote: j['review_note']?.toString(),
+    actions: (j['actions'] as List? ?? [])
+        .whereType<Map>()
+        .map((e) => ReviewActionItem.fromJson(Map<String, dynamic>.from(e)))
+        .toList(),
+    resubmitted: j['resubmitted'] == true,
+    photoCount:
+        (j['photo_count'] as num?)?.toInt() ??
+        (j['usable_photos'] as num?)?.toInt() ??
+        0,
+  );
 }
 
 class ReviewRepository {
@@ -94,7 +95,8 @@ class ReviewRepository {
   String errorMessage(Object e) {
     try {
       final data = (e as dynamic).response?.data;
-      if (data is Map && data['message'] != null) return data['message'].toString();
+      if (data is Map && data['message'] != null)
+        return data['message'].toString();
     } catch (_) {}
     return 'Could not send that back. Please try again.';
   }

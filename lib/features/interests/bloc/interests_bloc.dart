@@ -11,21 +11,29 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
     on<InterestActionEvent>(_onInterestAction);
   }
 
-  Future<void> _onFetchInterests(FetchInterestsEvent event, Emitter<InterestsState> emit) async {
+  Future<void> _onFetchInterests(
+    FetchInterestsEvent event,
+    Emitter<InterestsState> emit,
+  ) async {
     emit(InterestsLoading());
     try {
       final data = await _repository.fetchInterests();
-      emit(InterestsLoaded(
-        received: data['received']!,
-        matches: data['matches']!,
-        sent: data['sent']!,
-      ));
+      emit(
+        InterestsLoaded(
+          received: data['received']!,
+          matches: data['matches']!,
+          sent: data['sent']!,
+        ),
+      );
     } catch (e) {
       emit(InterestsError(e.toString()));
     }
   }
 
-  Future<void> _onInterestAction(InterestActionEvent event, Emitter<InterestsState> emit) async {
+  Future<void> _onInterestAction(
+    InterestActionEvent event,
+    Emitter<InterestsState> emit,
+  ) async {
     if (state is! InterestsLoaded) {
       // No cached state — fall back to full re-fetch
       try {
@@ -49,14 +57,19 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
     final updatedReceived = current.received
         .where((i) => i['interest_id']?.toString() != event.interestId)
         .toList();
-    emit(InterestsLoaded(
-      received: updatedReceived,
-      matches:  current.matches,
-      sent:     current.sent,
-    ));
+    emit(
+      InterestsLoaded(
+        received: updatedReceived,
+        matches: current.matches,
+        sent: current.sent,
+      ),
+    );
 
     try {
-      final result = await _repository.handleAction(event.interestId, accept: event.accept);
+      final result = await _repository.handleAction(
+        event.interestId,
+        accept: event.accept,
+      );
 
       if (event.accept && item.isNotEmpty) {
         // Move accepted item to matches, embedding conversation_id from backend response
@@ -66,11 +79,13 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
           'status': 'accepted',
           if (convId != null) 'conversation_id': convId,
         };
-        emit(InterestsLoaded(
-          received: updatedReceived,
-          matches:  [matchEntry, ...current.matches],
-          sent:     current.sent,
-        ));
+        emit(
+          InterestsLoaded(
+            received: updatedReceived,
+            matches: [matchEntry, ...current.matches],
+            sent: current.sent,
+          ),
+        );
       }
       // For reject: updatedReceived is already emitted above, nothing else needed
     } catch (e) {

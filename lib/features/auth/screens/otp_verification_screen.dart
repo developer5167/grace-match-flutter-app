@@ -60,7 +60,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     AppHaptics.light();
     context.read<AuthBloc>().add(VerifyOtpEvent(phone: widget.phone, otp: otp));
   }
-  
+
   void _resendOtp() {
     AppHaptics.medium();
     context.read<AuthBloc>().add(SendOtpEvent(widget.phone));
@@ -72,7 +72,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 64,
-      textStyle: AppTextStyles.bodyLarge.copyWith(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+      textStyle: AppTextStyles.bodyLarge.copyWith(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: AppColors.textPrimary,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
@@ -116,7 +120,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message, style: const TextStyle(color: Colors.white)),
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -125,7 +132,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       },
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        
+
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: _buildAppBar(),
@@ -136,14 +143,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 24),
-                  
+
                   Text(
                     'Verify Code',
                     style: AppTextStyles.displaySmall,
                   ).animate().fadeIn(duration: 400.ms).slideX(),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   Text.rich(
                     TextSpan(
                       text: 'Code sent to ',
@@ -151,34 +158,41 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       children: [
                         TextSpan(
                           text: widget.phone,
-                          style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: AppColors.gold,
+                          ),
                         ),
                       ],
                     ),
                   ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideX(),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   // PINPUT Fields
                   Center(
-                    child: Pinput(
-                      length: 6,
-                      controller: pinputController,
-                      focusNode: focusNode,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: focusedPinTheme,
-                      errorPinTheme: errorPinTheme,
-                      forceErrorState: _hasError,
-                      onChanged: (_) => setState(() => _hasError = false),
-                      onCompleted: _verifyOtp,
-                      readOnly: isLoading,
-                    )
-                    .animate(target: _hasError ? 1 : 0)
-                    .shakeX(hz: 8, amount: 4, duration: 400.ms),
-                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1),
-                  
+                        child:
+                            Pinput(
+                                  length: 6,
+                                  controller: pinputController,
+                                  focusNode: focusNode,
+                                  defaultPinTheme: defaultPinTheme,
+                                  focusedPinTheme: focusedPinTheme,
+                                  errorPinTheme: errorPinTheme,
+                                  forceErrorState: _hasError,
+                                  onChanged: (_) =>
+                                      setState(() => _hasError = false),
+                                  onCompleted: _verifyOtp,
+                                  readOnly: isLoading,
+                                )
+                                .animate(target: _hasError ? 1 : 0)
+                                .shakeX(hz: 8, amount: 4, duration: 400.ms),
+                      )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 400.ms)
+                      .slideY(begin: 0.1),
+
                   const SizedBox(height: 32),
-                  
+
                   // Resend Timer
                   Center(
                     child: _secondsRemaining > 0
@@ -190,19 +204,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             onPressed: isLoading ? null : _resendOtp,
                             child: Text(
                               'Resend Code',
-                              style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold),
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.gold,
+                              ),
                             ),
                           ),
                   ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
-                  
+
                   const Spacer(),
-                  
+
                   AppButton(
-                    label: 'Verify',
-                    isLoading: isLoading,
-                    onPressed: pinputController.text.length == 6 ? () => _verifyOtp(pinputController.text) : null,
-                  ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.2),
-                  
+                        label: 'Verify',
+                        isLoading: isLoading,
+                        onPressed: pinputController.text.length == 6
+                            ? () => _verifyOtp(pinputController.text)
+                            : null,
+                      )
+                      .animate()
+                      .fadeIn(delay: 400.ms, duration: 400.ms)
+                      .slideY(begin: 0.2),
+
                   const SizedBox(height: 16),
                 ],
               ),
@@ -218,7 +239,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppColors.textPrimary,
+        ),
         onPressed: () => context.pop(),
       ),
     );

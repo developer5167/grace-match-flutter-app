@@ -29,8 +29,14 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   late TextEditingController _locationCtrl;
 
   static const _denomOptions = [
-    'Any', 'CSI', 'Catholic', 'Pentecostal',
-    'Protestant', 'Born Again', 'Orthodox', 'Other',
+    'Any',
+    'CSI',
+    'Catholic',
+    'Pentecostal',
+    'Protestant',
+    'Born Again',
+    'Orthodox',
+    'Other',
   ];
 
   static const _professionOptions = {
@@ -44,18 +50,18 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   void initState() {
     super.initState();
     final f = widget.currentFilters;
-    _ageRange       = RangeValues(f.ageMin.toDouble(), f.ageMax.toDouble());
-    _heightRange    = RangeValues(f.heightMin.toDouble(), f.heightMax.toDouble());
-    _salaryRange    = RangeValues(f.salaryMin.toDouble(), f.salaryMax.toDouble());
-    _denomination   = f.denomination;
-    _denomFlexible  = f.denominationFlexible;
+    _ageRange = RangeValues(f.ageMin.toDouble(), f.ageMax.toDouble());
+    _heightRange = RangeValues(f.heightMin.toDouble(), f.heightMax.toDouble());
+    _salaryRange = RangeValues(f.salaryMin.toDouble(), f.salaryMax.toDouble());
+    _denomination = f.denomination;
+    _denomFlexible = f.denominationFlexible;
     _locationFlexible = f.locationFlexible;
-    _casteFlexible  = f.casteFlexible;
+    _casteFlexible = f.casteFlexible;
     _professionPref = _professionOptions.keys.firstWhere(
       (k) => _professionOptions[k] == f.professionPreference,
       orElse: () => 'Any',
     );
-    _locationCtrl   = TextEditingController(text: f.location ?? '');
+    _locationCtrl = TextEditingController(text: f.location ?? '');
   }
 
   @override
@@ -65,22 +71,26 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   }
 
   void _applyFilters() {
-    Navigator.of(context).pop(DiscoverFilters(
-      ageMin: _ageRange.start.round(),
-      ageMax: _ageRange.end.round(),
-      heightMin: _heightRange.start.round(),
-      heightMax: _heightRange.end.round(),
-      denomination: _denomination,
-      denominationFlexible: _denomFlexible || _denomination == 'Any',
-      location: _locationFlexible
-          ? null
-          : (_locationCtrl.text.trim().isEmpty ? null : _locationCtrl.text.trim()),
-      locationFlexible: _locationFlexible,
-      casteFlexible: _casteFlexible,
-      professionPreference: _professionOptions[_professionPref] ?? 'any',
-      salaryMin: _salaryRange.start.round(),
-      salaryMax: _salaryRange.end.round(),
-    ));
+    Navigator.of(context).pop(
+      DiscoverFilters(
+        ageMin: _ageRange.start.round(),
+        ageMax: _ageRange.end.round(),
+        heightMin: _heightRange.start.round(),
+        heightMax: _heightRange.end.round(),
+        denomination: _denomination,
+        denominationFlexible: _denomFlexible || _denomination == 'Any',
+        location: _locationFlexible
+            ? null
+            : (_locationCtrl.text.trim().isEmpty
+                  ? null
+                  : _locationCtrl.text.trim()),
+        locationFlexible: _locationFlexible,
+        casteFlexible: _casteFlexible,
+        professionPreference: _professionOptions[_professionPref] ?? 'any',
+        salaryMin: _salaryRange.start.round(),
+        salaryMax: _salaryRange.end.round(),
+      ),
+    );
   }
 
   void _resetFilters() => Navigator.of(context).pop(DiscoverFilters.defaults());
@@ -117,9 +127,12 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                 const Spacer(),
                 TextButton(
                   onPressed: _resetFilters,
-                  child: Text('Reset All',
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.gold)),
+                  child: Text(
+                    'Reset All',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.gold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -153,7 +166,11 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
           // ── pinned apply button ──────────────────────────────
           Container(
             padding: EdgeInsets.fromLTRB(
-                24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+              24,
+              12,
+              24,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             decoration: const BoxDecoration(
               color: AppColors.surfaceElevated,
               border: Border(top: BorderSide(color: AppColors.surfaceHighest)),
@@ -165,15 +182,17 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                 foregroundColor: AppColors.textOnGold,
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
               child: const Text(
                 'Apply Filters',
                 style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    letterSpacing: 0.5),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ),
@@ -183,25 +202,25 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   }
 
   Widget _divider() => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Divider(color: AppColors.surfaceHighest, height: 1),
-      );
+    padding: EdgeInsets.symmetric(vertical: 20),
+    child: Divider(color: AppColors.surfaceHighest, height: 1),
+  );
 
   Widget _sectionLabel(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Text(text,
-            style: AppTextStyles.labelLarge
-                .copyWith(color: AppColors.textSecondary)),
-      );
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Text(
+      text,
+      style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+    ),
+  );
 
   SliderThemeData get _sliderTheme => SliderTheme.of(context).copyWith(
-        activeTrackColor: AppColors.gold,
-        inactiveTrackColor: AppColors.surfaceHighest,
-        thumbColor: AppColors.gold,
-        overlayColor: AppColors.goldSubtle,
-        rangeThumbShape:
-            const RoundRangeSliderThumbShape(enabledThumbRadius: 10),
-      );
+    activeTrackColor: AppColors.gold,
+    inactiveTrackColor: AppColors.surfaceHighest,
+    thumbColor: AppColors.gold,
+    overlayColor: AppColors.goldSubtle,
+    rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 10),
+  );
 
   // ── Age ────────────────────────────────────────────────────────
   Widget _buildAgeSection() {
@@ -293,25 +312,26 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
               }),
               child: AnimatedContainer(
                 duration: 180.ms,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.goldSubtle
                       : AppColors.surfaceHighest,
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
-                    color: selected
-                        ? AppColors.gold
-                        : AppColors.surfaceHighest,
+                    color: selected ? AppColors.gold : AppColors.surfaceHighest,
                     width: selected ? 1.5 : 1,
                   ),
                 ),
-                child: Text(d,
-                    style: AppTextStyles.labelMedium.copyWith(
-                        color: selected
-                            ? AppColors.gold
-                            : AppColors.textSecondary)),
+                child: Text(
+                  d,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: selected ? AppColors.gold : AppColors.textSecondary,
+                  ),
+                ),
               ),
             );
           }).toList(),
@@ -335,25 +355,26 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
               onTap: () => setState(() => _professionPref = p),
               child: AnimatedContainer(
                 duration: 180.ms,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.goldSubtle
                       : AppColors.surfaceHighest,
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
-                    color: selected
-                        ? AppColors.gold
-                        : AppColors.surfaceHighest,
+                    color: selected ? AppColors.gold : AppColors.surfaceHighest,
                     width: selected ? 1.5 : 1,
                   ),
                 ),
-                child: Text(p,
-                    style: AppTextStyles.labelMedium.copyWith(
-                        color: selected
-                            ? AppColors.gold
-                            : AppColors.textSecondary)),
+                child: Text(
+                  p,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: selected ? AppColors.gold : AppColors.textSecondary,
+                  ),
+                ),
               ),
             );
           }).toList(),
@@ -420,18 +441,23 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
               hintText: 'e.g. Hyderabad, Vijayawada',
-              hintStyle:
-                  AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
+              ),
               filled: true,
               fillColor: AppColors.surfaceHighest,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              prefixIcon:
-                  Icon(Icons.location_on_outlined, color: AppColors.gold),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              prefixIcon: Icon(
+                Icons.location_on_outlined,
+                color: AppColors.gold,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
       ],
@@ -451,8 +477,9 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
               _casteFlexible
                   ? 'Open to all castes'
                   : 'Match my saved preference',
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
             ),
           ],
         ),
@@ -473,9 +500,12 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label,
-            style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
         const SizedBox(width: 4),
         Switch(
           value: value,

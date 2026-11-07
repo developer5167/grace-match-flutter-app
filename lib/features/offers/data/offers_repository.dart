@@ -69,22 +69,23 @@ class Offer {
   });
 
   factory Offer.fromJson(Map<String, dynamic> j) => Offer(
-        id: j['id'].toString(),
-        code: j['code']?.toString() ?? '',
-        title: j['title']?.toString() ?? 'Offer',
-        description: j['description']?.toString(),
-        discountType: j['discount_type']?.toString() ?? 'flat',
-        discountValue: _int(j['discount_value']),
-        maxDiscountInr: _intOrNull(j['max_discount_inr']),
-        planName: j['plan_name']?.toString(),
-        expiresAt: DateTime.tryParse(j['expires_at']?.toString() ?? '') ?? DateTime.now(),
-        isPersonal: j['is_personal'] == true,
-        alreadyUsed: j['already_used'] == true,
-        inProgress: j['in_progress'] == true,
-        isUsable: j['is_usable'] == true,
-        exampleDiscountInr: _int(j['example_discount_inr']),
-        exampleOnPriceInr: _int(j['example_on_price_inr']),
-      );
+    id: j['id'].toString(),
+    code: j['code']?.toString() ?? '',
+    title: j['title']?.toString() ?? 'Offer',
+    description: j['description']?.toString(),
+    discountType: j['discount_type']?.toString() ?? 'flat',
+    discountValue: _int(j['discount_value']),
+    maxDiscountInr: _intOrNull(j['max_discount_inr']),
+    planName: j['plan_name']?.toString(),
+    expiresAt:
+        DateTime.tryParse(j['expires_at']?.toString() ?? '') ?? DateTime.now(),
+    isPersonal: j['is_personal'] == true,
+    alreadyUsed: j['already_used'] == true,
+    inProgress: j['in_progress'] == true,
+    isUsable: j['is_usable'] == true,
+    exampleDiscountInr: _int(j['example_discount_inr']),
+    exampleOnPriceInr: _int(j['example_on_price_inr']),
+  );
 
   /// "20% off" / "₹300 off" — the headline on the card.
   String get headline =>
@@ -134,12 +135,15 @@ class OffersRepository {
 
   /// Price preview. Throws the server's own message so the member is told the
   /// actual reason — already used, wrong plan, expired — not "invalid code".
-  Future<CouponPreview> validate({required String code, required String planId}) async {
+  Future<CouponPreview> validate({
+    required String code,
+    required String planId,
+  }) async {
     try {
-      final res = await _dio.post(ApiEndpoints.offersValidate, data: {
-        'code': code.trim().toUpperCase(),
-        'plan_id': planId,
-      });
+      final res = await _dio.post(
+        ApiEndpoints.offersValidate,
+        data: {'code': code.trim().toUpperCase(), 'plan_id': planId},
+      );
       final d = Map<String, dynamic>.from(res.data['data']);
       return CouponPreview(
         code: d['code'].toString(),
@@ -148,7 +152,9 @@ class OffersRepository {
         finalInr: _int(d['final_inr']),
       );
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Could not apply that code');
+      throw Exception(
+        e.response?.data?['message'] ?? 'Could not apply that code',
+      );
     }
   }
 }

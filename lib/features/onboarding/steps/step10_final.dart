@@ -16,7 +16,12 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
   bool _agreeTerms = false;
 
   // Maps: display label → API value
-  final _managers = {'Self': 'self', 'Parent': 'parents', 'Sibling': 'others', 'Relative': 'others'};
+  final _managers = {
+    'Self': 'self',
+    'Parent': 'parents',
+    'Sibling': 'others',
+    'Relative': 'others',
+  };
 
   @override
   void initState() {
@@ -27,7 +32,13 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
       if (profile != null && mounted) {
         setState(() {
           if (profile['profile_managed_by'] != null) {
-            _managedBy = _managers.entries.cast<MapEntry<String, String>?>().firstWhere((e) => e?.value == profile['profile_managed_by'], orElse: () => null)?.key;
+            _managedBy = _managers.entries
+                .cast<MapEntry<String, String>?>()
+                .firstWhere(
+                  (e) => e?.value == profile['profile_managed_by'],
+                  orElse: () => null,
+                )
+                ?.key;
           }
         });
       }
@@ -39,9 +50,7 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
     if (_managedBy == null || !_agreeTerms) {
       return null;
     }
-    return {
-      'profile_managed_by': _managers[_managedBy],
-    };
+    return {'profile_managed_by': _managers[_managedBy]};
   }
 
   @override
@@ -59,12 +68,18 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.celebration_rounded, color: AppColors.textOnGold, size: 40),
+                const Icon(
+                  Icons.celebration_rounded,
+                  color: AppColors.textOnGold,
+                  size: 40,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'You are almost done!\nGraceMatch is excited to welcome you.',
-                    style: AppTextStyles.headlineSmall.copyWith(color: AppColors.textOnGold),
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      color: AppColors.textOnGold,
+                    ),
                   ),
                 ),
               ],
@@ -77,8 +92,13 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
             spacing: 8,
             runSpacing: 8,
             children: _managers.keys
-                .map((m) => _selectChip(
-                    m, _managedBy, (v) => setState(() => _managedBy = v)))
+                .map(
+                  (m) => _selectChip(
+                    m,
+                    _managedBy,
+                    (v) => setState(() => _managedBy = v),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 32),
@@ -103,7 +123,8 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
               Expanded(
                 child: Text.rich(
                   TextSpan(
-                    text: 'I confirm the details provided are true and I agree to the ',
+                    text:
+                        'I confirm the details provided are true and I agree to the ',
                     style: AppTextStyles.bodyMedium,
                     children: [
                       TextSpan(
@@ -135,11 +156,15 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
   }
 
   Widget _fieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(label, style: AppTextStyles.labelLarge),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(label, style: AppTextStyles.labelLarge),
+  );
 
-  Widget _selectChip(String label, String? selected, ValueChanged<String> onTap) {
+  Widget _selectChip(
+    String label,
+    String? selected,
+    ValueChanged<String> onTap,
+  ) {
     final isSelected = selected == label;
     return GestureDetector(
       onTap: () => onTap(label),
@@ -154,9 +179,12 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

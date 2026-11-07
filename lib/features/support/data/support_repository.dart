@@ -27,10 +27,10 @@ class SupportCategory {
   const SupportCategory({required this.key, required this.label, this.hint});
 
   factory SupportCategory.fromJson(Map<String, dynamic> j) => SupportCategory(
-        key: j['key']?.toString() ?? 'other',
-        label: j['label']?.toString() ?? 'Something else',
-        hint: j['hint']?.toString(),
-      );
+    key: j['key']?.toString() ?? 'other',
+    label: j['label']?.toString() ?? 'Something else',
+    hint: j['hint']?.toString(),
+  );
 }
 
 class SupportTicket {
@@ -65,29 +65,35 @@ class SupportTicket {
   });
 
   factory SupportTicket.fromJson(Map<String, dynamic> j) => SupportTicket(
-        id: j['id'].toString(),
-        category: j['category']?.toString() ?? 'other',
-        subject: j['subject']?.toString() ?? '',
-        status: j['status']?.toString() ?? 'open',
-        priority: j['priority']?.toString() ?? 'normal',
-        lastMessage: j['last_message']?.toString(),
-        unread: _int(j['unread_for_member']),
-        lastMessageAt: _date(j['last_message_at']),
-        createdAt: _date(j['created_at']),
-        attachmentsEnabled: j['attachments_enabled'] == true,
-      );
+    id: j['id'].toString(),
+    category: j['category']?.toString() ?? 'other',
+    subject: j['subject']?.toString() ?? '',
+    status: j['status']?.toString() ?? 'open',
+    priority: j['priority']?.toString() ?? 'normal',
+    lastMessage: j['last_message']?.toString(),
+    unread: _int(j['unread_for_member']),
+    lastMessageAt: _date(j['last_message_at']),
+    createdAt: _date(j['created_at']),
+    attachmentsEnabled: j['attachments_enabled'] == true,
+  );
 
   bool get isSettled => status == 'resolved' || status == 'closed';
 
   /// What the member should understand from the status, in their words.
   String get statusLabel {
     switch (status) {
-      case 'open':            return 'Sent';
-      case 'awaiting_staff':  return 'Waiting for support';
-      case 'awaiting_member': return 'Support replied';
-      case 'resolved':        return 'Resolved';
-      case 'closed':          return 'Closed';
-      default:                return status;
+      case 'open':
+        return 'Sent';
+      case 'awaiting_staff':
+        return 'Waiting for support';
+      case 'awaiting_member':
+        return 'Support replied';
+      case 'resolved':
+        return 'Resolved';
+      case 'closed':
+        return 'Closed';
+      default:
+        return status;
     }
   }
 }
@@ -110,13 +116,13 @@ class SupportMessage {
   });
 
   factory SupportMessage.fromJson(Map<String, dynamic> j) => SupportMessage(
-        id: j['id'].toString(),
-        senderType: j['sender_type']?.toString() ?? 'system',
-        senderName: j['sender_name']?.toString(),
-        body: j['body']?.toString(),
-        attachmentUrl: j['attachment_url']?.toString(),
-        createdAt: _date(j['created_at']),
-      );
+    id: j['id'].toString(),
+    senderType: j['sender_type']?.toString() ?? 'system',
+    senderName: j['sender_name']?.toString(),
+    body: j['body']?.toString(),
+    attachmentUrl: j['attachment_url']?.toString(),
+    createdAt: _date(j['created_at']),
+  );
 
   bool get isMine => senderType == 'member';
 }
@@ -166,25 +172,34 @@ class SupportRepository {
     required String message,
   }) async {
     try {
-      final res = await _dio.post(ApiEndpoints.supportTickets, data: {
-        'category': category,
-        'subject': subject.trim(),
-        'message': message.trim(),
-      });
-      return SupportTicket.fromJson(Map<String, dynamic>.from(res.data['data']));
+      final res = await _dio.post(
+        ApiEndpoints.supportTickets,
+        data: {
+          'category': category,
+          'subject': subject.trim(),
+          'message': message.trim(),
+        },
+      );
+      return SupportTicket.fromJson(
+        Map<String, dynamic>.from(res.data['data']),
+      );
     } on DioException catch (e) {
       final data = e.response?.data;
       if (e.response?.statusCode == 409 && data is Map) {
         throw DuplicateTicket(
           ticketId: data['data']?['ticket_id']?.toString() ?? '',
-          message: data['message']?.toString() ?? 'You already have a conversation about this.',
+          message:
+              data['message']?.toString() ??
+              'You already have a conversation about this.',
         );
       }
       throw Exception(_message(e));
     }
   }
 
-  Future<({SupportTicket ticket, List<SupportMessage> messages})> thread(String id) async {
+  Future<({SupportTicket ticket, List<SupportMessage> messages})> thread(
+    String id,
+  ) async {
     final res = await _dio.get(ApiEndpoints.supportTicket(id));
     final d = Map<String, dynamic>.from(res.data['data']);
     final raw = d['messages'];
@@ -192,9 +207,11 @@ class SupportRepository {
       ticket: SupportTicket.fromJson(Map<String, dynamic>.from(d['ticket'])),
       messages: raw is List
           ? raw
-              .whereType<Map>()
-              .map((e) => SupportMessage.fromJson(Map<String, dynamic>.from(e)))
-              .toList()
+                .whereType<Map>()
+                .map(
+                  (e) => SupportMessage.fromJson(Map<String, dynamic>.from(e)),
+                )
+                .toList()
           : <SupportMessage>[],
     );
   }
@@ -220,8 +237,13 @@ class SupportRepository {
         data = {'message': message.trim()};
       }
 
-      final res = await _dio.post(ApiEndpoints.supportMessages(ticketId), data: data);
-      return SupportMessage.fromJson(Map<String, dynamic>.from(res.data['data']));
+      final res = await _dio.post(
+        ApiEndpoints.supportMessages(ticketId),
+        data: data,
+      );
+      return SupportMessage.fromJson(
+        Map<String, dynamic>.from(res.data['data']),
+      );
     } on DioException catch (e) {
       throw Exception(_message(e));
     }
@@ -229,7 +251,8 @@ class SupportRepository {
 
   String _message(DioException e) {
     final data = e.response?.data;
-    if (data is Map && data['message'] != null) return data['message'].toString();
+    if (data is Map && data['message'] != null)
+      return data['message'].toString();
     return 'Could not reach support. Please try again.';
   }
 }

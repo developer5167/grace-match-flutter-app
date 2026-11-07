@@ -17,10 +17,10 @@ class AuthRepository {
         countryCode = phone.substring(0, 3);
         phoneNumber = phone.substring(3);
       }
-      await _dio.post(ApiEndpoints.sendOtp, data: {
-        'phone_number': phoneNumber,
-        'country_code': countryCode
-      });
+      await _dio.post(
+        ApiEndpoints.sendOtp,
+        data: {'phone_number': phoneNumber, 'country_code': countryCode},
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -39,15 +39,15 @@ class AuthRepository {
         data: {
           'phone_number': phoneNumber,
           'country_code': countryCode,
-          'otp': otp
+          'otp': otp,
         },
       );
-      
+
       final data = response.data['data'];
       final String accessToken = data['access_token'];
       final String refreshToken = data['refresh_token'];
       final bool isNewUser = data['is_new_user'] ?? false;
-      
+
       await AppStorage.saveTokens(
         accessToken: accessToken,
         refreshToken: refreshToken,
@@ -56,17 +56,16 @@ class AuthRepository {
       final user = data['user'];
       if (user != null) {
         await AppStorage.saveUserId(user['id']);
-        AppStorage.saveOnboardingComplete(user['is_onboarding_complete'] ?? false);
+        AppStorage.saveOnboardingComplete(
+          user['is_onboarding_complete'] ?? false,
+        );
         AppStorage.saveReviewStatus(user['review_status']);
       }
 
       // Register FCM token right after login so push works for closed app.
       await syncFcmToken();
-      
-      return {
-        'is_new_user': isNewUser,
-        'user': data['user'],
-      };
+
+      return {'is_new_user': isNewUser, 'user': data['user']};
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -124,7 +123,9 @@ class AuthRepository {
         if (data['errors'] != null && data['errors'] is List) {
           final errors = data['errors'] as List;
           if (errors.isNotEmpty) {
-            return AuthException(errors.map((err) => '• ${err['message']}').join('\n'));
+            return AuthException(
+              errors.map((err) => '• ${err['message']}').join('\n'),
+            );
           }
         }
         return AuthException(

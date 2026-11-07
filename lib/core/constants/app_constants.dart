@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class AppConstants {
   AppConstants._();
+
   /// API base URL. Override for local/dev:
   ///
   ///   flutter run --dart-define=API_BASE_URL=https://<tunnel>/api/v1
@@ -30,6 +31,7 @@ class AppConstants {
       );
     }
   }
+
   static const String appName = 'GraceMatch';
   static const String tagline = 'Where faith meets forever';
 
@@ -99,7 +101,8 @@ class ApiEndpoints {
   static String notificationRead(String id) => '/notifications/$id/read';
 
   // Activity
-  static const String activityBootstrap = '/activity/bootstrap'; // single call for entire tab
+  static const String activityBootstrap =
+      '/activity/bootstrap'; // single call for entire tab
   static const String activitySummary = '/activity/summary';
   static const String activityViews = '/activity/views';
   static const String activityShortlists = '/activity/shortlists';
@@ -109,34 +112,39 @@ class ApiEndpoints {
   static const String spotlight = '/premium/spotlight';
   static const String entitlements = '/premium/entitlements';
   static const String contactRequest = '/premium/contact-request';
-  static String contactStatus(String targetUserId) => '/premium/contact-status/$targetUserId';
-  static const String contactRespond = '/premium/contact-request'; // /:id/respond appended in repo
-  static String contactRespondAction(String id) => '/premium/contact-request/$id/respond';
-  static String contactRevoke(String id) => '/premium/contact-request/$id/revoke';
+  static String contactStatus(String targetUserId) =>
+      '/premium/contact-status/$targetUserId';
+  static const String contactRespond =
+      '/premium/contact-request'; // /:id/respond appended in repo
+  static String contactRespondAction(String id) =>
+      '/premium/contact-request/$id/respond';
+  static String contactRevoke(String id) =>
+      '/premium/contact-request/$id/revoke';
 
   // ─── Trust ──────────────────────────────────────────────────
-  static const String reportAndExit      = '/trust/report-and-exit';
-  static const String digilockerStart    = '/trust/digilocker/start';
-  static const String ageCheck           = '/onboarding/age-check';
-  static const String digilockerStatus   = '/trust/digilocker/status';
-  static const String screenshotAlert    = '/trust/screenshot';
+  static const String reportAndExit = '/trust/report-and-exit';
+  static const String digilockerStart = '/trust/digilocker/start';
+  static const String ageCheck = '/onboarding/age-check';
+  static const String digilockerStatus = '/trust/digilocker/status';
+  static const String screenshotAlert = '/trust/screenshot';
   static const String verificationSelfie = '/trust/verification-selfie';
 
   // ─── Calls ──────────────────────────────────────────────────
-  static const String iceServers  = '/calls/ice-servers';
+  static const String iceServers = '/calls/ice-servers';
   static const String callHistory = '/calls/history';
 
   // ─── Support ────────────────────────────────────────────────
-  static const String supportTickets    = '/support';
+  static const String supportTickets = '/support';
   static const String supportCategories = '/support/categories';
-  static const String supportUnread     = '/support/unread';
-  static String supportTicket(String id)   => '/support/$id';
+  static const String supportUnread = '/support/unread';
+  static String supportTicket(String id) => '/support/$id';
   static String supportMessages(String id) => '/support/$id/messages';
 
   // ─── Offers ─────────────────────────────────────────────────
-  static const String offers         = '/offers';
+  static const String offers = '/offers';
   static const String offersValidate = '/offers/validate';
-  static const String contactRequestsIncoming = '/premium/contact-requests/incoming';
+  static const String contactRequestsIncoming =
+      '/premium/contact-requests/incoming';
 
   // Growth
   static const String successStories = '/growth/success-stories';

@@ -1,11 +1,6 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/membership_palette.dart';
@@ -15,6 +10,7 @@ import '../../profile/bloc/profile_event.dart';
 import '../../offers/data/offers_repository.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/utils/store_policy.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   /// Prefilled when the member arrived by tapping an offer, so they never have
@@ -37,8 +33,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   // Held per plan, because the same code can be valid on one plan and not
   // another, and a preview shown against the wrong plan is a quoted price the
   // member will not be charged.
-  late final TextEditingController _couponCtl =
-      TextEditingController(text: widget.initialCoupon ?? '');
+  late final TextEditingController _couponCtl = TextEditingController(
+    text: widget.initialCoupon ?? '',
+  );
   final _offers = OffersRepository();
   final Map<String, CouponPreview> _applied = {};
   String? _couponError;
@@ -56,27 +53,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     super.dispose();
   }
 
-  bool get _payOnWebsite => !kIsWeb && Platform.isIOS;
-
-  Future<void> _openWebsite() async {
-    final uri = Uri.parse(AppConstants.siteUrl);
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!mounted) return;
-    if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open the website. Try again from Safari.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   Future<void> _applyCoupon(String planId) async {
     final code = _couponCtl.text.trim();
     if (code.isEmpty) return;
 
-    setState(() { _checking = true; _couponError = null; });
+    setState(() {
+      _checking = true;
+      _couponError = null;
+    });
     try {
       final preview = await _offers.validate(code: code, planId: planId);
       if (!mounted) return;
@@ -99,12 +83,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return BlocConsumer<SubscriptionBloc, SubscriptionState>(
       listener: (context, state) {
         if (state is PlansLoaded) {
-          setState(() => _cachedPlans = List<Map<String, dynamic>>.from(state.plans));
+          setState(
+            () => _cachedPlans = List<Map<String, dynamic>>.from(state.plans),
+          );
         }
         if (state is PaymentProcessed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message ?? (state.success ? 'Success' : 'Failed')),
+              content: Text(
+                state.message ?? (state.success ? 'Success' : 'Failed'),
+              ),
               backgroundColor: state.success ? Colors.green : Colors.red,
             ),
           );
@@ -112,7 +100,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             // Refresh premium plans immediately (disables current active plan).
             context.read<SubscriptionBloc>().add(FetchPlansEvent());
             // Refresh My Profile so premium badge/plan updates immediately.
-            context.read<ProfileBloc>().add(const FetchProfileEvent(silentRefresh: true));
+            context.read<ProfileBloc>().add(
+              const FetchProfileEvent(silentRefresh: true),
+            );
             // Auto close premium screen after a successful purchase so user
             // instantly sees updated profile state without manual restart.
             Future.delayed(const Duration(milliseconds: 350), () {
@@ -134,7 +124,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
-            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         }
 
@@ -149,7 +141,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text(state.message, style: const TextStyle(color: Colors.white), textAlign: TextAlign.center),
+                child: Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           );
@@ -166,7 +162,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
-            body: const Center(child: Text('No active plans found.', style: TextStyle(color: Colors.white))),
+            body: const Center(
+              child: Text(
+                'No active plans found.',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           );
         }
 
@@ -198,33 +199,88 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 // happens. Making somebody hunt through Settings while they
                 // are already annoyed is how a fixable problem becomes a
                 // refund request.
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      AppHaptics.selection();
-                      context.push('/support/new?category=payment');
-                    },
-                    icon: const Icon(Icons.support_agent_rounded,
-                        size: 16, color: AppColors.textSecondary),
-                    label: Text('Problem with a payment?',
-                        style: AppTextStyles.labelSmall
-                            .copyWith(color: AppColors.textSecondary)),
+                if (canSellPlansHere)
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        AppHaptics.selection();
+                        context.push('/support/new?category=payment');
+                      },
+                      icon: const Icon(
+                        Icons.support_agent_rounded,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      label: Text(
+                        'Problem with a payment?',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                ...plans.map(
+                  (plan) => Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: _buildPlanCard(
+                      plan: plan,
+                      context: context,
+                      isProcessing: isProcessing,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                ...plans.map((plan) => Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: _buildPlanCard(
-                        plan: plan,
-                        context: context,
-                        isProcessing: isProcessing,
-                      ),
-                    )),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  /// iOS, like Spotify: plans are visible but changed outside the app. The sheet
+  /// neither sells nor links anywhere (App Store guideline 3.1.1).
+  void _showChangesOutsideApp() {
+    AppHaptics.selection();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surfaceHighest,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Plan changes happen outside the app',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'All plan changes are handled through your GraceMatch account, outside the app.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.of(sheetContext).pop(),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(160, 52),
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                ),
+                child: const Text('Got it'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -249,12 +305,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${applied.code} applied',
-                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                  Text(
+                    '${applied.code} applied',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.gold,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     '₹${applied.discountInr} off — you pay ₹${applied.finalInr}',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -264,7 +326,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 _applied.remove(planId);
                 _couponError = null;
               }),
-              child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textTertiary),
+              child: const Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: AppColors.textTertiary,
+              ),
             ),
           ],
         ),
@@ -283,20 +349,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 style: AppTextStyles.labelMedium.copyWith(letterSpacing: 1.2),
                 decoration: InputDecoration(
                   hintText: 'Have an offer code?',
-                  hintStyle:
-                      AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 13,
+                  ),
                   filled: true,
                   fillColor: AppColors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.surfaceHighest),
+                    borderSide: const BorderSide(
+                      color: AppColors.surfaceHighest,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.surfaceHighest),
+                    borderSide: const BorderSide(
+                      color: AppColors.surfaceHighest,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -310,18 +383,29 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               onPressed: _checking ? null : () => _applyCoupon(planId),
               style: TextButton.styleFrom(
                 backgroundColor: AppColors.surfaceHighest,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: _checking
                   ? SizedBox(
-                      width: 14, height: 14,
+                      width: 14,
+                      height: 14,
                       child: CircularProgressIndicator(
-                          color: AppColors.gold, strokeWidth: 2),
+                        color: AppColors.gold,
+                        strokeWidth: 2,
+                      ),
                     )
-                  : Text('Apply',
-                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                  : Text(
+                      'Apply',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.gold,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -363,7 +447,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final rows = <Map<String, dynamic>>[];
     for (final row in catalog) {
       final on = map[row[0]] == true;
-      rows.add({'key': row[0], 'label': row[1], 'compare': row[1], 'included': on});
+      rows.add({
+        'key': row[0],
+        'label': row[1],
+        'compare': row[1],
+        'included': on,
+      });
     }
 
     String intLabel(dynamic v, String one, String many, String unlimited) {
@@ -381,19 +470,34 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
     rows.add({
       'key': 'contact_reveals_per_month',
-      'label': intLabel(map['contact_reveals_per_month'], 'contact reveal / month', 'contact reveals / month', 'Unlimited contact reveals'),
+      'label': intLabel(
+        map['contact_reveals_per_month'],
+        'contact reveal / month',
+        'contact reveals / month',
+        'Unlimited contact reveals',
+      ),
       'compare': 'Contact reveals per month',
       'included': intOn(map['contact_reveals_per_month']),
     });
     rows.add({
       'key': 'spotlight_boosts',
-      'label': intLabel(map['spotlight_boosts'], 'spotlight boost', 'spotlight boosts', 'Unlimited spotlight boosts'),
+      'label': intLabel(
+        map['spotlight_boosts'],
+        'spotlight boost',
+        'spotlight boosts',
+        'Unlimited spotlight boosts',
+      ),
       'compare': 'Spotlight boosts',
       'included': intOn(map['spotlight_boosts']),
     });
     rows.add({
       'key': 'super_interests',
-      'label': intLabel(map['super_interests'], 'super interest', 'super interests', 'Unlimited super interests'),
+      'label': intLabel(
+        map['super_interests'],
+        'super interest',
+        'super interests',
+        'Unlimited super interests',
+      ),
       'compare': 'Super interests',
       'included': intOn(map['super_interests']),
     });
@@ -427,16 +531,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required bool isProcessing,
   }) {
     final palette = MembershipPalette.of(plan['name']?.toString());
-    final bool isPopular = plan['featured'] == true ||
+    final bool isPopular =
+        plan['featured'] == true ||
         plan['name']?.toString().toLowerCase() == 'gold';
     final List<Map<String, dynamic>> entitlements = _entitlements(plan);
     final bool isCurrentActive = plan['is_current_active'] == true;
-    final bool isFree = plan['is_free'] == true ||
+    final bool isFree =
+        plan['is_free'] == true ||
         (num.tryParse(plan['price_inr']?.toString() ?? '') ?? 0) <= 0;
     final bool canPurchase = !isFree && plan['can_purchase'] != false;
     final bool buttonDisabled = isProcessing || !canPurchase;
     final currentSub = plan['current_subscription'];
-    final expiryText = currentSub is Map ? _formatExpiry(currentSub['expires_at']) : null;
+    final expiryText = currentSub is Map
+        ? _formatExpiry(currentSub['expires_at'])
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -465,7 +573,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
             ),
             child: Text(
-              isPopular ? 'MOST POPULAR · ${palette.label.toUpperCase()}' : palette.label.toUpperCase(),
+              isPopular
+                  ? 'MOST POPULAR · ${palette.label.toUpperCase()}'
+                  : palette.label.toUpperCase(),
               textAlign: TextAlign.center,
               style: AppTextStyles.labelSmall.copyWith(
                 color: palette.onMetal,
@@ -483,8 +593,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      plan['display_name']?.toString() ?? plan['name'] ?? 'Plan',
-                      style: AppTextStyles.headlineLarge.copyWith(color: palette.metal),
+                      plan['display_name']?.toString() ??
+                          plan['name'] ??
+                          'Plan',
+                      style: AppTextStyles.headlineLarge.copyWith(
+                        color: palette.metal,
+                      ),
                     ),
                     Text(
                       isFree ? 'Always' : _termLabel(plan['duration_months']),
@@ -492,35 +606,46 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      isFree ? 'Free' : _rupees(plan['price_inr']),
-                      style: AppTextStyles.displayMedium,
-                    ),
-                    const SizedBox(width: 8),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(isFree ? 'forever' : 'Total', style: AppTextStyles.bodyMedium),
-                    ),
-                  ],
-                ),
+                if (canSellPlansHere) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        isFree ? 'Free' : _rupees(plan['price_inr']),
+                        style: AppTextStyles.displayMedium,
+                      ),
+                      const SizedBox(width: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          isFree ? 'forever' : 'Total',
+                          style: AppTextStyles.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 24),
                 ...entitlements.map((f) {
                   final included = f['included'] == true;
                   final text = included
                       ? (f['label']?.toString() ?? '')
-                      : (f['compare']?.toString() ?? f['label']?.toString() ?? '');
+                      : (f['compare']?.toString() ??
+                            f['label']?.toString() ??
+                            '');
                   if (text.isEmpty) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
                       children: [
                         Icon(
-                          included ? Icons.check_circle_rounded : Icons.remove_circle_outline_rounded,
-                          color: included ? palette.metal : AppColors.textTertiary,
+                          included
+                              ? Icons.check_circle_rounded
+                              : Icons.remove_circle_outline_rounded,
+                          color: included
+                              ? palette.metal
+                              : AppColors.textTertiary,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -539,20 +664,31 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 if (isCurrentActive) ...[
                   Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.blessingSubtle,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.blessing.withAlpha(80)),
+                      border: Border.all(
+                        color: AppColors.blessing.withAlpha(80),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.verified_rounded, color: AppColors.blessing, size: 16),
+                        const Icon(
+                          Icons.verified_rounded,
+                          color: AppColors.blessing,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Current active plan',
-                            style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing),
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.blessing,
+                            ),
                           ),
                         ),
                       ],
@@ -563,53 +699,62 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
                         'Active until $expiryText',
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                 ],
                 const SizedBox(height: 20),
 
-                if (canPurchase && !_payOnWebsite) _couponRow(plan),
+                if (canPurchase && canSellPlansHere) _couponRow(plan),
 
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: buttonDisabled
                       ? null
                       : () {
-                          if (_payOnWebsite) {
-                            _openWebsite();
+                          if (!canSellPlansHere) {
+                            _showChangesOutsideApp();
                             return;
                           }
                           final planId = plan['id'].toString();
                           context.read<SubscriptionBloc>().add(
-                                InitiatePaymentEvent(
-                                  plan,
-                                  couponCode: _applied.containsKey(planId)
-                                      ? _applied[planId]!.code
-                                      : null,
-                                ),
-                              );
+                            InitiatePaymentEvent(
+                              plan,
+                              couponCode: _applied.containsKey(planId)
+                                  ? _applied[planId]!.code
+                                  : null,
+                            ),
+                          );
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: palette.metal,
                     foregroundColor: palette.onMetal,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                     minimumSize: const Size(double.infinity, 56),
                   ),
-                  child: isProcessing && !_payOnWebsite
+                  child: isProcessing
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(
                           isFree
-                              ? (isCurrentActive ? 'Your plan' : 'Included free')
+                              ? (isCurrentActive
+                                    ? 'Your plan'
+                                    : 'Included free')
                               : isCurrentActive
-                                  ? 'Current Plan'
-                                  : _payOnWebsite
-                                      ? 'Open website'
-                                      : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
+                              ? 'Current Plan'
+                              : !canSellPlansHere
+                              ? 'Get started'
+                              : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
                         ),
                 ),
               ],

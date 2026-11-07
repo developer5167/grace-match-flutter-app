@@ -37,10 +37,12 @@ class OnboardingRepository {
       }
 
       final files = await Future.wait(
-        filePaths.map((path) => MultipartFile.fromFile(
-          path,
-          contentType: DioMediaType('image', 'jpeg'),
-        )),
+        filePaths.map(
+          (path) => MultipartFile.fromFile(
+            path,
+            contentType: DioMediaType('image', 'jpeg'),
+          ),
+        ),
       );
 
       final formData = FormData.fromMap({'photos': files});

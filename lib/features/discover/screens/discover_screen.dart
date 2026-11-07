@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_buttons.dart';
+import '../widgets/device_tilt.dart';
 import '../widgets/discover_filter_sheet.dart';
 import '../bloc/discover_bloc.dart';
 import '../bloc/discover_event.dart';
@@ -51,7 +52,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
         final lower = msg.toLowerCase();
-        if (lower.contains('plan') || lower.contains('upgrade') || lower.contains('super')) {
+        if (lower.contains('plan') ||
+            lower.contains('upgrade') ||
+            lower.contains('super')) {
           context.push('/subscription');
         }
         return;
@@ -60,10 +63,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       return;
     }
 
-    context.read<DiscoverBloc>().add(SwipeProfileEvent(
-      targetUserId: currentProfile['id'].toString(),
-      isInterest: liked,
-    ));
+    context.read<DiscoverBloc>().add(
+      SwipeProfileEvent(
+        targetUserId: currentProfile['id'].toString(),
+        isInterest: liked,
+      ),
+    );
 
     await _advanceCard(liked: liked);
   }
@@ -107,7 +112,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         if (state is DiscoverLoading && _profiles.isEmpty) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         }
 
@@ -115,7 +122,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(
-              child: Text(state.message, style: const TextStyle(color: Colors.white)),
+              child: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           );
         }
@@ -123,7 +133,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         final activeFilters = state is DiscoverLoaded
             ? state.activeFilters
             : DiscoverFilters.defaults();
-        final dailyMatches = state is DiscoverLoaded ? state.dailyMatches : <Map<String, dynamic>>[];
+        final dailyMatches = state is DiscoverLoaded
+            ? state.dailyMatches
+            : <Map<String, dynamic>>[];
 
         if (state is DiscoverLoaded) {
           _profiles = state.profiles;
@@ -147,7 +159,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                             if (_currentIndex + 1 < _profiles.length)
                               Positioned.fill(
                                 child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(44, 20, 44, 80),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    32,
+                                    14,
+                                    32,
+                                    8,
+                                  ),
                                   child: ProfileCard(
                                     profile: _profiles[_currentIndex + 1],
                                     scale: 0.95,
@@ -156,12 +173,21 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               ),
                             Positioned.fill(
                               child: Padding(
-                                padding: const EdgeInsets.fromLTRB(24, 8, 24, 80),
-                                child: ProfileCard(
-                                  key: ValueKey(_profiles[_currentIndex]['id']),
-                                  profile: _profiles[_currentIndex],
-                                  onSwipeLeft: () => _onSwipe(false),
-                                  onSwipeRight: () => _onSwipe(true),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  4,
+                                  16,
+                                  8,
+                                ),
+                                child: DeviceTilt(
+                                  child: ProfileCard(
+                                    key: ValueKey(
+                                      _profiles[_currentIndex]['id'],
+                                    ),
+                                    profile: _profiles[_currentIndex],
+                                    onSwipeLeft: () => _onSwipe(false),
+                                    onSwipeRight: () => _onSwipe(true),
+                                  ),
                                 ),
                               ),
                             ),
@@ -175,7 +201,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     onInterest: () => _onSwipe(true),
                     onSuperInterest: () => _onSwipe(true, superLike: true),
                   ),
-                const SizedBox(height: 100),
+                // The shell's nav bar floats over the page (extendBody), and
+                // Flutter reports its full height, home indicator included,
+                // as bottom padding. A fixed 100 was shorter than the bar on
+                // Face ID iPhones, so it covered the action buttons.
+                SizedBox(height: MediaQuery.paddingOf(context).bottom + 8),
               ],
             ),
           ),
@@ -209,14 +239,21 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: hasFilters ? AppColors.goldSubtle : AppColors.surfaceElevated,
+                    color: hasFilters
+                        ? AppColors.goldSubtle
+                        : AppColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: hasFilters ? AppColors.gold : AppColors.surfaceHighest,
+                      color: hasFilters
+                          ? AppColors.gold
+                          : AppColors.surfaceHighest,
                     ),
                   ),
-                  child: Icon(Icons.tune_rounded,
-                      color: hasFilters ? AppColors.gold : AppColors.gold, size: 20),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    color: hasFilters ? AppColors.gold : AppColors.gold,
+                    size: 20,
+                  ),
                 ),
                 if (hasFilters)
                   Positioned(
@@ -250,11 +287,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             children: [
               Icon(Icons.auto_awesome, color: AppColors.gold, size: 16),
               const SizedBox(width: 8),
-              Text("Today's Picks",
-                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold)),
+              Text(
+                "Today's Picks",
+                style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
+              ),
               const SizedBox(width: 6),
-              Text('· ${matches.length} curated for you',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary)),
+              Text(
+                '· ${matches.length} curated for you',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
             ],
           ),
         ),
@@ -268,9 +311,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             itemBuilder: (ctx, i) {
               final m = matches[i];
               final photo = m['primary_photo'] as String?;
-              final name  = m['first_name'] as String? ?? '?';
+              final name = m['first_name'] as String? ?? '?';
               final compat = m['compatibility'] as int? ?? 0;
-              final uid   = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
+              final uid = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
               return GestureDetector(
                 onTap: () {
                   if (uid.isNotEmpty) context.push('/profile/$uid');
@@ -292,14 +335,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                 ? CachedNetworkImage(
                                     imageUrl: photo,
                                     fit: BoxFit.cover,
-                                    placeholder: (_, __) =>
-                                        Container(color: AppColors.surfaceHighest),
-                                    errorWidget: (_, __, ___) =>
-                                        Icon(Icons.person, color: AppColors.gold),
+                                    placeholder: (_, __) => Container(
+                                      color: AppColors.surfaceHighest,
+                                    ),
+                                    errorWidget: (_, __, ___) => Icon(
+                                      Icons.person,
+                                      color: AppColors.gold,
+                                    ),
                                   )
                                 : Container(
                                     color: AppColors.surfaceHighest,
-                                    child: Icon(Icons.person, color: AppColors.gold),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: AppColors.gold,
+                                    ),
                                   ),
                           ),
                         ),
@@ -307,7 +356,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                           bottom: -2,
                           right: -2,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.gold,
                               borderRadius: BorderRadius.circular(8),
@@ -347,7 +399,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   Widget _buildEmptyState() {
-    final limitReached = context.read<DiscoverBloc>().state is DiscoverLoaded &&
+    final limitReached =
+        context.read<DiscoverBloc>().state is DiscoverLoaded &&
         (context.read<DiscoverBloc>().state as DiscoverLoaded).limitReached;
     return Center(
       child: Column(
@@ -356,7 +409,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Text('✝', style: TextStyle(fontSize: 56, color: AppColors.goldMild)),
           const SizedBox(height: 16),
           Text(
-            limitReached ? "Today's matches are done" : "You've seen everyone for now",
+            limitReached
+                ? "Today's matches are done"
+                : "You've seen everyone for now",
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -376,7 +431,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             TextButton(
               onPressed: () =>
                   context.read<DiscoverBloc>().add(const FetchFeedEvent()),
-              child: Text('Refresh Feed', style: TextStyle(color: AppColors.gold)),
+              child: Text(
+                'Refresh Feed',
+                style: TextStyle(color: AppColors.gold),
+              ),
             ),
         ],
       ),

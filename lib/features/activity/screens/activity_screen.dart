@@ -12,6 +12,7 @@ import '../bloc/activity_bloc.dart';
 import '../bloc/activity_event.dart';
 import '../bloc/activity_state.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/store_policy.dart';
 
 class ActivityScreen extends StatefulWidget {
   /// Which tab to open on — a notification links straight to its tab.
@@ -30,12 +31,26 @@ class _ActivityScreenState extends State<ActivityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: _indexFor(widget.tab));
-    PushCenter.clear(const ['views', 'shortlisted', 'contacts', 'notifications']);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: _indexFor(widget.tab),
+    );
+    PushCenter.clear(const [
+      'views',
+      'shortlisted',
+      'contacts',
+      'notifications',
+    ]);
     context.read<ActivityBloc>().add(const FetchActivityEvent());
   }
 
-  static const _tabNames = ['notifications', 'views', 'shortlisted', 'contacts'];
+  static const _tabNames = [
+    'notifications',
+    'views',
+    'shortlisted',
+    'contacts',
+  ];
 
   int _indexFor(String? tab) {
     final i = tab == null ? -1 : _tabNames.indexOf(tab);
@@ -48,7 +63,12 @@ class _ActivityScreenState extends State<ActivityScreen>
     // Already on this screen when the notification was tapped.
     if (widget.tab != null && widget.tab != oldWidget.tab) {
       _tabController.animateTo(_indexFor(widget.tab));
-      PushCenter.clear(const ['views', 'shortlisted', 'contacts', 'notifications']);
+      PushCenter.clear(const [
+        'views',
+        'shortlisted',
+        'contacts',
+        'notifications',
+      ]);
     }
   }
 
@@ -78,9 +98,17 @@ class _ActivityScreenState extends State<ActivityScreen>
                     AppHaptics.light();
                     context.read<ActivityBloc>().add(const MarkAllReadEvent());
                   },
-                  icon: Icon(Icons.done_all_rounded, size: 18, color: AppColors.gold),
-                  label: Text('Mark all read',
-                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
+                  icon: Icon(
+                    Icons.done_all_rounded,
+                    size: 18,
+                    color: AppColors.gold,
+                  ),
+                  label: Text(
+                    'Mark all read',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.gold,
+                    ),
+                  ),
                 ),
               IconButton(
                 tooltip: 'All notifications',
@@ -88,18 +116,25 @@ class _ActivityScreenState extends State<ActivityScreen>
                   AppHaptics.selection();
                   context.push('/notifications');
                 },
-                icon: const Icon(Icons.history_rounded,
-                    size: 19, color: AppColors.textSecondary),
+                icon: const Icon(
+                  Icons.history_rounded,
+                  size: 19,
+                  color: AppColors.textSecondary,
+                ),
               ),
-              IconButton(
-                tooltip: 'Offers',
-                onPressed: () {
-                  AppHaptics.selection();
-                  context.push('/offers');
-                },
-                icon: const Icon(Icons.local_offer_outlined,
-                    size: 19, color: AppColors.textSecondary),
-              ),
+              if (canSellPlansHere)
+                IconButton(
+                  tooltip: 'Offers',
+                  onPressed: () {
+                    AppHaptics.selection();
+                    context.push('/offers');
+                  },
+                  icon: const Icon(
+                    Icons.local_offer_outlined,
+                    size: 19,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               const SizedBox(width: 4),
             ],
             bottom: TabBar(
@@ -132,20 +167,23 @@ class _ActivityScreenState extends State<ActivityScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('Contacts'),
-                      Builder(builder: (context) {
-                        final pendingCount = loaded?.contactRequests
-                                .where((r) => r['status'] == 'pending')
-                                .length ??
-                            0;
-                        if (pendingCount == 0) return const SizedBox.shrink();
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(width: 6),
-                            _badge(pendingCount),
-                          ],
-                        );
-                      }),
+                      Builder(
+                        builder: (context) {
+                          final pendingCount =
+                              loaded?.contactRequests
+                                  .where((r) => r['status'] == 'pending')
+                                  .length ??
+                              0;
+                          if (pendingCount == 0) return const SizedBox.shrink();
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 6),
+                              _badge(pendingCount),
+                            ],
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -155,41 +193,51 @@ class _ActivityScreenState extends State<ActivityScreen>
           body: state is ActivityLoading
               ? Center(child: CircularProgressIndicator(color: AppColors.gold))
               : state is ActivityError
-                  ? _buildError(state.message)
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _NotificationsTab(
-                          notifications: loaded?.notifications ?? [],
-                          onRefresh: () {
-                            context.read<ActivityBloc>().add(const FetchNotificationsEvent());
-                          },
-                        ),
-                        _ViewsTab(
-                          viewers: loaded?.viewers ?? [],
-                          totalViews: loaded?.totalViews ?? 0,
-                          isPremiumRequired: loaded?.viewsPremiumRequired ?? false,
-                          onRefresh: () {
-                            context.read<ActivityBloc>().add(const FetchViewsEvent());
-                          },
-                        ),
-                        _ShortlistsTab(
-                          profiles: loaded?.shortlists ?? [],
-                          onRefresh: () {
-                            context.read<ActivityBloc>().add(const FetchShortlistsEvent());
-                          },
-                        ),
-                        _ContactRequestsTab(
-                          requests: loaded?.contactRequests ?? [],
-                          onRefresh: () {
-                            context.read<ActivityBloc>().add(const FetchContactRequestsEvent());
-                          },
-                          onRespond: (id, action) {
-                            context.read<ActivityBloc>().add(RespondContactRequestEvent(id, action));
-                          },
-                        ),
-                      ],
+              ? _buildError(state.message)
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _NotificationsTab(
+                      notifications: loaded?.notifications ?? [],
+                      onRefresh: () {
+                        context.read<ActivityBloc>().add(
+                          const FetchNotificationsEvent(),
+                        );
+                      },
                     ),
+                    _ViewsTab(
+                      viewers: loaded?.viewers ?? [],
+                      totalViews: loaded?.totalViews ?? 0,
+                      isPremiumRequired: loaded?.viewsPremiumRequired ?? false,
+                      onRefresh: () {
+                        context.read<ActivityBloc>().add(
+                          const FetchViewsEvent(),
+                        );
+                      },
+                    ),
+                    _ShortlistsTab(
+                      profiles: loaded?.shortlists ?? [],
+                      onRefresh: () {
+                        context.read<ActivityBloc>().add(
+                          const FetchShortlistsEvent(),
+                        );
+                      },
+                    ),
+                    _ContactRequestsTab(
+                      requests: loaded?.contactRequests ?? [],
+                      onRefresh: () {
+                        context.read<ActivityBloc>().add(
+                          const FetchContactRequestsEvent(),
+                        );
+                      },
+                      onRespond: (id, action) {
+                        context.read<ActivityBloc>().add(
+                          RespondContactRequestEvent(id, action),
+                        );
+                      },
+                    ),
+                  ],
+                ),
         );
       },
     );
@@ -214,20 +262,28 @@ class _ActivityScreenState extends State<ActivityScreen>
   }
 
   Widget _buildError(String msg) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.wifi_off_rounded, color: AppColors.textTertiary, size: 48),
-            const SizedBox(height: 12),
-            Text(msg, style: AppTextStyles.bodyMedium),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => context.read<ActivityBloc>().add(const FetchActivityEvent()),
-              child: Text('Retry', style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
-            ),
-          ],
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.wifi_off_rounded,
+          color: AppColors.textTertiary,
+          size: 48,
         ),
-      );
+        const SizedBox(height: 12),
+        Text(msg, style: AppTextStyles.bodyMedium),
+        const SizedBox(height: 16),
+        TextButton(
+          onPressed: () =>
+              context.read<ActivityBloc>().add(const FetchActivityEvent()),
+          child: Text(
+            'Retry',
+            style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -237,7 +293,10 @@ class _NotificationsTab extends StatelessWidget {
   final List<Map<String, dynamic>> notifications;
   final VoidCallback onRefresh;
 
-  const _NotificationsTab({required this.notifications, required this.onRefresh});
+  const _NotificationsTab({
+    required this.notifications,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -259,9 +318,10 @@ class _NotificationsTab extends StatelessWidget {
         itemBuilder: (context, i) {
           final n = notifications[i];
           final isRead = n['is_read'] == true;
-          return _NotifTile(n: n, isRead: isRead)
-              .animate()
-              .fadeIn(duration: 300.ms, delay: (i * 40).ms);
+          return _NotifTile(
+            n: n,
+            isRead: isRead,
+          ).animate().fadeIn(duration: 300.ms, delay: (i * 40).ms);
         },
       ),
     );
@@ -284,7 +344,9 @@ class _NotifTile extends StatelessWidget {
         onTap: () {
           AppHaptics.light();
           if (!isRead) {
-            context.read<ActivityBloc>().add(MarkOneReadEvent(n['id'].toString()));
+            context.read<ActivityBloc>().add(
+              MarkOneReadEvent(n['id'].toString()),
+            );
           }
           _handleTap(context, type, n['data']);
         },
@@ -302,7 +364,9 @@ class _NotifTile extends StatelessWidget {
                     Text(
                       n['title']?.toString() ?? '',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: isRead ? AppColors.textSecondary : AppColors.textPrimary,
+                        color: isRead
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -381,7 +445,9 @@ class _NotifTile extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context, String type, dynamic data) {
-    final d = data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{};
+    final d = data is Map
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
     switch (type) {
       case 'interest_received':
         // Open the sender's profile — bottom bar shows Accept / Decline
@@ -484,29 +550,35 @@ class _ViewsTab extends StatelessWidget {
           const SizedBox(height: 20),
           if (isPremiumRequired) ...[
             _PremiumGate(
-              message: 'Upgrade to Silver or above to see who viewed your profile.',
+              message:
+                  'Upgrade to Silver or above to see who viewed your profile.',
               onTap: () => context.push('/subscription'),
             ),
           ] else if (viewers.isEmpty) ...[
             _emptyState(
               icon: Icons.visibility_off_rounded,
               title: 'No views yet',
-              subtitle: 'When someone opens your profile, they will appear here.',
+              subtitle:
+                  'When someone opens your profile, they will appear here.',
             ),
           ] else ...[
-            Text('Who viewed you', style: AppTextStyles.headlineSmall).animate().fadeIn(duration: 200.ms),
+            Text(
+              'Who viewed you',
+              style: AppTextStyles.headlineSmall,
+            ).animate().fadeIn(duration: 200.ms),
             const SizedBox(height: 12),
             ...viewers.asMap().entries.map((entry) {
               final i = entry.key;
               final v = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _ProfileMiniCard(profile: v, onTap: () {
-                  final uid = v['user_id']?.toString();
-                  if (uid != null) context.push('/profile/$uid');
-                })
-                    .animate()
-                    .fadeIn(duration: 300.ms, delay: (i * 50).ms),
+                child: _ProfileMiniCard(
+                  profile: v,
+                  onTap: () {
+                    final uid = v['user_id']?.toString();
+                    if (uid != null) context.push('/profile/$uid');
+                  },
+                ).animate().fadeIn(duration: 300.ms, delay: (i * 50).ms),
               );
             }),
           ],
@@ -550,7 +622,9 @@ class _ShortlistsTab extends StatelessWidget {
               icon: Icon(Icons.star_rounded, color: AppColors.gold),
               onPressed: () {
                 AppHaptics.medium();
-                context.read<ActivityBloc>().add(ToggleShortlistEvent(p['user_id'].toString()));
+                context.read<ActivityBloc>().add(
+                  ToggleShortlistEvent(p['user_id'].toString()),
+                );
               },
             ),
             onTap: () {
@@ -616,7 +690,10 @@ class _ProfileMiniCard extends StatelessWidget {
                       : null,
                 ),
                 child: photoUrl == null
-                    ? const Icon(Icons.person_rounded, color: AppColors.textTertiary)
+                    ? const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.textTertiary,
+                      )
                     : null,
               ),
               const SizedBox(width: 12),
@@ -633,13 +710,20 @@ class _ProfileMiniCard extends StatelessWidget {
                         ),
                         if (isTrusted) ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.verified_rounded, color: AppColors.blessing, size: 14),
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: AppColors.blessing,
+                            size: 14,
+                          ),
                         ],
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      [if (denom.isNotEmpty) denom, if (city.isNotEmpty) city].join(' • '),
+                      [
+                        if (denom.isNotEmpty) denom,
+                        if (city.isNotEmpty) city,
+                      ].join(' • '),
                       style: AppTextStyles.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -648,7 +732,10 @@ class _ProfileMiniCard extends StatelessWidget {
                 ),
               ),
               trailing ??
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textTertiary,
+                  ),
             ],
           ),
         ),
@@ -677,19 +764,28 @@ class _PremiumGate extends StatelessWidget {
           const SizedBox(height: 12),
           Text('Premium Feature', style: AppTextStyles.headlineSmall),
           const SizedBox(height: 8),
-          Text(message,
-              style: AppTextStyles.bodyMedium,
-              textAlign: TextAlign.center),
+          Text(
+            message,
+            style: AppTextStyles.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.gold,
               foregroundColor: AppColors.textOnGold,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: onTap,
-            child: Text('Upgrade Plan', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textOnGold)),
+            child: Text(
+              'Upgrade Plan',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.textOnGold,
+              ),
+            ),
           ),
         ],
       ),
@@ -697,7 +793,11 @@ class _PremiumGate extends StatelessWidget {
   }
 }
 
-Widget _emptyState({required IconData icon, required String title, required String subtitle}) {
+Widget _emptyState({
+  required IconData icon,
+  required String title,
+  required String subtitle,
+}) {
   return Center(
     child: Padding(
       padding: const EdgeInsets.all(32),
@@ -706,11 +806,17 @@ Widget _emptyState({required IconData icon, required String title, required Stri
         children: [
           Icon(icon, size: 64, color: AppColors.textTertiary),
           const SizedBox(height: 16),
-          Text(title, style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+          Text(
+            title,
+            style: AppTextStyles.headlineSmall,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 8),
-          Text(subtitle,
-              style: AppTextStyles.bodyMedium,
-              textAlign: TextAlign.center),
+          Text(
+            subtitle,
+            style: AppTextStyles.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     ),
@@ -735,7 +841,8 @@ class _ContactRequestsTab extends StatelessWidget {
       return _emptyState(
         icon: Icons.contacts_rounded,
         title: 'No Contact Requests',
-        subtitle: "When someone requests your contact details, they'll appear here.",
+        subtitle:
+            "When someone requests your contact details, they'll appear here.",
       );
     }
 
@@ -748,11 +855,11 @@ class _ContactRequestsTab extends StatelessWidget {
         itemBuilder: (context, i) {
           final r = requests[i];
           final status = r['status'] as String? ?? 'pending';
-          final name   = r['first_name'] as String? ?? 'Someone';
-          final photo  = r['primary_photo'] as String?;
+          final name = r['first_name'] as String? ?? 'Someone';
+          final photo = r['primary_photo'] as String?;
           final userId = r['user_id']?.toString();
           final reqAt = r['requested_at'] ?? r['created_at'];
-          final date   = reqAt != null
+          final date = reqAt != null
               ? DateFormat('dd MMM').format(DateTime.parse(reqAt.toString()))
               : '';
           final id = r['id']?.toString() ?? '';
@@ -777,8 +884,8 @@ class _ContactRequestsTab extends StatelessWidget {
                     color: status == 'pending'
                         ? AppColors.goldMild
                         : status == 'approved'
-                            ? Colors.green.withAlpha(80)
-                            : AppColors.surfaceHighest,
+                        ? Colors.green.withAlpha(80)
+                        : AppColors.surfaceHighest,
                   ),
                 ),
                 child: Row(
@@ -787,8 +894,15 @@ class _ContactRequestsTab extends StatelessWidget {
                     CircleAvatar(
                       radius: 28,
                       backgroundColor: AppColors.surface,
-                      backgroundImage: photo != null ? CachedNetworkImageProvider(photo) : null,
-                      child: photo == null ? const Icon(Icons.person, color: AppColors.textTertiary) : null,
+                      backgroundImage: photo != null
+                          ? CachedNetworkImageProvider(photo)
+                          : null,
+                      child: photo == null
+                          ? const Icon(
+                              Icons.person,
+                              color: AppColors.textTertiary,
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 14),
                     // Info
@@ -799,13 +913,21 @@ class _ContactRequestsTab extends StatelessWidget {
                           Text(name, style: AppTextStyles.labelLarge),
                           const SizedBox(height: 2),
                           Text(
-                            '${r['profession'] ?? ''} ${r['denomination'] != null ? '· ${r['denomination']}' : ''}'.trim(),
-                            style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                            '${r['profession'] ?? ''} ${r['denomination'] != null ? '· ${r['denomination']}' : ''}'
+                                .trim(),
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          Text(date, style: AppTextStyles.overline.copyWith(color: AppColors.textTertiary)),
+                          Text(
+                            date,
+                            style: AppTextStyles.overline.copyWith(
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -826,9 +948,15 @@ class _ContactRequestsTab extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: AppColors.error.withAlpha(20),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.error.withAlpha(60)),
+                                border: Border.all(
+                                  color: AppColors.error.withAlpha(60),
+                                ),
                               ),
-                              child: const Icon(Icons.close_rounded, color: AppColors.error, size: 20),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: AppColors.error,
+                                size: 20,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -836,7 +964,10 @@ class _ContactRequestsTab extends StatelessWidget {
                           GestureDetector(
                             onTap: () async {
                               AppHaptics.heavy();
-                              final confirmed = await _confirmAccept(context, name);
+                              final confirmed = await _confirmAccept(
+                                context,
+                                name,
+                              );
                               if (confirmed == true) onRespond(id, 'approve');
                             },
                             child: Container(
@@ -845,9 +976,15 @@ class _ContactRequestsTab extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.green.withAlpha(25),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.green.withAlpha(80)),
+                                border: Border.all(
+                                  color: Colors.green.withAlpha(80),
+                                ),
                               ),
-                              child: const Icon(Icons.check_rounded, color: Colors.green, size: 20),
+                              child: const Icon(
+                                Icons.check_rounded,
+                                color: Colors.green,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ],
@@ -863,36 +1000,51 @@ class _ContactRequestsTab extends StatelessWidget {
                           if (confirmed == true) onRespond(id, 'revoke');
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.withAlpha(25),
                             borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: Colors.green.withAlpha(60)),
+                            border: Border.all(
+                              color: Colors.green.withAlpha(60),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'Shared',
-                                style: AppTextStyles.overline.copyWith(color: Colors.green),
+                                style: AppTextStyles.overline.copyWith(
+                                  color: Colors.green,
+                                ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down_rounded,
-                                  size: 14, color: Colors.green.withAlpha(180)),
+                              Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 14,
+                                color: Colors.green.withAlpha(180),
+                              ),
                             ],
                           ),
                         ),
                       )
                     else
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceHighest,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
                           status == 'revoked' ? 'Withdrawn' : 'Declined',
-                          style: AppTextStyles.overline.copyWith(color: AppColors.textTertiary),
+                          style: AppTextStyles.overline.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
                         ),
                       ),
                   ],
@@ -915,18 +1067,26 @@ class _ContactRequestsTab extends StatelessWidget {
         content: Text(
           'They will see your number. You will not see theirs unless you request it '
           'on a Premium plan that includes contact reveals.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Not now',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+            child: Text(
+              'Not now',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Accept and share',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+            child: Text(
+              'Accept and share',
+              style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold),
+            ),
           ),
         ],
       ),
@@ -942,22 +1102,33 @@ class _ContactRequestsTab extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text('Stop sharing your number?', style: AppTextStyles.labelLarge),
+        title: Text(
+          'Stop sharing your number?',
+          style: AppTextStyles.labelLarge,
+        ),
         content: Text(
           '$name will no longer be able to see your contact details. '
           'This reveal still counts on the plan for this month.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Keep sharing',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+            child: Text(
+              'Keep sharing',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Stop sharing',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+            child: Text(
+              'Stop sharing',
+              style: AppTextStyles.labelMedium.copyWith(color: AppColors.error),
+            ),
           ),
         ],
       ),

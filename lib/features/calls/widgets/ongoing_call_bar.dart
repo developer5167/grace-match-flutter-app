@@ -55,7 +55,9 @@ class OngoingCallLayer extends StatelessWidget {
             ),
           ],
         ),
-        if (session.isVideo && session.hasRemoteVideo && session.phase == CallPhase.connected)
+        if (session.isVideo &&
+            session.hasRemoteVideo &&
+            session.phase == CallPhase.connected)
           _FloatingVideo(session: session, top: media.padding.top + 64),
       ],
     );
@@ -131,7 +133,9 @@ class _CallBarState extends State<_CallBar> {
                   '${s.peerName} · $_label',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelMedium.copyWith(color: Colors.white),
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
               Text(
@@ -143,7 +147,11 @@ class _CallBarState extends State<_CallBar> {
               IconButton(
                 visualDensity: VisualDensity.compact,
                 onPressed: s.hangUp,
-                icon: const Icon(Icons.call_end_rounded, color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.call_end_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ],
           ),

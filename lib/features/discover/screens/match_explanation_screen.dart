@@ -52,7 +52,8 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
           if (first is String && first.isNotEmpty) return first;
           if (first is Map) {
             final m = Map<String, dynamic>.from(first);
-            final url = m['photo_url']?.toString() ??
+            final url =
+                m['photo_url']?.toString() ??
                 m['url']?.toString() ??
                 m['image_url']?.toString() ??
                 m['secure_url']?.toString() ??
@@ -62,7 +63,8 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
         }
         if (value is Map) {
           final m = Map<String, dynamic>.from(value);
-          final url = m['photo_url']?.toString() ??
+          final url =
+              m['photo_url']?.toString() ??
               m['profile_photo_url']?.toString() ??
               m['image_url']?.toString() ??
               m['secure_url']?.toString() ??
@@ -73,7 +75,8 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
       }
 
       final profile = data['profile'];
-      final myPhoto = pickFrom(data['photos']) ??
+      final myPhoto =
+          pickFrom(data['photos']) ??
           pickFrom(data['profile_photos']) ??
           pickFrom(profile) ??
           pickFrom(data['user']) ??
@@ -191,11 +194,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                   )
                 : Container(
                     color: AppColors.surfaceHighest,
-                    child: Icon(
-                      Icons.person,
-                      color: AppColors.gold,
-                      size: 32,
-                    ),
+                    child: Icon(Icons.person, color: AppColors.gold, size: 32),
                   ),
           ),
         ),
@@ -299,10 +298,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _fetchExplanation,
-                  child: Text(
-                    'Retry',
-                    style: TextStyle(color: AppColors.gold),
-                  ),
+                  child: Text('Retry', style: TextStyle(color: AppColors.gold)),
                 ),
               ],
             )

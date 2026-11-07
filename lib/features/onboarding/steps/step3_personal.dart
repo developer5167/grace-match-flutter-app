@@ -28,7 +28,11 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
 
   @override
   Map<String, dynamic>? getStepData() {
-    if (_heightCtrl.text.isEmpty || _educationCtrl.text.isEmpty || _professionCtrl.text.isEmpty || _salaryRange == null || _jobSector == null) {
+    if (_heightCtrl.text.isEmpty ||
+        _educationCtrl.text.isEmpty ||
+        _professionCtrl.text.isEmpty ||
+        _salaryRange == null ||
+        _jobSector == null) {
       return null;
     }
     return {
@@ -61,18 +65,30 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
       final profile = parent?.onboardingData?['profile'];
       if (profile != null && mounted) {
         setState(() {
-          if (profile['height_cm'] != null) _heightCtrl.text = profile['height_cm'].toString();
-          if (profile['education'] != null) _educationCtrl.text = profile['education'];
-          if (profile['profession'] != null) _professionCtrl.text = profile['profession'];
+          if (profile['height_cm'] != null)
+            _heightCtrl.text = profile['height_cm'].toString();
+          if (profile['education'] != null)
+            _educationCtrl.text = profile['education'];
+          if (profile['profession'] != null)
+            _professionCtrl.text = profile['profession'];
           if (profile['bio'] != null) _bioCtrl.text = profile['bio'];
-          
+
           if (profile['job_sector'] != null) {
-            _jobSector = _sectorOptions.entries.cast<MapEntry<String, String>?>().firstWhere((e) => e?.value == profile['job_sector'], orElse: () => null)?.key;
+            _jobSector = _sectorOptions.entries
+                .cast<MapEntry<String, String>?>()
+                .firstWhere(
+                  (e) => e?.value == profile['job_sector'],
+                  orElse: () => null,
+                )
+                ?.key;
           }
 
           if (profile['annual_income_min'] != null) {
             final min = profile['annual_income_min'];
-            _salaryRange = _salaryMinMax.entries.cast<MapEntry<String, List<int>>?>().firstWhere((e) => e?.value[0] == min, orElse: () => null)?.key;
+            _salaryRange = _salaryMinMax.entries
+                .cast<MapEntry<String, List<int>>?>()
+                .firstWhere((e) => e?.value[0] == min, orElse: () => null)
+                ?.key;
           }
         });
       }
@@ -103,8 +119,13 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
             spacing: 8,
             runSpacing: 8,
             children: _sectorOptions.keys
-                .map((s) => _selectChip(
-                    s, _jobSector, (v) => setState(() => _jobSector = v)))
+                .map(
+                  (s) => _selectChip(
+                    s,
+                    _jobSector,
+                    (v) => setState(() => _jobSector = v),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 24),
@@ -114,8 +135,13 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
             spacing: 8,
             runSpacing: 8,
             children: _salaryMinMax.keys
-                .map((r) => _selectChip(
-                    r, _salaryRange, (v) => setState(() => _salaryRange = v)))
+                .map(
+                  (r) => _selectChip(
+                    r,
+                    _salaryRange,
+                    (v) => setState(() => _salaryRange = v),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 24),
@@ -126,7 +152,8 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
             maxLines: 4,
             style: AppTextStyles.labelLarge,
             decoration: const InputDecoration(
-              hintText: 'Tell us about yourself, your faith, and what you are looking for in a partner...',
+              hintText:
+                  'Tell us about yourself, your faith, and what you are looking for in a partner...',
             ),
           ),
           const SizedBox(height: 40),
@@ -136,12 +163,15 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
   }
 
   Widget _fieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(label, style: AppTextStyles.labelMedium),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(label, style: AppTextStyles.labelMedium),
+  );
 
-  Widget _inputField(TextEditingController ctrl, String hint,
-      {bool isNumber = false}) {
+  Widget _inputField(
+    TextEditingController ctrl,
+    String hint, {
+    bool isNumber = false,
+  }) {
     return TextField(
       controller: ctrl,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
@@ -151,7 +181,10 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
   }
 
   Widget _selectChip(
-      String label, String? selected, ValueChanged<String> onTap) {
+    String label,
+    String? selected,
+    ValueChanged<String> onTap,
+  ) {
     final isSelected = selected == label;
     return GestureDetector(
       onTap: () => onTap(label),
@@ -166,9 +199,12 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

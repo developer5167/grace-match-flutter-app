@@ -15,7 +15,10 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     on<SwipeProfileEvent>(_onSwipeProfile);
   }
 
-  Future<void> _onFetchFeed(FetchFeedEvent event, Emitter<DiscoverState> emit) async {
+  Future<void> _onFetchFeed(
+    FetchFeedEvent event,
+    Emitter<DiscoverState> emit,
+  ) async {
     if (state is DiscoverInitial) emit(DiscoverLoading());
     try {
       _currentPage = event.page;
@@ -26,14 +29,18 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
         filters: _activeFilters,
       );
 
-      final existing = state is DiscoverLoaded ? (state as DiscoverLoaded) : null;
-      emit(DiscoverLoaded(
-        profiles: feed.profiles,
-        hasReachedMax: feed.profiles.length < 10 || feed.limitReached,
-        activeFilters: _activeFilters,
-        dailyMatches: existing?.dailyMatches ?? [],
-        limitReached: feed.limitReached,
-      ));
+      final existing = state is DiscoverLoaded
+          ? (state as DiscoverLoaded)
+          : null;
+      emit(
+        DiscoverLoaded(
+          profiles: feed.profiles,
+          hasReachedMax: feed.profiles.length < 10 || feed.limitReached,
+          activeFilters: _activeFilters,
+          dailyMatches: existing?.dailyMatches ?? [],
+          limitReached: feed.limitReached,
+        ),
+      );
 
       // Fetch daily matches in parallel on first load
       if (existing == null || existing.dailyMatches.isEmpty) {
@@ -45,7 +52,9 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
   }
 
   Future<void> _onFetchDailyMatches(
-      FetchDailyMatchesEvent event, Emitter<DiscoverState> emit) async {
+    FetchDailyMatchesEvent event,
+    Emitter<DiscoverState> emit,
+  ) async {
     try {
       final matches = await _repository.fetchDailyMatches();
       if (state is DiscoverLoaded) {
@@ -56,11 +65,16 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     }
   }
 
-  Future<void> _onSwipeProfile(SwipeProfileEvent event, Emitter<DiscoverState> emit) async {
+  Future<void> _onSwipeProfile(
+    SwipeProfileEvent event,
+    Emitter<DiscoverState> emit,
+  ) async {
     try {
       if (event.isInterest) {
-        await _repository.sendInterest(event.targetUserId,
-            isSuperInterest: event.isSuperInterest);
+        await _repository.sendInterest(
+          event.targetUserId,
+          isSuperInterest: event.isSuperInterest,
+        );
       } else {
         await _repository.passProfile(event.targetUserId);
       }

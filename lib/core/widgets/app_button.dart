@@ -42,9 +42,10 @@ class _AppButtonState extends State<AppButton>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scaleAnim = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -67,10 +68,8 @@ class _AppButtonState extends State<AppButton>
       onTap: _handleTap,
       child: AnimatedBuilder(
         animation: _scaleAnim,
-        builder: (_, child) => Transform.scale(
-          scale: _scaleAnim.value,
-          child: child,
-        ),
+        builder: (_, child) =>
+            Transform.scale(scale: _scaleAnim.value, child: child),
         child: _buildContent(),
       ),
     );
@@ -110,9 +109,12 @@ class _AppButtonState extends State<AppButton>
                 Icon(widget.icon, color: AppColors.textSecondary, size: 18),
                 const SizedBox(width: 8),
               ],
-              Text(widget.label,
-                  style: AppTextStyles.buttonTextSecondary
-                      .copyWith(color: AppColors.textPrimary)),
+              Text(
+                widget.label,
+                style: AppTextStyles.buttonTextSecondary.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ],
           ),
         ),
@@ -126,9 +128,7 @@ class _AppButtonState extends State<AppButton>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(100),
         gradient: widget.onPressed == null || widget.isLoading
-            ? LinearGradient(
-                colors: [AppColors.goldDark, AppColors.goldDark],
-              )
+            ? LinearGradient(colors: [AppColors.goldDark, AppColors.goldDark])
             : AppColors.goldenGradient,
         boxShadow: widget.onPressed != null && !widget.isLoading
             ? [

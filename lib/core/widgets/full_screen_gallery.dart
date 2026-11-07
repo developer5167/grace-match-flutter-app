@@ -62,8 +62,14 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                     imageUrl: widget.images[index],
                     fit: BoxFit.contain,
                     width: double.infinity,
-                    placeholder: (_, __) => Center(child: CircularProgressIndicator(color: AppColors.gold)),
-                    errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white, size: 50),
+                    placeholder: (_, __) => Center(
+                      child: CircularProgressIndicator(color: AppColors.gold),
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.broken_image,
+                      color: Colors.white,
+                      size: 50,
+                    ),
                   ),
                 ),
               );
@@ -86,14 +92,20 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black45,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '${_currentIndex + 1} / ${widget.images.length}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 40), // Balance
@@ -114,8 +126,13 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                     radius: 22,
                     backgroundColor: Colors.black45,
                     child: IconButton(
-                      onPressed: _currentIndex > 0 ? () => goTo(_currentIndex - 1) : null,
-                      icon: const Icon(Icons.chevron_left_rounded, color: Colors.white),
+                      onPressed: _currentIndex > 0
+                          ? () => goTo(_currentIndex - 1)
+                          : null,
+                      icon: const Icon(
+                        Icons.chevron_left_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -136,7 +153,10 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                       onPressed: _currentIndex < widget.images.length - 1
                           ? () => goTo(_currentIndex + 1)
                           : null,
-                      icon: const Icon(Icons.chevron_right_rounded, color: Colors.white),
+                      icon: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

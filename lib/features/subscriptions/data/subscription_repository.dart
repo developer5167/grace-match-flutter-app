@@ -22,14 +22,24 @@ class SubscriptionRepository {
 
   /// Creates the order. [couponCode] is priced by the server, never here —
   /// the amount the sheet opens with has to be the amount the server charges.
-  Future<Map<String, dynamic>> createOrder(dynamic planId, {String? couponCode}) async {
+  Future<Map<String, dynamic>> createOrder(
+    dynamic planId, {
+    String? couponCode,
+  }) async {
     final id = planId.toString().trim();
-    final response = await _dio.post(ApiEndpoints.razorpayOrder, data: {
-      'plan_id': id,
-      if (couponCode != null && couponCode.trim().isNotEmpty)
-        'coupon_code': couponCode.trim().toUpperCase(),
-    });
-    return _asMap(response.data is Map ? (response.data['data'] ?? response.data) : response.data);
+    final response = await _dio.post(
+      ApiEndpoints.razorpayOrder,
+      data: {
+        'plan_id': id,
+        if (couponCode != null && couponCode.trim().isNotEmpty)
+          'coupon_code': couponCode.trim().toUpperCase(),
+      },
+    );
+    return _asMap(
+      response.data is Map
+          ? (response.data['data'] ?? response.data)
+          : response.data,
+    );
   }
 
   /// Verifies the payment signature server-side and activates the subscription.
@@ -39,11 +49,14 @@ class SubscriptionRepository {
     required String signature,
   }) async {
     try {
-      final response = await _dio.post(ApiEndpoints.razorpayVerify, data: {
-        'razorpay_order_id': orderId,
-        'razorpay_payment_id': paymentId,
-        'razorpay_signature': signature,
-      });
+      final response = await _dio.post(
+        ApiEndpoints.razorpayVerify,
+        data: {
+          'razorpay_order_id': orderId,
+          'razorpay_payment_id': paymentId,
+          'razorpay_signature': signature,
+        },
+      );
       return response.data['success'] == true;
     } catch (_) {
       return false;
@@ -53,9 +66,10 @@ class SubscriptionRepository {
   Future<void> abandonOrder(String orderId) async {
     if (orderId.isEmpty) return;
     try {
-      await _dio.post(ApiEndpoints.razorpayAbandon, data: {
-        'razorpay_order_id': orderId,
-      });
+      await _dio.post(
+        ApiEndpoints.razorpayAbandon,
+        data: {'razorpay_order_id': orderId},
+      );
     } catch (_) {}
   }
 }

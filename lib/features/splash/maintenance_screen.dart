@@ -59,7 +59,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             child: Column(
               children: [
                 const Spacer(),
-                Icon(Icons.build_circle_outlined, color: AppColors.gold, size: 48),
+                Icon(
+                  Icons.build_circle_outlined,
+                  color: AppColors.gold,
+                  size: 48,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   'Under maintenance',
@@ -70,7 +74,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 Text(
                   MaintenanceGate.message,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const Spacer(),
                 SizedBox(
@@ -81,13 +87,18 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.gold,
                       side: BorderSide(color: AppColors.goldMild),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
                     ),
                     child: _checking
                         ? SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.gold,
+                            ),
                           )
                         : const Text('Try again'),
                   ),

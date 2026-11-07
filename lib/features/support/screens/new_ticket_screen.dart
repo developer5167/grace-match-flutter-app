@@ -52,7 +52,10 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
       _message.text.trim().length >= 5;
 
   Future<void> _send() async {
-    setState(() { _sending = true; _error = null; });
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
     final router = GoRouter.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -68,10 +71,12 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
     } on DuplicateTicket catch (e) {
       // Not an error the member caused: take them to the thread they have.
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(
-        content: Text(e.message),
-        backgroundColor: AppColors.surfaceHighest,
-      ));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: AppColors.surfaceHighest,
+        ),
+      );
       router.pop(true);
       if (e.ticketId.isNotEmpty) router.push('/support/${e.ticketId}');
     } catch (e) {
@@ -101,7 +106,11 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return Center(
-                child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2));
+              child: CircularProgressIndicator(
+                color: AppColors.gold,
+                strokeWidth: 2,
+              ),
+            );
           }
 
           final categories = snap.data ?? const <SupportCategory>[];
@@ -112,20 +121,35 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.cloud_off_rounded, size: 44, color: AppColors.textTertiary),
+                    const Icon(
+                      Icons.cloud_off_rounded,
+                      size: 44,
+                      color: AppColors.textTertiary,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Could not reach support',
-                        style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+                    Text(
+                      'Could not reach support',
+                      style: AppTextStyles.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 8),
-                    Text('Check your connection and try again.',
-                        style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textSecondary),
-                        textAlign: TextAlign.center),
+                    Text(
+                      'Check your connection and try again.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 20),
                     TextButton(
-                      onPressed: () => setState(() => _categories = _repo.categories()),
-                      child: Text('Try again',
-                          style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                      onPressed: () =>
+                          setState(() => _categories = _repo.categories()),
+                      child: Text(
+                        'Try again',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: AppColors.gold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -138,32 +162,46 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
             children: [
               Text('What is this about?', style: AppTextStyles.labelLarge),
               const SizedBox(height: 10),
-              ...categories.map((c) => _CategoryTile(
-                    category: c,
-                    selected: _selected == c.key,
-                    onTap: () {
-                      AppHaptics.selection();
-                      setState(() => _selected = c.key);
-                    },
-                  )),
+              ...categories.map(
+                (c) => _CategoryTile(
+                  category: c,
+                  selected: _selected == c.key,
+                  onTap: () {
+                    AppHaptics.selection();
+                    setState(() => _selected = c.key);
+                  },
+                ),
+              ),
 
               const SizedBox(height: 24),
               Text('Give it a title', style: AppTextStyles.labelLarge),
               const SizedBox(height: 8),
-              _field(_subject, 'Charged but my plan did not activate', maxLines: 1, maxLength: 160),
+              _field(
+                _subject,
+                'Charged but my plan did not activate',
+                maxLines: 1,
+                maxLength: 160,
+              ),
 
               const SizedBox(height: 20),
               Text('Tell us what happened', style: AppTextStyles.labelLarge),
               const SizedBox(height: 8),
-              _field(_message,
-                  'The more detail the better — when it happened, what you saw, '
-                  'and anything you have already tried.',
-                  maxLines: 6, maxLength: 4000),
+              _field(
+                _message,
+                'The more detail the better — when it happened, what you saw, '
+                'and anything you have already tried.',
+                maxLines: 6,
+                maxLength: 4000,
+              ),
 
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!,
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.roseDark)),
+                Text(
+                  _error!,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.roseDark,
+                  ),
+                ),
               ],
 
               const SizedBox(height: 24),
@@ -174,19 +212,29 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                   foregroundColor: AppColors.textOnGold,
                   disabledBackgroundColor: AppColors.surfaceHighest,
                   minimumSize: const Size(double.infinity, 54),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
                 ),
                 child: _sending
                     ? const SizedBox(
-                        width: 20, height: 20,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
-                            color: AppColors.textOnGold, strokeWidth: 2))
+                          color: AppColors.textOnGold,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : Text('Send to support', style: AppTextStyles.buttonText),
               ),
               const SizedBox(height: 12),
-              Text('We usually reply within a day.',
-                  style: AppTextStyles.overline.copyWith(color: AppColors.textTertiary),
-                  textAlign: TextAlign.center),
+              Text(
+                'We usually reply within a day.',
+                style: AppTextStyles.overline.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           );
         },
@@ -194,8 +242,12 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint,
-      {required int maxLines, required int maxLength}) {
+  Widget _field(
+    TextEditingController c,
+    String hint, {
+    required int maxLines,
+    required int maxLength,
+  }) {
     return TextField(
       controller: c,
       maxLines: maxLines,
@@ -204,10 +256,14 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+        hintStyle: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.textTertiary,
+        ),
         filled: true,
         fillColor: AppColors.surface,
-        counterStyle: AppTextStyles.overline.copyWith(color: AppColors.textTertiary),
+        counterStyle: AppTextStyles.overline.copyWith(
+          color: AppColors.textTertiary,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.surfaceHighest),
@@ -250,7 +306,8 @@ class _CategoryTile extends StatelessWidget {
             color: selected ? AppColors.goldSubtle : AppColors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: selected ? AppColors.gold : AppColors.surfaceHighest),
+              color: selected ? AppColors.gold : AppColors.surfaceHighest,
+            ),
           ),
           child: Row(
             children: [
@@ -258,20 +315,32 @@ class _CategoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(category.label,
-                        style: AppTextStyles.labelMedium.copyWith(
-                            color: selected ? AppColors.gold : AppColors.textPrimary)),
+                    Text(
+                      category.label,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: selected
+                            ? AppColors.gold
+                            : AppColors.textPrimary,
+                      ),
+                    ),
                     if (category.hint != null) ...[
                       const SizedBox(height: 2),
-                      Text(category.hint!,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textSecondary)),
+                      Text(
+                        category.hint!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ],
                 ),
               ),
               if (selected)
-                Icon(Icons.check_circle_rounded, size: 18, color: AppColors.gold),
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 18,
+                  color: AppColors.gold,
+                ),
             ],
           ),
         ),

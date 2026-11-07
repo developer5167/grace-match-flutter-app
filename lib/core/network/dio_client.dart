@@ -25,10 +25,7 @@ class DioClient {
       ),
     );
 
-    dio.interceptors.addAll([
-      _AuthInterceptor(dio),
-      _LoggingInterceptor(),
-    ]);
+    dio.interceptors.addAll([_AuthInterceptor(dio), _LoggingInterceptor()]);
 
     return dio;
   }
@@ -71,7 +68,8 @@ class DioClient {
     final token = await AppStorage.getAccessToken();
     if (token == null) return null;
     final exp = _expiry(token);
-    if (exp == null || exp.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
+    if (exp == null ||
+        exp.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
       return token;
     }
     try {
@@ -107,7 +105,9 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     final token = await AppStorage.getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';

@@ -25,17 +25,20 @@ class CallKit {
       conversationId: data['conversation_id']?.toString() ?? '',
       callerName: (name == null || name.isEmpty) ? 'Someone' : name,
       callerPhoto: data['caller_photo']?.toString() ?? '',
-      isVideo: data['is_video']?.toString() != 'false' && data['is_video'] != false,
+      isVideo:
+          data['is_video']?.toString() != 'false' && data['is_video'] != false,
       shownAt: int.tryParse(data['ts']?.toString() ?? ''),
       outgoing: data['outgoing']?.toString() == 'true',
     );
   }
 
   static bool isIncoming(Map<String, dynamic> data) =>
-      data['kind']?.toString() == 'incoming_call' || data['type']?.toString() == 'incoming_call';
+      data['kind']?.toString() == 'incoming_call' ||
+      data['type']?.toString() == 'incoming_call';
 
   static bool isCancelled(Map<String, dynamic> data) =>
-      data['kind']?.toString() == 'call_cancelled' || data['type']?.toString() == 'call_cancelled';
+      data['kind']?.toString() == 'call_cancelled' ||
+      data['type']?.toString() == 'call_cancelled';
 
   static CallKitParams params(
     IncomingCallData call, {
@@ -106,7 +109,9 @@ class CallKit {
   /// announce every call, and a second show restarts the ringtone.
   static Future<void> ring(IncomingCallData call) async {
     if (await isKnown(call.callId)) return;
-    final stamped = call.copyWith(shownAt: DateTime.now().millisecondsSinceEpoch);
+    final stamped = call.copyWith(
+      shownAt: DateTime.now().millisecondsSinceEpoch,
+    );
     await FlutterCallkitIncoming.showCallkitIncoming(params(stamped));
   }
 
@@ -132,14 +137,19 @@ class CallKit {
   /// Stop ringing without reporting a decline: the call ended elsewhere.
   static Future<void> dismiss(String callId) async {
     try {
-      await FlutterCallkitIncoming.hideCallkitIncoming(CallKitParams(id: callId));
+      await FlutterCallkitIncoming.hideCallkitIncoming(
+        CallKitParams(id: callId),
+      );
     } catch (_) {}
   }
 
   /// Ring an outgoing or answered call as "ongoing". On Android this starts
   /// the foreground service that keeps the microphone and camera running
   /// while the member uses the rest of the app or locks the phone.
-  static Future<void> markOngoing(IncomingCallData call, {required bool outgoing}) async {
+  static Future<void> markOngoing(
+    IncomingCallData call, {
+    required bool outgoing,
+  }) async {
     if (call.callId.isEmpty) return;
     try {
       await FlutterCallkitIncoming.startCall(
@@ -174,7 +184,9 @@ class CallKit {
     IncomingCallData? found;
     for (final c in calls) {
       final extra = c.extra;
-      final data = extra == null ? null : parse(Map<String, dynamic>.from(extra));
+      final data = extra == null
+          ? null
+          : parse(Map<String, dynamic>.from(extra));
       final fresh = data?.shownAt != null && now - data!.shownAt! < 90 * 1000;
       if (!c.isAccepted) {
         // Still ringing: the member opened the app from the launcher instead
@@ -195,20 +207,23 @@ class CallKit {
 
   /// Decline over HTTP. The Decline button on a lock screen fires with no app
   /// running and no socket to send it on.
-  static Future<void> rejectOverHttp(String callId) => _post('/calls/$callId/reject');
+  static Future<void> rejectOverHttp(String callId) =>
+      _post('/calls/$callId/reject');
 
   static Future<void> endOverHttp(String callId) => _post('/calls/$callId/end');
 
   static Future<void> _post(String path) async {
-    final dio = Dio(BaseOptions(
-      baseUrl: AppConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ));
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
     Future<Response<dynamic>> send(String token) => dio.post(
-          path,
-          options: Options(headers: {'Authorization': 'Bearer $token'}),
-        );
+      path,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
     final token = await AppStorage.getAccessToken();
     if (token == null) return;
     try {
@@ -218,7 +233,10 @@ class CallKit {
       final refresh = await AppStorage.getRefreshToken();
       if (refresh == null) return;
       try {
-        final r = await dio.post(ApiEndpoints.refreshToken, data: {'refresh_token': refresh});
+        final r = await dio.post(
+          ApiEndpoints.refreshToken,
+          data: {'refresh_token': refresh},
+        );
         final data = r.data['data'] as Map<String, dynamic>;
         await AppStorage.saveTokens(
           accessToken: data['access_token'] as String,
@@ -250,22 +268,22 @@ class IncomingCallData {
   });
 
   IncomingCallData copyWith({int? shownAt, bool? outgoing}) => IncomingCallData(
-        callId: callId,
-        conversationId: conversationId,
-        callerName: callerName,
-        callerPhoto: callerPhoto,
-        isVideo: isVideo,
-        shownAt: shownAt ?? this.shownAt,
-        outgoing: outgoing ?? this.outgoing,
-      );
+    callId: callId,
+    conversationId: conversationId,
+    callerName: callerName,
+    callerPhoto: callerPhoto,
+    isVideo: isVideo,
+    shownAt: shownAt ?? this.shownAt,
+    outgoing: outgoing ?? this.outgoing,
+  );
 
   Map<String, dynamic> toMap() => {
-        'call_id': callId,
-        'conversation_id': conversationId,
-        'caller_name': callerName,
-        'caller_photo': callerPhoto,
-        'is_video': isVideo ? 'true' : 'false',
-        if (shownAt != null) 'ts': shownAt.toString(),
-        'outgoing': outgoing ? 'true' : 'false',
-      };
+    'call_id': callId,
+    'conversation_id': conversationId,
+    'caller_name': callerName,
+    'caller_photo': callerPhoto,
+    'is_video': isVideo ? 'true' : 'false',
+    if (shownAt != null) 'ts': shownAt.toString(),
+    'outgoing': outgoing ? 'true' : 'false',
+  };
 }

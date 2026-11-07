@@ -29,11 +29,14 @@ class ProfileRepository {
 
   Future<void> sendInterest(String userId, {bool isSuper = false}) async {
     try {
-      await _dio.post(ApiEndpoints.sendInterest, data: {
-        'receiver_id': userId,
-        'is_super_interest': isSuper,
-        'type': isSuper ? 'super_interest' : 'interest'
-      });
+      await _dio.post(
+        ApiEndpoints.sendInterest,
+        data: {
+          'receiver_id': userId,
+          'is_super_interest': isSuper,
+          'type': isSuper ? 'super_interest' : 'interest',
+        },
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -66,10 +69,14 @@ class ProfileRepository {
     }
   }
 
-  Future<Map<String, dynamic>> updateSettings(Map<String, dynamic> settings) async {
+  Future<Map<String, dynamic>> updateSettings(
+    Map<String, dynamic> settings,
+  ) async {
     try {
-      final response =
-          await _dio.put(ApiEndpoints.updateSettings, data: settings);
+      final response = await _dio.put(
+        ApiEndpoints.updateSettings,
+        data: settings,
+      );
       final data = response.data['data'];
       if (data is Map<String, dynamic>) return data;
       return {};

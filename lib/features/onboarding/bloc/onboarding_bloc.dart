@@ -11,7 +11,10 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<SaveStepEvent>(_onSaveStep);
   }
 
-  Future<void> _onLoadStatus(LoadStatusEvent event, Emitter<OnboardingState> emit) async {
+  Future<void> _onLoadStatus(
+    LoadStatusEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
     emit(OnboardingLoading());
     try {
       final status = await _repository.getStatus();
@@ -21,13 +24,18 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
-  Future<void> _onSaveStep(SaveStepEvent event, Emitter<OnboardingState> emit) async {
+  Future<void> _onSaveStep(
+    SaveStepEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
     emit(OnboardingLoading());
     try {
       if (event.step == 8) {
         // Deferred photo upload: delete removed photos first, then upload new ones
-        final deletedIds = (event.data['_deletedPhotoIds'] as List?)?.cast<String>() ?? [];
-        final localPaths = (event.data['_localPhotoPaths'] as List?)?.cast<String>() ?? [];
+        final deletedIds =
+            (event.data['_deletedPhotoIds'] as List?)?.cast<String>() ?? [];
+        final localPaths =
+            (event.data['_localPhotoPaths'] as List?)?.cast<String>() ?? [];
 
         for (final id in deletedIds) {
           await _repository.deletePhoto(id);

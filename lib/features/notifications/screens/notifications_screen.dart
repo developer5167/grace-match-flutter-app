@@ -46,13 +46,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   void _onScroll() {
     if (!_scroll.hasClients) return;
-    final nearEnd = _scroll.position.pixels >= _scroll.position.maxScrollExtent - 400;
+    final nearEnd =
+        _scroll.position.pixels >= _scroll.position.maxScrollExtent - 400;
     if (nearEnd && _hasMore && !_loadingMore && !_loading) _load();
   }
 
   Future<void> _load({bool reset = false}) async {
     if (reset) {
-      setState(() { _loading = true; _error = null; _page = 1; _hasMore = true; });
+      setState(() {
+        _loading = true;
+        _error = null;
+        _page = 1;
+        _hasMore = true;
+      });
     } else {
       setState(() => _loadingMore = true);
     }
@@ -71,7 +77,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = e; _loading = false; _loadingMore = false; });
+      setState(() {
+        _error = e;
+        _loading = false;
+        _loadingMore = false;
+      });
     }
   }
 
@@ -155,21 +165,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   IconData _iconFor(String type) {
     switch (type) {
-      case 'new_message':          return Icons.chat_bubble_rounded;
-      case 'interest_received':    return Icons.favorite_rounded;
-      case 'interest_accepted':    return Icons.celebration_rounded;
-      case 'interest_rejected':    return Icons.heart_broken_rounded;
-      case 'profile_viewed':       return Icons.visibility_rounded;
-      case 'shortlisted':          return Icons.bookmark_rounded;
+      case 'new_message':
+        return Icons.chat_bubble_rounded;
+      case 'interest_received':
+        return Icons.favorite_rounded;
+      case 'interest_accepted':
+        return Icons.celebration_rounded;
+      case 'interest_rejected':
+        return Icons.heart_broken_rounded;
+      case 'profile_viewed':
+        return Icons.visibility_rounded;
+      case 'shortlisted':
+        return Icons.bookmark_rounded;
       case 'contact_request':
-      case 'contact_approved':     return Icons.contact_phone_rounded;
-      case 'offer':                return Icons.local_offer_rounded;
-      case 'support_reply':        return Icons.support_agent_rounded;
-      case 'checkout_reminder':    return Icons.shopping_cart_rounded;
-      case 'offer_expiring':       return Icons.timer_outlined;
-      case 'subscription_expiring':return Icons.workspace_premium_rounded;
-      case 'daily_matches':        return Icons.auto_awesome_rounded;
-      default:                     return Icons.notifications_rounded;
+      case 'contact_approved':
+        return Icons.contact_phone_rounded;
+      case 'offer':
+        return Icons.local_offer_rounded;
+      case 'support_reply':
+        return Icons.support_agent_rounded;
+      case 'checkout_reminder':
+        return Icons.shopping_cart_rounded;
+      case 'offer_expiring':
+        return Icons.timer_outlined;
+      case 'subscription_expiring':
+        return Icons.workspace_premium_rounded;
+      case 'daily_matches':
+        return Icons.auto_awesome_rounded;
+      default:
+        return Icons.notifications_rounded;
     }
   }
 
@@ -205,7 +229,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -219,8 +246,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   color: AppColors.gold,
                   borderRadius: BorderRadius.circular(100),
                 ),
-                child: Text('$_unread',
-                    style: AppTextStyles.overline.copyWith(color: AppColors.textOnGold)),
+                child: Text(
+                  '$_unread',
+                  style: AppTextStyles.overline.copyWith(
+                    color: AppColors.textOnGold,
+                  ),
+                ),
               ),
             ],
           ],
@@ -229,8 +260,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (_unread > 0)
             TextButton(
               onPressed: _markAllRead,
-              child: Text('Mark all read',
-                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold)),
+              child: Text(
+                'Mark all read',
+                style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold),
+              ),
             ),
         ],
       ),
@@ -285,8 +318,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: SizedBox(
-                  width: 18, height: 18,
-                  child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: AppColors.gold,
+                    strokeWidth: 2,
+                  ),
                 ),
               ),
             );
@@ -306,7 +343,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 decoration: BoxDecoration(
                   // Unread is carried by the surface, not by a dot alone — the
                   // list should be scannable without hunting for markers.
-                  color: n.isRead ? AppColors.surface : AppColors.surfaceElevated,
+                  color: n.isRead
+                      ? AppColors.surface
+                      : AppColors.surfaceElevated,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: n.isRead ? AppColors.surface : AppColors.goldMild,
@@ -316,7 +355,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 34, height: 34,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         color: tint.withAlpha(28),
                         borderRadius: BorderRadius.circular(10),
@@ -333,17 +373,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             const SizedBox(height: 3),
                             Text(
                               n.body,
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(_when(n.createdAt),
-                        style: AppTextStyles.overline
-                            .copyWith(color: AppColors.textTertiary)),
+                    Text(
+                      _when(n.createdAt),
+                      style: AppTextStyles.overline.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -354,7 +398,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _empty({required IconData icon, required String title, required String subtitle}) {
+  Widget _empty({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -363,11 +411,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             Icon(icon, size: 44, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text(title, style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AppTextStyles.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
-            Text(subtitle,
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center),
+            Text(
+              subtitle,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

@@ -30,8 +30,7 @@ class AppStorage {
   static Future<void> saveUserId(String userId) =>
       _secure.write(key: StorageKeys.userId, value: userId);
 
-  static Future<String?> getUserId() =>
-      _secure.read(key: StorageKeys.userId);
+  static Future<String?> getUserId() => _secure.read(key: StorageKeys.userId);
 
   static Future<void> clearAll() async {
     await _secure.deleteAll();
@@ -66,13 +65,13 @@ class AppStorage {
   static void saveReviewStatus(String? status) =>
       _prefs.put('review_status', status);
 
-  static String? getReviewStatus() =>
-      _prefs.get('review_status') as String?;
+  static String? getReviewStatus() => _prefs.get('review_status') as String?;
 
   static bool wasCallScreenPermissionAsked() =>
       _prefs.get('call_fsi_asked', defaultValue: false) as bool;
 
-  static void markCallScreenPermissionAsked() => _prefs.put('call_fsi_asked', true);
+  static void markCallScreenPermissionAsked() =>
+      _prefs.put('call_fsi_asked', true);
 
   static void saveSkippedUpdateVersion(String version) =>
       _prefs.put(StorageKeys.skippedUpdateVersion, version);

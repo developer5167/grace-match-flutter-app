@@ -22,7 +22,8 @@ class CallNotifications {
     await PushCenter.ensurePlugin();
     await PushCenter.plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(
           const AndroidNotificationChannel(
             channelId,

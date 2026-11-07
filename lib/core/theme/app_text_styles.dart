@@ -131,7 +131,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     shadows: [
-      Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2))
+      Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
     ],
   );
 
@@ -140,7 +140,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
     shadows: [
-      Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 1))
+      Shadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 1)),
     ],
   );
 }

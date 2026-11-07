@@ -28,9 +28,17 @@ class _AppShellState extends State<AppShell> {
 
   static const _tabs = [
     _NavTab(path: '/discover', icon: Icons.explore_rounded, label: 'Discover'),
-    _NavTab(path: '/interests', icon: Icons.favorite_rounded, label: 'Interests'),
+    _NavTab(
+      path: '/interests',
+      icon: Icons.favorite_rounded,
+      label: 'Interests',
+    ),
     _NavTab(path: '/chat', icon: Icons.chat_bubble_rounded, label: 'Chat'),
-    _NavTab(path: '/activity', icon: Icons.notifications_rounded, label: 'Activity'),
+    _NavTab(
+      path: '/activity',
+      icon: Icons.notifications_rounded,
+      label: 'Activity',
+    ),
     _NavTab(path: '/profile', icon: Icons.person_rounded, label: 'Profile'),
   ];
 
@@ -121,7 +129,9 @@ class _PremiumNavBar extends StatelessWidget {
                           curve: Curves.elasticOut,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            gradient: isSelected ? AppColors.goldenGradient : null,
+                            gradient: isSelected
+                                ? AppColors.goldenGradient
+                                : null,
                             color: isSelected ? null : Colors.transparent,
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -137,8 +147,9 @@ class _PremiumNavBar extends StatelessWidget {
                         AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 200),
                           style: isSelected
-                              ? AppTextStyles.labelSmall
-                                  .copyWith(color: AppColors.gold)
+                              ? AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.gold,
+                                )
                               : AppTextStyles.labelSmall,
                           child: Text(tabs[i].label),
                         ),

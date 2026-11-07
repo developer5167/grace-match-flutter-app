@@ -42,17 +42,22 @@ abstract class SubscriptionState extends Equatable {
 }
 
 class SubscriptionInitial extends SubscriptionState {}
+
 class SubscriptionLoading extends SubscriptionState {}
+
 class PlansLoaded extends SubscriptionState {
   final List<Map<String, dynamic>> plans;
   const PlansLoaded(this.plans);
 }
+
 class PaymentPending extends SubscriptionState {}
+
 class PaymentProcessed extends SubscriptionState {
   final bool success;
   final String? message;
   const PaymentProcessed({required this.success, this.message});
 }
+
 class SubscriptionError extends SubscriptionState {
   final String message;
   const SubscriptionError(this.message);
@@ -75,7 +80,10 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  Future<void> _onFetchPlans(FetchPlansEvent event, Emitter<SubscriptionState> emit) async {
+  Future<void> _onFetchPlans(
+    FetchPlansEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
     emit(SubscriptionLoading());
     try {
       final plans = await _repository.fetchPlans();
@@ -85,7 +93,10 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     }
   }
 
-  Future<void> _onInitiatePayment(InitiatePaymentEvent event, Emitter<SubscriptionState> emit) async {
+  Future<void> _onInitiatePayment(
+    InitiatePaymentEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
     emit(PaymentPending());
     try {
       final orderData = await _repository.createOrder(
@@ -93,7 +104,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         couponCode: event.couponCode,
       );
       final rupees = orderData['amount'];
-      final amountPaise = ((rupees is num)
+      final amountPaise =
+          ((rupees is num)
               ? rupees.toDouble()
               : double.parse(rupees.toString())) *
           100;
@@ -116,7 +128,9 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       if (prefill.isNotEmpty) options['prefill'] = prefill;
 
       if (options['key'] == null || (options['key'] as String).isEmpty) {
-        throw Exception('Razorpay key missing. Set RAZORPAY_KEY_ID on the server.');
+        throw Exception(
+          'Razorpay key missing. Set RAZORPAY_KEY_ID on the server.',
+        );
       }
       if ((options['order_id'] as String).isEmpty) {
         throw Exception('Could not create payment order.');
@@ -130,7 +144,9 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   }
 
   Future<void> _onPaymentSuccess(
-      PaymentSuccessEvent event, Emitter<SubscriptionState> emit) async {
+    PaymentSuccessEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
     // Verify payment signature on the server to activate the subscription.
     try {
       final verified = await _repository.verifyPayment(
@@ -140,28 +156,46 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       );
       if (verified) {
         await di.sl<SocketService>().ensureConnected();
-        emit(const PaymentProcessed(
+        emit(
+          const PaymentProcessed(
             success: true,
-            message: '🎉 Premium Activated! Enjoy unlimited matches.'));
+            message: '🎉 Premium Activated! Enjoy unlimited matches.',
+          ),
+        );
       } else {
-        emit(const PaymentProcessed(
+        emit(
+          const PaymentProcessed(
             success: false,
-            message: 'Payment verification failed. Contact support if amount was deducted.'));
+            message:
+                'Payment verification failed. Contact support if amount was deducted.',
+          ),
+        );
       }
     } catch (_) {
       await di.sl<SocketService>().ensureConnected();
       // Even if verify call fails, the webhook will activate it.
-      emit(const PaymentProcessed(
+      emit(
+        const PaymentProcessed(
           success: true,
-          message: 'Payment received! Your subscription will activate shortly.'));
+          message: 'Payment received! Your subscription will activate shortly.',
+        ),
+      );
     }
   }
 
-  Future<void> _onPaymentError(PaymentErrorEvent event, Emitter<SubscriptionState> emit) async {
+  Future<void> _onPaymentError(
+    PaymentErrorEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
     final orderId = _lastOrderId;
     _lastOrderId = null;
     if (orderId != null) await _repository.abandonOrder(orderId);
-    emit(PaymentProcessed(success: false, message: 'Payment Failed: ${event.response.message}'));
+    emit(
+      PaymentProcessed(
+        success: false,
+        message: 'Payment Failed: ${event.response.message}',
+      ),
+    );
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {

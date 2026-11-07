@@ -96,7 +96,10 @@ class _CallScreenState extends State<CallScreen> {
       if (session.needsPlan && why != null) {
         _showPlanDialog(why);
       } else {
-        Future.delayed(Duration(milliseconds: why == null ? 700 : 1600), _leave);
+        Future.delayed(
+          Duration(milliseconds: why == null ? 700 : 1600),
+          _leave,
+        );
       }
     }
     setState(() {});
@@ -137,11 +140,16 @@ class _CallScreenState extends State<CallScreen> {
     if (s.reconnecting) return 'Reconnecting…';
     switch (s.phase) {
       case CallPhase.idle:
-      case CallPhase.dialling:   return 'Calling…';
-      case CallPhase.ringing:    return 'Ringing…';
-      case CallPhase.connecting: return 'Connecting…';
-      case CallPhase.connected:  return _elapsed;
-      case CallPhase.ended:      return 'Call ended';
+      case CallPhase.dialling:
+        return 'Calling…';
+      case CallPhase.ringing:
+        return 'Ringing…';
+      case CallPhase.connecting:
+        return 'Connecting…';
+      case CallPhase.connected:
+        return _elapsed;
+      case CallPhase.ended:
+        return 'Call ended';
     }
   }
 
@@ -171,8 +179,14 @@ class _CallScreenState extends State<CallScreen> {
     }
     final connected = session.phase == CallPhase.connected;
     final ended = session.phase == CallPhase.ended;
-    final showRemote = session.isVideo && connected && session.remoteRenderer.srcObject != null;
-    final showLocal = session.isVideo && session.cameraOn && !ended &&
+    final showRemote =
+        session.isVideo &&
+        connected &&
+        session.remoteRenderer.srcObject != null;
+    final showLocal =
+        session.isVideo &&
+        session.cameraOn &&
+        !ended &&
         session.localRenderer.srcObject != null;
     final top = MediaQuery.of(context).padding.top;
 
@@ -206,7 +220,8 @@ class _CallScreenState extends State<CallScreen> {
                     child: RTCVideoView(
                       session.localRenderer,
                       mirror: true,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      objectFit:
+                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     ),
                   ),
                 ),
@@ -222,7 +237,11 @@ class _CallScreenState extends State<CallScreen> {
                   IconButton(
                     tooltip: 'Back to the app',
                     onPressed: _minimise,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
@@ -233,13 +252,17 @@ class _CallScreenState extends State<CallScreen> {
                           session.peerName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.headlineSmall.copyWith(color: Colors.white),
+                          style: AppTextStyles.headlineSmall.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           _status,
                           style: AppTextStyles.labelMedium.copyWith(
-                            color: session.reconnecting ? AppColors.gold : Colors.white70,
+                            color: session.reconnecting
+                                ? AppColors.gold
+                                : Colors.white70,
                           ),
                         ),
                       ],
@@ -263,13 +286,19 @@ class _CallScreenState extends State<CallScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CallAvatar(name: session.peerName, photo: session.peerPhoto, size: 112),
+            CallAvatar(
+              name: session.peerName,
+              photo: session.peerPhoto,
+              size: 112,
+            ),
             const SizedBox(height: 20),
             Text(
               _status,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: session.reconnecting ? AppColors.gold : AppColors.textSecondary,
+                color: session.reconnecting
+                    ? AppColors.gold
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -280,7 +309,8 @@ class _CallScreenState extends State<CallScreen> {
 
   Widget _controls(CallSession session) {
     return Positioned(
-      left: 0, right: 0,
+      left: 0,
+      right: 0,
       bottom: MediaQuery.of(context).padding.bottom + 36,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -288,26 +318,42 @@ class _CallScreenState extends State<CallScreen> {
           _round(
             icon: session.micOn ? Icons.mic_rounded : Icons.mic_off_rounded,
             active: !session.micOn,
-            onTap: () { AppHaptics.light(); session.toggleMic(); },
+            onTap: () {
+              AppHaptics.light();
+              session.toggleMic();
+            },
           ),
           if (session.isVideo) ...[
             const SizedBox(width: 16),
             _round(
-              icon: session.cameraOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
+              icon: session.cameraOn
+                  ? Icons.videocam_rounded
+                  : Icons.videocam_off_rounded,
               active: !session.cameraOn,
-              onTap: () { AppHaptics.light(); session.toggleCamera(); },
+              onTap: () {
+                AppHaptics.light();
+                session.toggleCamera();
+              },
             ),
             const SizedBox(width: 16),
             _round(
               icon: Icons.cameraswitch_rounded,
-              onTap: () { AppHaptics.light(); session.switchCamera(); },
+              onTap: () {
+                AppHaptics.light();
+                session.switchCamera();
+              },
             ),
           ],
           const SizedBox(width: 16),
           _round(
-            icon: session.speakerOn ? Icons.volume_up_rounded : Icons.hearing_rounded,
+            icon: session.speakerOn
+                ? Icons.volume_up_rounded
+                : Icons.hearing_rounded,
             active: session.speakerOn,
-            onTap: () { AppHaptics.light(); session.toggleSpeaker(); },
+            onTap: () {
+              AppHaptics.light();
+              session.toggleSpeaker();
+            },
           ),
           const SizedBox(width: 16),
           _round(
@@ -334,7 +380,8 @@ class _CallScreenState extends State<CallScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 56, height: 56,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
           color: background ?? (active ? Colors.white : Colors.white24),
           shape: BoxShape.circle,

@@ -150,16 +150,17 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                       hasWork
                           ? 'Action needed'
                           : isRejected
-                              ? 'Application update'
-                              : 'Profile under review',
+                          ? 'Application update'
+                          : 'Profile under review',
                       style: AppTextStyles.headlineMedium,
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 120.ms),
                     const SizedBox(height: 12),
                     Text(
                       _bodyCopy(isRejected, hasWork, inbox?.reviewNote),
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 220.ms),
                     if (_banner != null) ...[
@@ -199,16 +200,20 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                       onPressed: () => context.push('/support'),
                       child: Text(
                         'Contact support',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.gold),
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.gold,
+                        ),
                       ),
                     ),
                     TextButton(
-                      onPressed: _working ? null : () => confirmDeleteAccount(context),
+                      onPressed: _working
+                          ? null
+                          : () => confirmDeleteAccount(context),
                       child: Text(
                         'Delete account',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.error),
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.error,
+                        ),
                       ),
                     ),
                     TextButton(
@@ -218,8 +223,9 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                       },
                       child: Text(
                         'Sign out',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(color: AppColors.textTertiary),
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                       ),
                     ),
                   ],
@@ -245,8 +251,8 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
     final color = isRejected
         ? AppColors.error
         : hasWork
-            ? AppColors.gold
-            : AppColors.gold;
+        ? AppColors.gold
+        : AppColors.gold;
     return Center(
       child: Container(
         width: 108,
@@ -260,8 +266,8 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
           isRejected
               ? Icons.error_outline_rounded
               : hasWork
-                  ? Icons.assignment_late_rounded
-                  : Icons.access_time_rounded,
+              ? Icons.assignment_late_rounded
+              : Icons.access_time_rounded,
           size: 52,
           color: color,
         ),
@@ -275,7 +281,9 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
       decoration: BoxDecoration(
         color: gold ? AppColors.goldSubtle : AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: gold ? AppColors.goldMild : AppColors.surfaceHighest),
+        border: Border.all(
+          color: gold ? AppColors.goldMild : AppColors.surfaceHighest,
+        ),
       ),
       child: Text(text, style: AppTextStyles.bodyMedium),
     );
@@ -304,11 +312,13 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                     setState(() {
                       _inbox = next;
                       if (next.resubmitted) {
-                        _banner = 'Sent back for review. We will take another look.';
+                        _banner =
+                            'Sent back for review. We will take another look.';
                       }
                     });
                   } catch (e) {
-                    if (mounted) setState(() => _banner = _repo.errorMessage(e));
+                    if (mounted)
+                      setState(() => _banner = _repo.errorMessage(e));
                     await _reload();
                   } finally {
                     if (mounted) setState(() => _working = false);
@@ -334,15 +344,19 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         const SizedBox(height: 4),
                         Text(
                           action.hint,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
                 if (!done)
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textTertiary,
+                  ),
               ],
             ),
           ),

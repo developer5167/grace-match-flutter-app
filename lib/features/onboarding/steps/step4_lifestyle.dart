@@ -37,11 +37,7 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
     if (_diet == null || _smoke == null || _drink == null) {
       return null;
     }
-    return {
-      'diet': _diet,
-      'smoking': _smoke,
-      'drinking': _drink,
-    };
+    return {'diet': _diet, 'smoking': _smoke, 'drinking': _drink};
   }
 
   @override
@@ -54,9 +50,21 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           _fieldLabel('Diet Preferences'),
           Row(
             children: [
-              _choiceCard('Veg', '🥗', 'veg', _diet, (v) => setState(() => _diet = v)),
+              _choiceCard(
+                'Veg',
+                '🥗',
+                'veg',
+                _diet,
+                (v) => setState(() => _diet = v),
+              ),
               const SizedBox(width: 12),
-              _choiceCard('Non-Veg', '🍗', 'non_veg', _diet, (v) => setState(() => _diet = v)),
+              _choiceCard(
+                'Non-Veg',
+                '🍗',
+                'non_veg',
+                _diet,
+                (v) => setState(() => _diet = v),
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -64,9 +72,21 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           _fieldLabel('Smoking Habit'),
           Row(
             children: [
-              _choiceCard('No', '🚭', 'no', _smoke, (v) => setState(() => _smoke = v)),
+              _choiceCard(
+                'No',
+                '🚭',
+                'no',
+                _smoke,
+                (v) => setState(() => _smoke = v),
+              ),
               const SizedBox(width: 12),
-              _choiceCard('Yes', '🚬', 'yes', _smoke, (v) => setState(() => _smoke = v)),
+              _choiceCard(
+                'Yes',
+                '🚬',
+                'yes',
+                _smoke,
+                (v) => setState(() => _smoke = v),
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -74,11 +94,29 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           _fieldLabel('Drinking Habit'),
           Row(
             children: [
-              _choiceCard('No', '🚫', 'no', _drink, (v) => setState(() => _drink = v)),
+              _choiceCard(
+                'No',
+                '🚫',
+                'no',
+                _drink,
+                (v) => setState(() => _drink = v),
+              ),
               const SizedBox(width: 12),
-              _choiceCard('Occasional', '🥂', 'occasionally', _drink, (v) => setState(() => _drink = v)),
+              _choiceCard(
+                'Occasional',
+                '🥂',
+                'occasionally',
+                _drink,
+                (v) => setState(() => _drink = v),
+              ),
               const SizedBox(width: 12),
-              _choiceCard('Yes', '🍺', 'yes', _drink, (v) => setState(() => _drink = v)),
+              _choiceCard(
+                'Yes',
+                '🍺',
+                'yes',
+                _drink,
+                (v) => setState(() => _drink = v),
+              ),
             ],
           ),
           const SizedBox(height: 40),
@@ -88,11 +126,17 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
   }
 
   Widget _fieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(label, style: AppTextStyles.labelLarge),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(label, style: AppTextStyles.labelLarge),
+  );
 
-  Widget _choiceCard(String title, String emoji, String value, String? current, ValueChanged<String> onChanged) {
+  Widget _choiceCard(
+    String title,
+    String emoji,
+    String value,
+    String? current,
+    ValueChanged<String> onChanged,
+  ) {
     final isSelected = current == value;
     return Expanded(
       child: GestureDetector(
@@ -102,18 +146,27 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: isSelected ? AppColors.goldSubtle : AppColors.surfaceElevated,
+            color: isSelected
+                ? AppColors.goldSubtle
+                : AppColors.surfaceElevated,
             border: Border.all(
               color: isSelected ? AppColors.gold : AppColors.surfaceHighest,
               width: isSelected ? 2 : 1,
             ),
           ),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
-            const SizedBox(height: 8),
-            Text(title, style: AppTextStyles.labelMedium.copyWith(
-              color: isSelected ? AppColors.gold : AppColors.textSecondary)),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: isSelected ? AppColors.gold : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

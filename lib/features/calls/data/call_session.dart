@@ -76,14 +76,14 @@ class CallSession extends ChangeNotifier {
   bool get isLive => phase != CallPhase.ended && phase != CallPhase.idle;
 
   IncomingCallData get identity => IncomingCallData(
-        callId: callId ?? '',
-        conversationId: conversationId,
-        callerName: peerName,
-        callerPhoto: peerPhoto,
-        isVideo: isVideo,
-        outgoing: isCaller,
-        shownAt: DateTime.now().millisecondsSinceEpoch,
-      );
+    callId: callId ?? '',
+    conversationId: conversationId,
+    callerName: peerName,
+    callerPhoto: peerPhoto,
+    isVideo: isVideo,
+    outgoing: isCaller,
+    shownAt: DateTime.now().millisecondsSinceEpoch,
+  );
 
   Future<void> _initRenderers() async {
     if (_renderersReady) return;
@@ -97,7 +97,10 @@ class CallSession extends ChangeNotifier {
     _set(CallPhase.dialling);
     _listen();
 
-    final ack = await socket.startCall(conversationId: conversationId, isVideo: isVideo);
+    final ack = await socket.startCall(
+      conversationId: conversationId,
+      isVideo: isVideo,
+    );
     if (ack['ok'] != true) {
       needsPlan = ack['code'] == 'PLAN_REQUIRED';
       return _fail(ack['error']?.toString() ?? 'Could not start the call');
@@ -233,16 +236,19 @@ class CallSession extends ChangeNotifier {
       await Helper.setSpeakerphoneOn(speakerOn);
     } catch (_) {}
 
-    _pc = await createPeerConnection({
-      'iceServers': iceServers ?? _masthiIceServers,
-      'sdpSemantics': 'unified-plan',
-    }, {
-      'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': isVideo,
+    _pc = await createPeerConnection(
+      {
+        'iceServers': iceServers ?? _masthiIceServers,
+        'sdpSemantics': 'unified-plan',
       },
-      'optional': [],
-    });
+      {
+        'mandatory': {
+          'OfferToReceiveAudio': true,
+          'OfferToReceiveVideo': isVideo,
+        },
+        'optional': [],
+      },
+    );
 
     for (final track in _local!.getTracks()) {
       await _pc!.addTrack(track, _local!);
@@ -368,7 +374,8 @@ class CallSession extends ChangeNotifier {
     _sub?.cancel();
     _sub = socket.callStream.listen((event) async {
       if (phase == CallPhase.ended) return;
-      if (event.callId == null || callId == null || event.callId != callId) return;
+      if (event.callId == null || callId == null || event.callId != callId)
+        return;
 
       switch (event.name) {
         case 'call:answered':

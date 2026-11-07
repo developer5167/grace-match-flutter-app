@@ -58,7 +58,10 @@ class CallManager {
       return s != null && s.isLive ? s.callId : null;
     };
     _socketSub = socket.callStream.listen(_onSocketEvent);
-    _kitSub = FlutterCallkitIncoming.onEvent.listen(_onKitEvent, onError: (_) {});
+    _kitSub = FlutterCallkitIncoming.onEvent.listen(
+      _onKitEvent,
+      onError: (_) {},
+    );
     PushCenter.extraResponseHandler = _onLocalNotification;
     CallNotifications.hide();
   }
@@ -133,7 +136,9 @@ class CallManager {
       case ck.CallEventActionCallEnded(:final callKitParams):
         // "Hang up" on the ongoing-call notification.
         final session = active.value;
-        if (session != null && session.callId == callKitParams.id && session.isLive) {
+        if (session != null &&
+            session.callId == callKitParams.id &&
+            session.isLive) {
           session.hangUp();
         }
         break;
@@ -198,7 +203,8 @@ class CallManager {
       // Restarts the plugin's foreground service now that the microphone and
       // camera are granted, so they keep working with the screen off.
       await CallKit.markOngoing(session.identity, outgoing: false);
-      if (session.phase == CallPhase.connected) await CallKit.markConnected(call.callId);
+      if (session.phase == CallPhase.connected)
+        await CallKit.markConnected(call.callId);
     }
   }
 
@@ -304,7 +310,9 @@ class CallManager {
   }
 
   Future<bool> _permissions(bool video) async {
-    final needed = video ? [Permission.microphone, Permission.camera] : [Permission.microphone];
+    final needed = video
+        ? [Permission.microphone, Permission.camera]
+        : [Permission.microphone];
     final statuses = await needed.request();
     return statuses.values.every((s) => s.isGranted);
   }
@@ -338,8 +346,14 @@ class CallManager {
           style: AppTextStyles.bodyMedium,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Not now')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Allow')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Not now'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Allow'),
+          ),
         ],
       ),
     );
@@ -363,7 +377,9 @@ class CallManager {
   Future<CallEntitlements> entitlements({bool refresh = false}) async {
     final at = _entitlementsAt;
     final cached = _entitlements;
-    if (!refresh && cached != null && at != null &&
+    if (!refresh &&
+        cached != null &&
+        at != null &&
         DateTime.now().difference(at) < const Duration(minutes: 2)) {
       return cached;
     }
@@ -391,21 +407,24 @@ class CallManager {
     _sheetCallId = call.callId;
     AppHaptics.heavy();
     nav
-        .push(MaterialPageRoute<void>(
-          settings: const RouteSettings(name: _sheetRoute),
-          fullscreenDialog: true,
-          builder: (_) => IncomingCallSheet(call: call),
-        ))
+        .push(
+          MaterialPageRoute<void>(
+            settings: const RouteSettings(name: _sheetRoute),
+            fullscreenDialog: true,
+            builder: (_) => IncomingCallSheet(call: call),
+          ),
+        )
         .whenComplete(() {
-      if (_sheetCallId == call.callId) _sheetCallId = null;
-    });
+          if (_sheetCallId == call.callId) _sheetCallId = null;
+        });
   }
 
   void _closeSheet(String callId) {
     if (_sheetCallId != callId) return;
     _sheetCallId = null;
-    AppRouter.rootNavigatorKey.currentState
-        ?.popUntil((route) => route.settings.name != _sheetRoute);
+    AppRouter.rootNavigatorKey.currentState?.popUntil(
+      (route) => route.settings.name != _sheetRoute,
+    );
   }
 
   static const _sheetRoute = 'incoming-call';
@@ -446,7 +465,9 @@ class IncomingCallSheet extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               call.isVideo ? 'Incoming video call' : 'Incoming voice call',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const Spacer(flex: 3),
             Row(
@@ -462,7 +483,9 @@ class IncomingCallSheet extends StatelessWidget {
                   },
                 ),
                 _action(
-                  icon: call.isVideo ? Icons.videocam_rounded : Icons.call_rounded,
+                  icon: call.isVideo
+                      ? Icons.videocam_rounded
+                      : Icons.call_rounded,
                   label: 'Answer',
                   colour: Colors.green,
                   onTap: () {
@@ -491,13 +514,19 @@ class IncomingCallSheet extends StatelessWidget {
         GestureDetector(
           onTap: onTap,
           child: Container(
-            width: 68, height: 68,
+            width: 68,
+            height: 68,
             decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
             child: Icon(icon, color: Colors.white, size: 28),
           ),
         ),
         const SizedBox(height: 10),
-        Text(label, style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -509,7 +538,12 @@ class CallAvatar extends StatelessWidget {
   final String photo;
   final double size;
 
-  const CallAvatar({super.key, required this.name, required this.photo, this.size = 96});
+  const CallAvatar({
+    super.key,
+    required this.name,
+    required this.photo,
+    this.size = 96,
+  });
 
   @override
   Widget build(BuildContext context) {

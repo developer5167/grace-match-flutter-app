@@ -46,7 +46,10 @@ class _OffersScreenState extends State<OffersScreen> {
         elevation: 0,
         title: Text('Offers', style: AppTextStyles.headlineSmall),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -55,7 +58,10 @@ class _OffersScreenState extends State<OffersScreen> {
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+              child: CircularProgressIndicator(
+                color: AppColors.gold,
+                strokeWidth: 2,
+              ),
             );
           }
           if (snap.hasError) {
@@ -79,7 +85,8 @@ class _OffersScreenState extends State<OffersScreen> {
                   _message(
                     icon: Icons.local_offer_outlined,
                     title: 'No offers right now',
-                    subtitle: "When there's an offer for you, it will appear here "
+                    subtitle:
+                        "When there's an offer for you, it will appear here "
                         'and you will get a notification.',
                   ),
                 ],
@@ -118,19 +125,29 @@ class _OffersScreenState extends State<OffersScreen> {
           children: [
             Icon(icon, size: 44, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text(title, style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AppTextStyles.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 20),
               TextButton(
                 onPressed: onRetry,
-                child: Text('Try again',
-                    style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+                child: Text(
+                  'Try again',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.gold,
+                  ),
+                ),
               ),
             ],
           ],
@@ -176,7 +193,10 @@ class _OfferCard extends StatelessWidget {
                         if (offer.isPersonal)
                           Container(
                             margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.roseSubtle,
                               borderRadius: BorderRadius.circular(100),
@@ -189,24 +209,33 @@ class _OfferCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        Text(offer.headline,
-                            style: AppTextStyles.headlineSmall.copyWith(color: accent)),
+                        Text(
+                          offer.headline,
+                          style: AppTextStyles.headlineSmall.copyWith(
+                            color: accent,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(offer.title, style: AppTextStyles.labelLarge),
-                        if (offer.description != null && offer.description!.isNotEmpty) ...[
+                        if (offer.description != null &&
+                            offer.description!.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
                             offer.description!,
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.textSecondary),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ],
                       ],
                     ),
                   ),
                   if (spent)
-                    const Icon(Icons.check_circle_rounded,
-                        color: AppColors.textTertiary, size: 20),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
                 ],
               ),
             ),
@@ -224,7 +253,9 @@ class _OfferCard extends StatelessWidget {
                           ? null
                           : () {
                               AppHaptics.light();
-                              Clipboard.setData(ClipboardData(text: offer.code));
+                              Clipboard.setData(
+                                ClipboardData(text: offer.code),
+                              );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Code ${offer.code} copied'),
@@ -234,7 +265,10 @@ class _OfferCard extends StatelessWidget {
                               );
                             },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(10),
@@ -246,13 +280,18 @@ class _OfferCard extends StatelessWidget {
                               offer.code,
                               style: AppTextStyles.labelLarge.copyWith(
                                 letterSpacing: 1.6,
-                                color: spent ? AppColors.textTertiary : AppColors.textPrimary,
+                                color: spent
+                                    ? AppColors.textTertiary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                             const Spacer(),
                             if (!spent)
-                              const Icon(Icons.copy_rounded,
-                                  size: 14, color: AppColors.textTertiary),
+                              const Icon(
+                                Icons.copy_rounded,
+                                size: 14,
+                                color: AppColors.textTertiary,
+                              ),
                           ],
                         ),
                       ),
@@ -268,7 +307,9 @@ class _OfferCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
               decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.surfaceHighest)),
+                border: Border(
+                  top: BorderSide(color: AppColors.surfaceHighest),
+                ),
               ),
               child: Row(
                 children: [
@@ -280,8 +321,9 @@ class _OfferCard extends StatelessWidget {
                           offer.planName == null
                               ? 'Any plan'
                               : 'On ${offer.planName}',
-                          style: AppTextStyles.labelSmall
-                              .copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -290,8 +332,8 @@ class _OfferCard extends StatelessWidget {
                             color: spent
                                 ? AppColors.textTertiary
                                 : offer.isEndingSoon
-                                    ? AppColors.roseDark
-                                    : AppColors.textTertiary,
+                                ? AppColors.roseDark
+                                : AppColors.textTertiary,
                           ),
                         ),
                       ],
@@ -308,11 +350,14 @@ class _OfferCard extends StatelessWidget {
                       style: TextButton.styleFrom(
                         backgroundColor: accent.withAlpha(30),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       child: Text(
                         offer.inProgress ? 'Continue' : 'Use offer',
-                        style: AppTextStyles.labelMedium.copyWith(color: accent),
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: accent,
+                        ),
                       ),
                     ),
                 ],

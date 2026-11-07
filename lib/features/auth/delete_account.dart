@@ -17,7 +17,9 @@ Future<void> confirmDeleteAccount(BuildContext context) async {
       title: Text('Delete account?', style: AppTextStyles.headlineSmall),
       content: Text(
         'This permanently deletes your profile, photos, messages, and phone number from GraceMatch. You cannot undo this.',
-        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.textSecondary,
+        ),
       ),
       actions: [
         TextButton(
@@ -26,7 +28,10 @@ Future<void> confirmDeleteAccount(BuildContext context) async {
         ),
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Delete account', style: TextStyle(color: AppColors.error)),
+          child: const Text(
+            'Delete account',
+            style: TextStyle(color: AppColors.error),
+          ),
         ),
       ],
     ),
@@ -38,9 +43,8 @@ Future<void> confirmDeleteAccount(BuildContext context) async {
     context: context,
     useRootNavigator: true,
     barrierDismissible: false,
-    builder: (_) => Center(
-      child: CircularProgressIndicator(color: AppColors.gold),
-    ),
+    builder: (_) =>
+        Center(child: CircularProgressIndicator(color: AppColors.gold)),
   );
 
   try {

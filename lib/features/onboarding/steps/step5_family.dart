@@ -15,8 +15,16 @@ class SiblingInfo {
   String type;
   String education;
   String maritalStatus;
-  SiblingInfo({this.type = 'Brother', this.education = '', this.maritalStatus = 'Unmarried'});
-  Map<String, String> toJson() => {'type': type, 'education': education, 'marital_status': maritalStatus};
+  SiblingInfo({
+    this.type = 'Brother',
+    this.education = '',
+    this.maritalStatus = 'Unmarried',
+  });
+  Map<String, String> toJson() => {
+    'type': type,
+    'education': education,
+    'marital_status': maritalStatus,
+  };
 }
 
 class _Step5FamilyState extends OnboardingStepState<Step5Family> {
@@ -26,8 +34,17 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
   final _motherCtrl = TextEditingController();
   final List<SiblingInfo> _siblings = [];
 
-  final _familyTypes = {'Nuclear': 'nuclear', 'Joint': 'joint', 'Other': 'other'};
-  final _familyValuesMap = {'Orthodox': 'middle', 'Traditional': 'middle', 'Moderate': 'upper_middle', 'Liberal': 'affluent'};
+  final _familyTypes = {
+    'Nuclear': 'nuclear',
+    'Joint': 'joint',
+    'Other': 'other',
+  };
+  final _familyValuesMap = {
+    'Orthodox': 'middle',
+    'Traditional': 'middle',
+    'Moderate': 'upper_middle',
+    'Liberal': 'affluent',
+  };
   final _maritalStatuses = ['Unmarried', 'Married', 'Divorced', 'Widowed'];
 
   @override
@@ -38,25 +55,42 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
       final family = parent?.onboardingData?['family'];
       if (family != null && mounted) {
         setState(() {
-          if (family['father_occupation'] != null) _fatherCtrl.text = family['father_occupation'];
-          if (family['mother_occupation'] != null) _motherCtrl.text = family['mother_occupation'];
-          
+          if (family['father_occupation'] != null)
+            _fatherCtrl.text = family['father_occupation'];
+          if (family['mother_occupation'] != null)
+            _motherCtrl.text = family['mother_occupation'];
+
           if (family['family_type'] != null) {
-            _familyType = _familyTypes.entries.cast<MapEntry<String, String>?>().firstWhere((e) => e?.value == family['family_type'], orElse: () => null)?.key;
-          }
-          
-          if (family['family_class'] != null) {
-            _familyValue = _familyValuesMap.entries.cast<MapEntry<String, String>?>().firstWhere((e) => e?.value == family['family_class'], orElse: () => null)?.key;
+            _familyType = _familyTypes.entries
+                .cast<MapEntry<String, String>?>()
+                .firstWhere(
+                  (e) => e?.value == family['family_type'],
+                  orElse: () => null,
+                )
+                ?.key;
           }
 
-          if (family['sibling_details'] != null && family['sibling_details'] is List) {
+          if (family['family_class'] != null) {
+            _familyValue = _familyValuesMap.entries
+                .cast<MapEntry<String, String>?>()
+                .firstWhere(
+                  (e) => e?.value == family['family_class'],
+                  orElse: () => null,
+                )
+                ?.key;
+          }
+
+          if (family['sibling_details'] != null &&
+              family['sibling_details'] is List) {
             _siblings.clear();
             for (var s in family['sibling_details']) {
-              _siblings.add(SiblingInfo(
-                type: s['type'] ?? 'Brother',
-                education: s['education'] ?? '',
-                maritalStatus: s['marital_status'] ?? 'Unmarried',
-              ));
+              _siblings.add(
+                SiblingInfo(
+                  type: s['type'] ?? 'Brother',
+                  education: s['education'] ?? '',
+                  maritalStatus: s['marital_status'] ?? 'Unmarried',
+                ),
+              );
             }
           }
         });
@@ -69,11 +103,15 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
     if (_familyType == null || _familyValue == null) {
       return null;
     }
-    
+
     int brothers = _siblings.where((s) => s.type == 'Brother').length;
     int sisters = _siblings.where((s) => s.type == 'Sister').length;
-    int marriedBrothers = _siblings.where((s) => s.type == 'Brother' && s.maritalStatus == 'Married').length;
-    int marriedSisters = _siblings.where((s) => s.type == 'Sister' && s.maritalStatus == 'Married').length;
+    int marriedBrothers = _siblings
+        .where((s) => s.type == 'Brother' && s.maritalStatus == 'Married')
+        .length;
+    int marriedSisters = _siblings
+        .where((s) => s.type == 'Sister' && s.maritalStatus == 'Married')
+        .length;
 
     return {
       'family_type': _familyTypes[_familyType],
@@ -100,8 +138,13 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
             spacing: 8,
             runSpacing: 8,
             children: _familyTypes.keys
-                .map((t) => _selectChip(
-                    t, _familyType, (v) => setState(() => _familyType = v)))
+                .map(
+                  (t) => _selectChip(
+                    t,
+                    _familyType,
+                    (v) => setState(() => _familyType = v),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 24),
@@ -111,8 +154,13 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
             spacing: 8,
             runSpacing: 8,
             children: _familyValuesMap.keys
-                .map((v) => _selectChip(
-                    v, _familyValue, (val) => setState(() => _familyValue = val)))
+                .map(
+                  (v) => _selectChip(
+                    v,
+                    _familyValue,
+                    (val) => setState(() => _familyValue = val),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 24),
@@ -131,12 +179,19 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
               _fieldLabel("Sibling Details"),
               TextButton.icon(
                 onPressed: () => setState(() => _siblings.add(SiblingInfo())),
-                icon: Icon(Icons.add_circle_outline, size: 20, color: AppColors.gold),
-                label: Text('Add Sibling', style: TextStyle(color: AppColors.gold)),
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  size: 20,
+                  color: AppColors.gold,
+                ),
+                label: Text(
+                  'Add Sibling',
+                  style: TextStyle(color: AppColors.gold),
+                ),
               ),
             ],
           ),
-          
+
           ..._siblings.asMap().entries.map((entry) {
             int idx = entry.key;
             SiblingInfo sib = entry.value;
@@ -152,13 +207,26 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
                 children: [
                   Row(
                     children: [
-                      _selectChip('Brother', sib.type, (v) => setState(() => sib.type = v)),
+                      _selectChip(
+                        'Brother',
+                        sib.type,
+                        (v) => setState(() => sib.type = v),
+                      ),
                       const SizedBox(width: 8),
-                      _selectChip('Sister', sib.type, (v) => setState(() => sib.type = v)),
+                      _selectChip(
+                        'Sister',
+                        sib.type,
+                        (v) => setState(() => sib.type = v),
+                      ),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
-                        onPressed: () => setState(() => _siblings.removeAt(idx)),
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _siblings.removeAt(idx)),
                       ),
                     ],
                   ),
@@ -166,7 +234,10 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
                   TextField(
                     onChanged: (v) => sib.education = v,
                     style: AppTextStyles.labelMedium,
-                    controller: TextEditingController(text: sib.education)..selection = TextSelection.collapsed(offset: sib.education.length),
+                    controller: TextEditingController(text: sib.education)
+                      ..selection = TextSelection.collapsed(
+                        offset: sib.education.length,
+                      ),
                     decoration: const InputDecoration(
                       hintText: 'Education / Study',
                       isDense: true,
@@ -176,7 +247,15 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
                   _fieldLabel('Marital Status'),
                   Wrap(
                     spacing: 8,
-                    children: _maritalStatuses.map((s) => _smallChip(s, sib.maritalStatus, (v) => setState(() => sib.maritalStatus = v))).toList(),
+                    children: _maritalStatuses
+                        .map(
+                          (s) => _smallChip(
+                            s,
+                            sib.maritalStatus,
+                            (v) => setState(() => sib.maritalStatus = v),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
               ),
@@ -189,7 +268,11 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
     );
   }
 
-  Widget _smallChip(String label, String? selected, ValueChanged<String> onTap) {
+  Widget _smallChip(
+    String label,
+    String? selected,
+    ValueChanged<String> onTap,
+  ) {
     final isSelected = selected == label;
     return GestureDetector(
       onTap: () => onTap(label),
@@ -198,17 +281,24 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: isSelected ? AppColors.goldSubtle : Colors.transparent,
-          border: Border.all(color: isSelected ? AppColors.gold : AppColors.surfaceHighest),
+          border: Border.all(
+            color: isSelected ? AppColors.gold : AppColors.surfaceHighest,
+          ),
         ),
-        child: Text(label, style: AppTextStyles.labelSmall.copyWith(color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
 
   Widget _fieldLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(label, style: AppTextStyles.labelMedium),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(label, style: AppTextStyles.labelMedium),
+  );
 
   Widget _inputField(TextEditingController ctrl, String hint) {
     return TextField(
@@ -218,7 +308,11 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
     );
   }
 
-  Widget _selectChip(String label, String? selected, ValueChanged<String> onTap) {
+  Widget _selectChip(
+    String label,
+    String? selected,
+    ValueChanged<String> onTap,
+  ) {
     final isSelected = selected == label;
     return GestureDetector(
       onTap: () => onTap(label),
@@ -233,11 +327,13 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
 }
-

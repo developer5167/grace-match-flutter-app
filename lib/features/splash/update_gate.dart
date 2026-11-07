@@ -42,9 +42,10 @@ class AppUpdatePolicy {
       latestVersion: (json['latest_version'] ?? '').toString(),
       mandatory: json['mandatory'] == true,
       title: (json['title'] ?? 'Update available').toString(),
-      message: (json['message'] ??
-              'A newer version of GraceMatch is ready. Update to keep using the app.')
-          .toString(),
+      message:
+          (json['message'] ??
+                  'A newer version of GraceMatch is ready. Update to keep using the app.')
+              .toString(),
       androidUrl: json['android_url']?.toString(),
       iosUrl: json['ios_url']?.toString(),
       androidMaintenance: json['android_maintenance'] == true,
@@ -59,15 +60,18 @@ class AppUpdatePolicy {
   bool get maintenanceForDevice {
     if (kIsWeb) return false;
     if (defaultTargetPlatform == TargetPlatform.iOS) return iosMaintenance;
-    if (defaultTargetPlatform == TargetPlatform.android) return androidMaintenance;
+    if (defaultTargetPlatform == TargetPlatform.android)
+      return androidMaintenance;
     return false;
   }
 
+  /// This platform's store only. Opening the other store's page breaks App
+  /// Store guideline 4, and admin requires the link before the prompt goes on.
   String? get storeUrl {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return (iosUrl != null && iosUrl!.isNotEmpty) ? iosUrl : androidUrl;
-    }
-    return (androidUrl != null && androidUrl!.isNotEmpty) ? androidUrl : iosUrl;
+    final url = defaultTargetPlatform == TargetPlatform.iOS
+        ? iosUrl
+        : androidUrl;
+    return (url != null && url.isNotEmpty) ? url : null;
   }
 }
 
@@ -76,7 +80,14 @@ class UpdateGate {
 
   static Future<AppUpdatePolicy?> fetch() async {
     try {
-      final resp = await DioClient.instance.get(ApiEndpoints.publicAppUpdate);
+      // Android and iOS have separate policies in admin.
+      final platform = defaultTargetPlatform == TargetPlatform.iOS
+          ? 'ios'
+          : 'android';
+      final resp = await DioClient.instance.get(
+        ApiEndpoints.publicAppUpdate,
+        queryParameters: {'platform': platform},
+      );
       final data = resp.data['data'];
       if (data is Map<String, dynamic>) {
         return AppUpdatePolicy.fromJson(data);
@@ -93,7 +104,10 @@ class UpdateGate {
   /// After splash. Returns once the member may continue (or never, if mandatory
   /// and they have not updated). [fetched] skips a second request when splash
   /// already loaded the policy.
-  static Future<void> maybePrompt(BuildContext context, {AppUpdatePolicy? fetched}) async {
+  static Future<void> maybePrompt(
+    BuildContext context, {
+    AppUpdatePolicy? fetched,
+  }) async {
     final policy = fetched ?? await fetch();
     if (policy == null || !policy.enabled || policy.latestVersion.isEmpty) {
       return;
@@ -167,8 +181,11 @@ class _UpdateDialog extends StatelessWidget {
                 color: AppColors.goldSubtle,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(Icons.system_update_alt_rounded,
-                  color: AppColors.gold, size: 26),
+              child: Icon(
+                Icons.system_update_alt_rounded,
+                color: AppColors.gold,
+                size: 26,
+              ),
             ),
             const SizedBox(height: 18),
             Text(
@@ -197,6 +214,10 @@ class _UpdateDialog extends StatelessWidget {
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.textOnGold,
                   elevation: 0,
+                  // The app theme pads buttons 18px top and bottom and sets a
+                  // 56px minimum; inside this 48px box that clipped the label.
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

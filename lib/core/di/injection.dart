@@ -30,7 +30,9 @@ void init() {
   sl.registerLazySingleton<InterestsRepository>(() => InterestsRepository());
   sl.registerLazySingleton<ProfileRepository>(() => ProfileRepository());
   sl.registerLazySingleton<ChatRepository>(() => ChatRepository());
-  sl.registerLazySingleton<SubscriptionRepository>(() => SubscriptionRepository());
+  sl.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepository(),
+  );
   sl.registerLazySingleton<ActivityRepository>(() => ActivityRepository());
 
   // BLoCs

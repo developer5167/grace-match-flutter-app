@@ -43,7 +43,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     if (!_isValid) return;
     AppHaptics.medium();
     FocusScope.of(context).unfocus();
-    
+
     final fullPhone = '$_selectedCode${_phoneController.text}';
     context.read<AuthBloc>().add(SendOtpEvent(fullPhone));
   }
@@ -62,7 +62,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message, style: const TextStyle(color: Colors.white)),
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -71,7 +74,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       },
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        
+
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: _buildAppBar(),
@@ -82,31 +85,34 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 24),
-                  
+
                   // Title
                   Text(
                     'What\'s your number?',
                     style: AppTextStyles.displaySmall,
                   ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Subtitle
                   Text(
-                    'We will send a code to verify your identity.',
-                    style: AppTextStyles.bodyLarge,
-                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideX(begin: -0.1),
-                  
+                        'We will send a code to verify your identity.',
+                        style: AppTextStyles.bodyLarge,
+                      )
+                      .animate()
+                      .fadeIn(delay: 100.ms, duration: 400.ms)
+                      .slideX(begin: -0.1),
+
                   const SizedBox(height: 48),
-                  
+
                   // Input Field
                   _buildPhoneInput()
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 400.ms)
                       .slideX(begin: -0.1),
-                  
+
                   const Spacer(),
-                  
+
                   // Terms text
                   Center(
                     child: Text(
@@ -114,15 +120,18 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       style: AppTextStyles.labelSmall,
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   AppButton(
-                    label: 'Continue',
-                    isLoading: isLoading,
-                    onPressed: _isValid ? _onContinue : null,
-                  ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.2),
-                  
+                        label: 'Continue',
+                        isLoading: isLoading,
+                        onPressed: _isValid ? _onContinue : null,
+                      )
+                      .animate()
+                      .fadeIn(delay: 400.ms, duration: 400.ms)
+                      .slideY(begin: 0.2),
+
                   const SizedBox(height: 16),
                 ],
               ),
@@ -138,7 +147,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppColors.textPrimary,
+        ),
         onPressed: () => context.pop(),
       ),
     );
@@ -166,40 +178,44 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
             ),
             child: Row(
               children: [
-                const Text(
-                  '🇮🇳',
-                  style: TextStyle(fontSize: 20),
-                ),
+                const Text('🇮🇳', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
-                Text(
-                  _selectedCode,
-                  style: AppTextStyles.labelLarge,
-                ),
+                Text(_selectedCode, style: AppTextStyles.labelLarge),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down_rounded, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.arrow_drop_down_rounded,
+                  color: AppColors.textSecondary,
+                ),
               ],
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Phone Number Input
           Expanded(
             child: TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              style: AppTextStyles.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
               cursorColor: AppColors.gold,
               decoration: InputDecoration(
                 hintText: '0000 0000 00',
-                hintStyle: AppTextStyles.bodyLarge.copyWith(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textTertiary),
+                hintStyle: AppTextStyles.bodyLarge.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textTertiary,
+                ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
               ),
             ),
           ),
-          
+
           // Validation Checkmark
           if (_isValid)
             Icon(

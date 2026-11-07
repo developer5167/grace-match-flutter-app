@@ -8,13 +8,17 @@ class ChatRepository {
   Future<List<Map<String, dynamic>>> fetchConversations() async {
     try {
       final response = await _dio.get(ApiEndpoints.conversations);
-      return List<Map<String, dynamic>>.from(response.data['data']['conversations']);
+      return List<Map<String, dynamic>>.from(
+        response.data['data']['conversations'],
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchMessages(String conversationId) async {
+  Future<List<Map<String, dynamic>>> fetchMessages(
+    String conversationId,
+  ) async {
     try {
       final response = await _dio.get(ApiEndpoints.messages(conversationId));
       return List<Map<String, dynamic>>.from(response.data['data']['messages']);
@@ -41,7 +45,10 @@ class ChatRepository {
     } catch (_) {}
   }
 
-  Future<Map<String, dynamic>> sendMessage(String conversationId, String text) async {
+  Future<Map<String, dynamic>> sendMessage(
+    String conversationId,
+    String text,
+  ) async {
     try {
       final response = await _dio.post(
         ApiEndpoints.messages(conversationId),

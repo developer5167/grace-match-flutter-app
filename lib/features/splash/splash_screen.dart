@@ -29,10 +29,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
 
     _glowController = AnimationController(
       vsync: this,
@@ -58,9 +60,9 @@ class _SplashScreenState extends State<SplashScreen>
     final maintenanceCheck = MaintenanceGate.blocked();
     await PushCenter.launchReady;
     final startTime = DateTime.now();
-    
+
     final token = await AppStorage.getAccessToken();
-    
+
     if (token != null) {
       try {
         // Single bootstrap call — replaces the old GET /profile/me and also
@@ -72,7 +74,8 @@ class _SplashScreenState extends State<SplashScreen>
           final user = data['user'];
           if (user is Map) {
             AppStorage.saveOnboardingComplete(
-                user['is_onboarding_complete'] ?? false);
+              user['is_onboarding_complete'] ?? false,
+            );
             AppStorage.saveReviewStatus(user['review_status']?.toString());
           }
         }
@@ -90,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (remaining > 0) {
       await Future.delayed(Duration(milliseconds: remaining));
     }
-    
+
     if (!mounted) return;
 
     final blocked = await maintenanceCheck;
@@ -140,9 +143,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
         child: Stack(
           children: [
             // ── Background radial glow ─────────────────────────
@@ -155,8 +156,9 @@ class _SplashScreenState extends State<SplashScreen>
                       center: Alignment.center,
                       radius: 0.7,
                       colors: [
-                        AppColors.gold
-                            .withAlpha((_glowAnimation.value * 30).toInt()),
+                        AppColors.gold.withAlpha(
+                          (_glowAnimation.value * 30).toInt(),
+                        ),
                         Colors.transparent,
                       ],
                     ),
@@ -175,10 +177,7 @@ class _SplashScreenState extends State<SplashScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    colors: [
-                      AppColors.gold.withAlpha(30),
-                      Colors.transparent,
-                    ],
+                    colors: [AppColors.gold.withAlpha(30), Colors.transparent],
                   ),
                 ),
               ),
@@ -193,27 +192,26 @@ class _SplashScreenState extends State<SplashScreen>
                   // web logo, converging the way they do on the site. It runs
                   // its own entrance, so no scale/elastic here — the two would
                   // fight each other.
-                  const AnimatedRingsMark(size: 150)
-                      .animate()
-                      .fadeIn(duration: 500.ms),
+                  const AnimatedRingsMark(
+                    size: 150,
+                  ).animate().fadeIn(duration: 500.ms),
 
                   const SizedBox(height: 28),
 
                   // Brand name
                   Text(
-                    'GraceMatch',
-                    style: AppTextStyles.displayMedium.copyWith(
-                      foreground: Paint()
-                        ..shader = LinearGradient(
-                          colors: [
-                            AppColors.gold,
-                            AppColors.goldLight,
-                            AppColors.gold,
-                          ],
-                        ).createShader(
-                            const Rect.fromLTWH(0, 0, 250, 50)),
-                    ),
-                  )
+                        'GraceMatch',
+                        style: AppTextStyles.displayMedium.copyWith(
+                          foreground: Paint()
+                            ..shader = LinearGradient(
+                              colors: [
+                                AppColors.gold,
+                                AppColors.goldLight,
+                                AppColors.gold,
+                              ],
+                            ).createShader(const Rect.fromLTWH(0, 0, 250, 50)),
+                        ),
+                      )
                       .animate(delay: 400.ms)
                       .slideY(
                         begin: 0.3,
@@ -227,12 +225,12 @@ class _SplashScreenState extends State<SplashScreen>
 
                   // Tagline
                   Text(
-                    'Where faith meets forever',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textTertiary,
-                      letterSpacing: 0.5,
-                    ),
-                  )
+                        'Where faith meets forever',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textTertiary,
+                          letterSpacing: 0.5,
+                        ),
+                      )
                       .animate(delay: 700.ms)
                       .fadeIn(duration: 600.ms)
                       .slideY(begin: 0.2, end: 0),
@@ -257,13 +255,10 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-            )
-                .animate(delay: 1000.ms)
-                .fadeIn(duration: 400.ms),
+            ).animate(delay: 1000.ms).fadeIn(duration: 400.ms),
           ],
         ),
       ),
     );
   }
-
 }

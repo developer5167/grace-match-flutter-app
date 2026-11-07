@@ -47,8 +47,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   // Keys to access step data
-  final List<GlobalKey<OnboardingStepState>> _stepKeys = 
-      List.generate(10, (index) => GlobalKey<OnboardingStepState>());
+  final List<GlobalKey<OnboardingStepState>> _stepKeys = List.generate(
+    10,
+    (index) => GlobalKey<OnboardingStepState>(),
+  );
 
   final _stepTitles = [
     'About You',
@@ -78,8 +80,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
 
   Map<String, dynamic>? onboardingData;
 
-
-
   void _nextStep() {
     final currentKey = _stepKeys[_currentStep];
     final stepData = currentKey.currentState?.getStepData();
@@ -91,7 +91,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     // Save step data to backend
-    context.read<OnboardingBloc>().add(SaveStepEvent(_currentStep + 1, stepData));
+    context.read<OnboardingBloc>().add(
+      SaveStepEvent(_currentStep + 1, stepData),
+    );
   }
 
   bool get _isFixing => widget.initialStep != null || widget.fixAction != null;
@@ -125,9 +127,16 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   String _getStepTitle() {
     if (_isFixing) {
       final titles = [
-        'Basic Info', 'Faith Details', 'Bio & Details', 'Lifestyle',
-        'Family Background', 'Partner Preferences', 'Hobbies', 'My Photos',
-        'Verification', 'Finalize'
+        'Basic Info',
+        'Faith Details',
+        'Bio & Details',
+        'Lifestyle',
+        'Family Background',
+        'Partner Preferences',
+        'Hobbies',
+        'My Photos',
+        'Verification',
+        'Finalize',
       ];
       return 'Edit ${titles[_currentStep]}';
     }
@@ -135,7 +144,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _prevStep() {
-    if (_isFixing && (widget.initialStep == null || _currentStep == widget.initialStep)) {
+    if (_isFixing &&
+        (widget.initialStep == null || _currentStep == widget.initialStep)) {
       if (context.canPop()) {
         context.pop();
       } else {
@@ -143,7 +153,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
       }
       return;
     }
-    
+
     if (_currentStep > 0) {
       AppHaptics.light();
       _pageController.previousPage(
@@ -189,7 +199,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
         } else if (state is OnboardingError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message, style: const TextStyle(color: Colors.white)),
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -197,15 +210,18 @@ class OnboardingScreenState extends State<OnboardingScreen> {
         }
       },
       builder: (context, state) {
-        if (onboardingData == null && (state is OnboardingLoading || state is OnboardingInitial)) {
+        if (onboardingData == null &&
+            (state is OnboardingLoading || state is OnboardingInitial)) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         }
 
         final isLoading = state is OnboardingLoading;
-        
+
         final List<Widget> steps = [
           Step1Basic(key: _stepKeys[0]),
           Step2Faith(key: _stepKeys[1]),
@@ -227,7 +243,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                 _buildHeader(isLoading),
                 if (!_isFixing)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 12,
+                    ),
                     child: OnboardingStepIndicator(
                       total: _totalSteps,
                       current: _currentStep,
@@ -241,7 +260,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: Text(
-                          _isFixing ? 'Edit ${_stepTitles[_currentStep]}' : _stepTitles[_currentStep],
+                          _isFixing
+                              ? 'Edit ${_stepTitles[_currentStep]}'
+                              : _stepTitles[_currentStep],
                           key: ValueKey('title_$_currentStep'),
                           style: AppTextStyles.headlineLarge,
                         ),
@@ -272,18 +293,22 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                     label: _isFixing
                         ? 'Save'
                         : _currentStep == _totalSteps - 1
-                            ? 'Complete Profile ✓'
-                            : 'Continue',
+                        ? 'Complete Profile ✓'
+                        : 'Continue',
                     isLoading: isLoading,
                     onPressed: _nextStep,
                   ),
                 ),
                 if (!_isFixing)
                   TextButton(
-                    onPressed: isLoading ? null : () => confirmDeleteAccount(context),
+                    onPressed: isLoading
+                        ? null
+                        : () => confirmDeleteAccount(context),
                     child: Text(
                       'Delete account',
-                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.error),
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -303,8 +328,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           if (_currentStep > 0 || _isFixing)
             IconButton(
               onPressed: isLoading ? null : _prevStep,
-              icon: const Icon(Icons.arrow_back_ios_rounded,
-                  color: AppColors.textPrimary),
+              icon: const Icon(
+                Icons.arrow_back_ios_rounded,
+                color: AppColors.textPrimary,
+              ),
             )
           else
             const SizedBox(width: 48),

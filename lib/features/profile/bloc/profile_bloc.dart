@@ -15,37 +15,50 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<RejectInterestEvent>(_onRejectInterest);
   }
 
-  Future<void> _onAcceptInterest(AcceptInterestEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onAcceptInterest(
+    AcceptInterestEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     try {
       await _repository.acceptInterest(event.interestId);
       if (state is ProfileLoaded) {
         final current = state as ProfileLoaded;
-        emit(ProfileLoaded({
-          ...current.profile,
-          'interaction_status': 'accepted'
-        }, userId: current.userId));
+        emit(
+          ProfileLoaded({
+            ...current.profile,
+            'interaction_status': 'accepted',
+          }, userId: current.userId),
+        );
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
 
-  Future<void> _onRejectInterest(RejectInterestEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onRejectInterest(
+    RejectInterestEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     try {
       await _repository.rejectInterest(event.interestId);
       if (state is ProfileLoaded) {
         final current = state as ProfileLoaded;
-        emit(ProfileLoaded({
-          ...current.profile,
-          'interaction_status': 'rejected'
-        }, userId: current.userId));
+        emit(
+          ProfileLoaded({
+            ...current.profile,
+            'interaction_status': 'rejected',
+          }, userId: current.userId),
+        );
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
 
-  Future<void> _onSendInterest(SendInterestEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onSendInterest(
+    SendInterestEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     try {
       await _repository.sendInterest(event.userId, isSuper: event.isSuper);
       if (state is ProfileLoaded) {
@@ -56,17 +69,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         // interaction_sender_id is left as it was. Going from 'none' it is
         // null, which is what the bottom bar needs to show "interest sent"
         // rather than the accept/decline pair meant for the receiver.
-        emit(ProfileLoaded({
-          ...current.profile,
-          'interaction_status': 'sent',
-        }, userId: current.userId));
+        emit(
+          ProfileLoaded({
+            ...current.profile,
+            'interaction_status': 'sent',
+          }, userId: current.userId),
+        );
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
 
-  Future<void> _onFetchProfile(FetchProfileEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onFetchProfile(
+    FetchProfileEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     final silentOwnProfile =
         event.silentRefresh && event.userId == null && state is ProfileLoaded;
     if (!silentOwnProfile) emit(ProfileLoading());
@@ -89,7 +107,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
-  Future<void> _onUpdateSettings(UpdateSettingsEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onUpdateSettings(
+    UpdateSettingsEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     final previous = state is ProfileLoaded ? state as ProfileLoaded : null;
     try {
       // PUT returns updated settings fields directly — merge them into local state
@@ -98,7 +119,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (previous != null && updatedSettings.isNotEmpty) {
         final fullData = Map<String, dynamic>.from(previous.profile);
         final profileSection = Map<String, dynamic>.from(
-          fullData['profile'] is Map ? fullData['profile'] as Map<String, dynamic> : {},
+          fullData['profile'] is Map
+              ? fullData['profile'] as Map<String, dynamic>
+              : {},
         );
         profileSection.addAll(updatedSettings);
         fullData['profile'] = profileSection;
@@ -107,8 +130,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         add(const FetchProfileEvent(silentRefresh: true));
       }
     } catch (e) {
-      if (previous != null) emit(previous);
-      else emit(ProfileError(e.toString()));
+      if (previous != null)
+        emit(previous);
+      else
+        emit(ProfileError(e.toString()));
     }
   }
 }

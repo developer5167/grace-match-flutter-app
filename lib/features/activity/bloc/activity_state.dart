@@ -57,14 +57,14 @@ class ActivityLoaded extends ActivityState {
 
   @override
   List<Object?> get props => [
-        notifications,
-        unreadNotifications,
-        viewers,
-        totalViews,
-        viewsPremiumRequired,
-        shortlists,
-        contactRequests,
-      ];
+    notifications,
+    unreadNotifications,
+    viewers,
+    totalViews,
+    viewsPremiumRequired,
+    shortlists,
+    contactRequests,
+  ];
 }
 
 class ActivityError extends ActivityState {

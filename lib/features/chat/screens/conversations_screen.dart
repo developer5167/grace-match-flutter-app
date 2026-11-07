@@ -69,14 +69,19 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         Widget body;
         if (state is ChatError) {
           body = Center(
-            child: Text(state.message, style: const TextStyle(color: Colors.white)),
+            child: Text(
+              state.message,
+              style: const TextStyle(color: Colors.white),
+            ),
           );
         } else if (state is ConversationsLoaded) {
           body = _buildConversationList(state.conversations);
         } else if (_cachedConversations.isNotEmpty) {
           body = _buildConversationList(_cachedConversations);
         } else {
-          body = Center(child: CircularProgressIndicator(color: AppColors.gold));
+          body = Center(
+            child: CircularProgressIndicator(color: AppColors.gold),
+          );
         }
 
         return Scaffold(
@@ -89,7 +94,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               IconButton(
                 icon: Icon(Icons.shield_rounded, color: AppColors.gold),
                 onPressed: () {},
-              )
+              ),
             ],
           ),
           body: body,
@@ -104,11 +109,18 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.chat_bubble_outline_rounded, size: 64, color: AppColors.surfaceHighest),
+            const Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: 64,
+              color: AppColors.surfaceHighest,
+            ),
             const SizedBox(height: 16),
             Text('No active chats', style: AppTextStyles.headlineSmall),
             const SizedBox(height: 8),
-            Text('Matches will appear here once both like each other.', style: AppTextStyles.bodyMedium),
+            Text(
+              'Matches will appear here once both like each other.',
+              style: AppTextStyles.bodyMedium,
+            ),
           ],
         ),
       );
@@ -134,11 +146,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             if (conversationId == null || conversationId.isEmpty) return;
             // Capture bloc reference BEFORE the async gap so it's safe after pop.
             final bloc = context.read<ChatBloc>();
-            await context.push('/chat/$conversationId', extra: {
-              'name': name,
-              'photo': photo,
-              'userId': otherUserId,
-            });
+            await context.push(
+              '/chat/$conversationId',
+              extra: {'name': name, 'photo': photo, 'userId': otherUserId},
+            );
             bloc.add(FetchConversationsEvent());
           },
           child: Container(
@@ -154,14 +165,22 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.surfaceHighest,
-                        border: isUnread ? Border.all(color: AppColors.gold, width: 2) : null,
+                        border: isUnread
+                            ? Border.all(color: AppColors.gold, width: 2)
+                            : null,
                         image: photo != null && photo.isNotEmpty
-                          ? DecorationImage(image: CachedNetworkImageProvider(photo), fit: BoxFit.cover)
-                          : null,
+                            ? DecorationImage(
+                                image: CachedNetworkImageProvider(photo),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
                       child: photo == null || photo.isEmpty
-                        ? const Icon(Icons.person, color: AppColors.textTertiary)
-                        : null,
+                          ? const Icon(
+                              Icons.person,
+                              color: AppColors.textTertiary,
+                            )
+                          : null,
                     ),
                     // Online/offline dot — bottom-right of avatar
                     Positioned(
@@ -192,7 +211,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.gold,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.background, width: 2),
+                            border: Border.all(
+                              color: AppColors.background,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -209,13 +231,17 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                           Text(
                             name,
                             style: AppTextStyles.labelLarge.copyWith(
-                              fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
                             ),
                           ),
                           Text(
                             time,
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: isUnread ? AppColors.gold : AppColors.textTertiary,
+                              color: isUnread
+                                  ? AppColors.gold
+                                  : AppColors.textTertiary,
                             ),
                           ),
                         ],
@@ -226,8 +252,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: isUnread ? AppColors.textPrimary : AppColors.textSecondary,
-                          fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+                          color: isUnread
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                          fontWeight: isUnread
+                              ? FontWeight.w500
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -241,4 +271,3 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     );
   }
 }
-

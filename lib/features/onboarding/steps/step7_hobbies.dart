@@ -13,7 +13,8 @@ class Step7Hobbies extends StatefulWidget {
   State<Step7Hobbies> createState() => _Step7HobbiesState();
 }
 
-class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with AutomaticKeepAliveClientMixin {
+class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
+    with AutomaticKeepAliveClientMixin {
   final List<int> _selectedHobbyIds = [];
   List<Map<String, dynamic>> _hobbies = [];
   bool _isLoading = true;
@@ -29,15 +30,19 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
 
   Future<void> _fetchHobbies() async {
     try {
-      final response = await DioClient.instance.get(ApiEndpoints.onboardingHobbies);
+      final response = await DioClient.instance.get(
+        ApiEndpoints.onboardingHobbies,
+      );
       final data = response.data['data'] as List;
-      
+
       final parent = context.findAncestorStateOfType<OnboardingScreenState>();
       final savedHobbies = parent?.onboardingData?['hobbies'] as List?;
-      
+
       setState(() {
-        _hobbies = data.map((h) => {'id': h['id'] as int, 'name': h['name'] as String}).toList();
-        
+        _hobbies = data
+            .map((h) => {'id': h['id'] as int, 'name': h['name'] as String})
+            .toList();
+
         if (savedHobbies != null) {
           for (var sh in savedHobbies) {
             final int id = sh['id'];
@@ -46,7 +51,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
             }
           }
         }
-        
+
         _isLoading = false;
       });
     } catch (_) {
@@ -59,9 +64,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
     if (_selectedHobbyIds.isEmpty) {
       return null;
     }
-    return {
-      'hobby_ids': _selectedHobbyIds,
-    };
+    return {'hobby_ids': _selectedHobbyIds};
   }
 
   void _toggleHobby(int id) {
@@ -89,7 +92,10 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
 
     if (_hobbies.isEmpty) {
       return Center(
-        child: Text('Unable to load hobbies. Please try again.', style: AppTextStyles.bodyMedium),
+        child: Text(
+          'Unable to load hobbies. Please try again.',
+          style: AppTextStyles.bodyMedium,
+        ),
       );
     }
 
@@ -101,8 +107,12 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
           Row(
             children: [
               Text('Selected: ', style: AppTextStyles.labelMedium),
-              Text('${_selectedHobbyIds.length}/10',
-                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold)),
+              Text(
+                '${_selectedHobbyIds.length}/10',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.gold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -113,10 +123,13 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
             spacing: 8,
             runSpacing: 8,
             children: _hobbies
-                .map((hobby) => _multiSelectChip(
+                .map(
+                  (hobby) => _multiSelectChip(
                     hobby['name'] as String,
                     _selectedHobbyIds.contains(hobby['id']),
-                    () => _toggleHobby(hobby['id'] as int)))
+                    () => _toggleHobby(hobby['id'] as int),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 32),
@@ -139,9 +152,12 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies> with Automati
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.gold : AppColors.textSecondary)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: isSelected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

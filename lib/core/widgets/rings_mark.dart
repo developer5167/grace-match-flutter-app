@@ -154,14 +154,11 @@ class _RingsPainter extends CustomPainter {
     // what stops the metal reading as flat against a near-black ground.
     if (converge > 0.01) {
       final halo = Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(cx, cy),
-          size.shortestSide * 0.52,
-          [
-            AppColors.gold.withValues(alpha: 0.20 * converge),
-            AppColors.gold.withValues(alpha: 0.0),
-          ],
-        );
+        ..shader =
+            ui.Gradient.radial(Offset(cx, cy), size.shortestSide * 0.52, [
+              AppColors.gold.withValues(alpha: 0.20 * converge),
+              AppColors.gold.withValues(alpha: 0.0),
+            ]);
       canvas.drawCircle(Offset(cx, cy), size.shortestSide * 0.52, halo);
     }
 
@@ -274,16 +271,37 @@ class _RingsPainter extends CustomPainter {
 
         // Signed area: negative means we are looking at the inside of the
         // tube, which is always hidden by the outside.
-        final area = (sx[b] - sx[a]) * (sy[c] - sy[a]) -
+        final area =
+            (sx[b] - sx[a]) * (sy[c] - sy[a]) -
             (sx[c] - sx[a]) * (sy[b] - sy[a]);
         if (area <= 0) continue;
 
         final depth = (wz[a] + wz[b] + wz[c] + wz[d]) * 0.25;
 
-        out.add(sx[a], sy[a], sx[b], sy[b], sx[c], sy[c],
-            col[a], col[b], col[c], depth);
-        out.add(sx[a], sy[a], sx[c], sy[c], sx[d], sy[d],
-            col[a], col[c], col[d], depth);
+        out.add(
+          sx[a],
+          sy[a],
+          sx[b],
+          sy[b],
+          sx[c],
+          sy[c],
+          col[a],
+          col[b],
+          col[c],
+          depth,
+        );
+        out.add(
+          sx[a],
+          sy[a],
+          sx[c],
+          sy[c],
+          sx[d],
+          sy[d],
+          col[a],
+          col[c],
+          col[d],
+          depth,
+        );
       }
     }
   }
@@ -316,7 +334,9 @@ class _RingsPainter extends CustomPainter {
     final lit = 0.46 + 0.52 * key + 0.34 * hemi + 0.26 * fresnel;
 
     double channel(double baseC, double roseC, double hiC) =>
-        baseC * 255.0 * lit + roseC * 255.0 * rim * 0.16 + hiC * 255.0 * spec * 1.15;
+        baseC * 255.0 * lit +
+        roseC * 255.0 * rim * 0.16 +
+        hiC * 255.0 * spec * 1.15;
 
     final r = channel(base.r, AppColors.rose.r, AppColors.textPrimary.r);
     final g = channel(base.g, AppColors.rose.g, AppColors.textPrimary.g);
@@ -351,10 +371,10 @@ class _Ring {
 /// thousand short-lived objects every frame.
 class _Scratch {
   _Scratch(int maxTris)
-      : xy = Float32List(maxTris * 6),
-        col = Int32List(maxTris * 3),
-        depth = Float64List(maxTris),
-        order = Int32List(maxTris);
+    : xy = Float32List(maxTris * 6),
+      col = Int32List(maxTris * 3),
+      depth = Float64List(maxTris),
+      order = Int32List(maxTris);
 
   final Float32List xy;
   final Int32List col;
@@ -362,8 +382,18 @@ class _Scratch {
   final Int32List order;
   int count = 0;
 
-  void add(double x0, double y0, double x1, double y1, double x2, double y2,
-      int c0, int c1, int c2, double d) {
+  void add(
+    double x0,
+    double y0,
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    int c0,
+    int c1,
+    int c2,
+    double d,
+  ) {
     final i = count;
     final p = i * 6;
     xy[p] = x0;
@@ -414,10 +444,16 @@ class _AnimatedRingsMarkState extends State<AnimatedRingsMark>
   void initState() {
     super.initState();
 
-    _converge = AnimationController(vsync: this, duration: widget.convergeDuration);
+    _converge = AnimationController(
+      vsync: this,
+      duration: widget.convergeDuration,
+    );
     // No idle tumble — a Y/X spin turns the circles into ovals, and the
     // settled frame has to match the circular app icon.
-    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 18));
+    _spin = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    );
 
     if (widget.delay == Duration.zero) {
       _converge.forward();
@@ -437,7 +473,10 @@ class _AnimatedRingsMarkState extends State<AnimatedRingsMark>
 
   @override
   Widget build(BuildContext context) {
-    final eased = CurvedAnimation(parent: _converge, curve: Curves.easeInOutCubic);
+    final eased = CurvedAnimation(
+      parent: _converge,
+      curve: Curves.easeInOutCubic,
+    );
 
     return AnimatedBuilder(
       animation: Listenable.merge([eased, _spin]),

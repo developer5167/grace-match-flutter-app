@@ -55,7 +55,10 @@ class ScreenGuard {
   /// Watch for screenshots and report them.
   ///
   /// iOS only in practice — Android has already blocked it by this point.
-  static Future<void> watch(String subjectUserId, {String surface = 'profile'}) async {
+  static Future<void> watch(
+    String subjectUserId, {
+    String surface = 'profile',
+  }) async {
     if (!Platform.isIOS) return;
     try {
       // Second callback is screen recording — the same concern, and on iOS
@@ -83,13 +86,19 @@ class ScreenGuard {
   ///
   /// Deliberately silent on failure: the member who took the screenshot is not
   /// the audience for an error about it.
-  static Future<void> report(String subjectUserId, {String surface = 'profile'}) async {
+  static Future<void> report(
+    String subjectUserId, {
+    String surface = 'profile',
+  }) async {
     try {
-      await DioClient.instance.post(ApiEndpoints.screenshotAlert, data: {
-        'subject_id': subjectUserId,
-        'surface': surface,
-        'platform': Platform.isIOS ? 'ios' : 'android',
-      });
+      await DioClient.instance.post(
+        ApiEndpoints.screenshotAlert,
+        data: {
+          'subject_id': subjectUserId,
+          'surface': surface,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+        },
+      );
     } catch (e) {
       debugPrint('screenshot report failed: $e');
     }

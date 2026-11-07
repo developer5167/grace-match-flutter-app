@@ -9,9 +9,9 @@ import '../theme/app_text_styles.dart';
 class ContactSupport {
   ContactSupport._();
 
-  static Uri get uri => Uri.parse('${AppConstants.siteUrl}/contact').replace(
-        queryParameters: const {'topic': 'support'},
-      );
+  static Uri get uri => Uri.parse(
+    '${AppConstants.siteUrl}/contact',
+  ).replace(queryParameters: const {'topic': 'support'});
 
   static Future<bool> open() async {
     try {
@@ -22,7 +22,10 @@ class ContactSupport {
   }
 
   /// Used when login (or any other gate) refuses a suspended account.
-  static Future<void> showSuspendedDialog(BuildContext context, {String? message}) {
+  static Future<void> showSuspendedDialog(
+    BuildContext context, {
+    String? message,
+  }) {
     return showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(

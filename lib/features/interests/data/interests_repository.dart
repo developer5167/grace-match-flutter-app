@@ -9,7 +9,7 @@ class InterestsRepository {
     try {
       final response = await _dio.get(ApiEndpoints.interestsList);
       final data = response.data['data'];
-      
+
       return {
         'received': List<Map<String, dynamic>>.from(data['received'] ?? []),
         'matches': List<Map<String, dynamic>>.from(data['matches'] ?? []),
@@ -21,7 +21,10 @@ class InterestsRepository {
   }
 
   /// Returns the response data map (e.g. `{conversation_id: "..."}` for accept).
-  Future<Map<String, dynamic>?> handleAction(String interestId, {required bool accept}) async {
+  Future<Map<String, dynamic>?> handleAction(
+    String interestId, {
+    required bool accept,
+  }) async {
     try {
       final url = accept
           ? ApiEndpoints.acceptInterest(interestId)

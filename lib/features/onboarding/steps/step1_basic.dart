@@ -16,7 +16,8 @@ import '../screens/onboarding_screen.dart';
 
 class Step1Basic extends StatefulWidget {
   const Step1Basic({super.key});
-  @override State<Step1Basic> createState() => _Step1BasicState();
+  @override
+  State<Step1Basic> createState() => _Step1BasicState();
 }
 
 class _Step1BasicState extends OnboardingStepState<Step1Basic> {
@@ -36,9 +37,12 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
         setState(() {
           _gender = profile['gender'];
           _lookingFor = profile['looking_for'];
-          if (profile['first_name'] != null) _nameCtrl.text = profile['first_name'];
-          if (profile['date_of_birth'] != null) _dob = DateTime.tryParse(profile['date_of_birth']);
-          if (profile['location_city'] != null) _cityCtrl.text = profile['location_city'];
+          if (profile['first_name'] != null)
+            _nameCtrl.text = profile['first_name'];
+          if (profile['date_of_birth'] != null)
+            _dob = DateTime.tryParse(profile['date_of_birth']);
+          if (profile['location_city'] != null)
+            _cityCtrl.text = profile['location_city'];
         });
       }
     });
@@ -46,7 +50,11 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
 
   @override
   Map<String, dynamic>? getStepData() {
-    if (_gender == null || _lookingFor == null || _nameCtrl.text.isEmpty || _dob == null || _cityCtrl.text.isEmpty) {
+    if (_gender == null ||
+        _lookingFor == null ||
+        _nameCtrl.text.isEmpty ||
+        _dob == null ||
+        _cityCtrl.text.isEmpty) {
       return null;
     }
     return {
@@ -70,9 +78,21 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _genderChoice('Male', '👨', 'male', _gender, (v) => setState(() => _gender = v)),
+              _genderChoice(
+                'Male',
+                '👨',
+                'male',
+                _gender,
+                (v) => setState(() => _gender = v),
+              ),
               const SizedBox(width: 12),
-              _genderChoice('Female', '👩', 'female', _gender, (v) => setState(() => _gender = v)),
+              _genderChoice(
+                'Female',
+                '👩',
+                'female',
+                _gender,
+                (v) => setState(() => _gender = v),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -82,9 +102,21 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _genderChoice('Man', '👨', 'male', _lookingFor, (v) => setState(() => _lookingFor = v)),
+              _genderChoice(
+                'Man',
+                '👨',
+                'male',
+                _lookingFor,
+                (v) => setState(() => _lookingFor = v),
+              ),
               const SizedBox(width: 12),
-              _genderChoice('Woman', '👩', 'female', _lookingFor, (v) => setState(() => _lookingFor = v)),
+              _genderChoice(
+                'Woman',
+                '👩',
+                'female',
+                _lookingFor,
+                (v) => setState(() => _lookingFor = v),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -108,7 +140,13 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
     );
   }
 
-  Widget _genderChoice(String label, String emoji, String value, String? current, ValueChanged<String> onSelect) {
+  Widget _genderChoice(
+    String label,
+    String emoji,
+    String value,
+    String? current,
+    ValueChanged<String> onSelect,
+  ) {
     final isSelected = current == value;
     return Expanded(
       child: GestureDetector(
@@ -121,18 +159,27 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: isSelected ? AppColors.goldSubtle : AppColors.surfaceElevated,
+            color: isSelected
+                ? AppColors.goldSubtle
+                : AppColors.surfaceElevated,
             border: Border.all(
               color: isSelected ? AppColors.gold : AppColors.surfaceHighest,
               width: isSelected ? 2 : 1,
             ),
           ),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
-            const SizedBox(height: 8),
-            Text(label, style: AppTextStyles.labelMedium.copyWith(
-              color: isSelected ? AppColors.gold : AppColors.textSecondary)),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 32)),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: isSelected ? AppColors.gold : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -161,14 +208,18 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
     final dateOnly =
         '${dob.year.toString().padLeft(4, '0')}-${dob.month.toString().padLeft(2, '0')}-${dob.day.toString().padLeft(2, '0')}';
     try {
-      await DioClient.instance.post(ApiEndpoints.ageCheck, data: {'date_of_birth': dateOnly});
+      await DioClient.instance.post(
+        ApiEndpoints.ageCheck,
+        data: {'date_of_birth': dateOnly},
+      );
       return false;
     } on DioException catch (e) {
       if (e.response?.statusCode == 403) return true;
     } catch (_) {}
     final now = DateTime.now();
     var age = now.year - dob.year;
-    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) age--;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day))
+      age--;
     return age < 18;
   }
 
@@ -213,9 +264,9 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           firstDate: DateTime(now.year - 70),
           lastDate: DateTime(now.year, now.month, now.day),
           builder: (ctx, child) => Theme(
-            data: Theme.of(ctx).copyWith(
-              colorScheme: ColorScheme.dark(primary: AppColors.gold),
-            ),
+            data: Theme.of(
+              ctx,
+            ).copyWith(colorScheme: ColorScheme.dark(primary: AppColors.gold)),
             child: child!,
           ),
         );
@@ -233,15 +284,21 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.surfaceHighest),
         ),
-        child: Row(children: [
-          Expanded(child: Text(
-            _dob != null
-                ? '${_dob!.day}/${_dob!.month}/${_dob!.year}'
-                : 'Select date of birth',
-            style: _dob != null ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium,
-          )),
-          Icon(Icons.calendar_today_rounded, color: AppColors.gold, size: 18),
-        ]),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                _dob != null
+                    ? '${_dob!.day}/${_dob!.month}/${_dob!.year}'
+                    : 'Select date of birth',
+                style: _dob != null
+                    ? AppTextStyles.labelLarge
+                    : AppTextStyles.bodyMedium,
+              ),
+            ),
+            Icon(Icons.calendar_today_rounded, color: AppColors.gold, size: 18),
+          ],
+        ),
       ),
     );
   }

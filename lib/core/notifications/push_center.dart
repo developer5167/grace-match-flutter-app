@@ -71,8 +71,8 @@ class PushCenter {
       // initialize wait on a second engine that never answers in debug.
       onDidReceiveBackgroundNotificationResponse:
           defaultTargetPlatform == TargetPlatform.android
-              ? notificationTapBackground
-              : null,
+          ? notificationTapBackground
+          : null,
     );
     _pluginReady = true;
   }
@@ -105,7 +105,8 @@ class PushCenter {
     final type = data['type']?.toString();
     final kind = data['kind']?.toString();
     final conv = data['conversation_id']?.toString();
-    if (conv != null && conv.isNotEmpty &&
+    if (conv != null &&
+        conv.isNotEmpty &&
         (type == 'new_message' ||
             type == 'interest_accepted' ||
             kind == 'missed_call' ||
@@ -131,8 +132,12 @@ class PushCenter {
     if (kind == 'contact_request' || kind == 'contact_response') {
       return '/activity?tab=contacts';
     }
-    if (const ['REVIEW_ACTIONS', 'APPLICATION_RESULT', 'PHOTO_REVIEW_RESULT', 'ADMIN_MESSAGE']
-        .contains(kind)) {
+    if (const [
+      'REVIEW_ACTIONS',
+      'APPLICATION_RESULT',
+      'PHOTO_REVIEW_RESULT',
+      'ADMIN_MESSAGE',
+    ].contains(kind)) {
       return '/review-status';
     }
     if (kind == 'app_update') return '/splash';
@@ -184,7 +189,13 @@ class PushCenter {
       try {
         final router = AppRouter.router;
         final path = Uri.parse(route).path;
-        const tabs = ['/discover', '/interests', '/chat', '/activity', '/profile'];
+        const tabs = [
+          '/discover',
+          '/interests',
+          '/chat',
+          '/activity',
+          '/profile',
+        ];
         if (tabs.contains(path) || path == '/splash') {
           router.go(route);
           return;
@@ -192,8 +203,8 @@ class PushCenter {
         final base = path.startsWith('/chat/')
             ? '/chat'
             : path.startsWith('/support')
-                ? '/profile'
-                : '/discover';
+            ? '/profile'
+            : '/discover';
         router.go(base);
         // `go` replaces the stack asynchronously. Push on the next frame so
         // it lands on top of the tab rather than being dropped.
@@ -227,12 +238,15 @@ class PushCenter {
     required String? body,
     required Map<String, dynamic> data,
   }) async {
-    if ((title == null || title.isEmpty) && (body == null || body.isEmpty)) return;
+    if ((title == null || title.isEmpty) && (body == null || body.isEmpty))
+      return;
     await ensurePlugin();
     final tag = data['tag']?.toString();
     final hasTag = tag != null && tag.isNotEmpty;
     final id = hasTag ? _id(tag) : data.hashCode & 0x7fffffff;
-    final quiet = data['kind']?.toString() == 'typing' || data['type']?.toString() == 'typing';
+    final quiet =
+        data['kind']?.toString() == 'typing' ||
+        data['type']?.toString() == 'typing';
     await plugin.show(
       id,
       title,
@@ -278,8 +292,10 @@ class PushCenter {
       }
     }
     try {
-      final android = plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       final active = await android?.getActiveNotifications();
       if (active == null) return;
       for (final n in active) {
@@ -294,10 +310,10 @@ class PushCenter {
   /// Everything about one conversation: its messages, "is typing", a missed
   /// call, the match that opened it.
   static Future<void> clearChat(String conversationId) => clear([
-        'chat:$conversationId',
-        'typing:$conversationId',
-        'missed:$conversationId',
-      ]);
+    'chat:$conversationId',
+    'typing:$conversationId',
+    'missed:$conversationId',
+  ]);
 }
 
 @pragma('vm:entry-point')
