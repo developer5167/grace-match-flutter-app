@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/net_image.dart';
 
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -81,6 +82,10 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 80,
+      // Phone cameras shoot 4000px+. Nothing shows a photo larger than this,
+      // and a smaller file uploads faster on a weak connection.
+      maxWidth: 1600,
+      maxHeight: 1600,
     );
 
     if (image != null && mounted) {
@@ -228,7 +233,15 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: isNetwork
-                        ? CachedNetworkImage(imageUrl: path, fit: BoxFit.cover)
+                        ? CachedNetworkImage(
+                            imageUrl: path,
+                            fit: BoxFit.cover,
+                            // A third of the screen wide (3-column grid).
+                            memCacheWidth: decodePx(
+                              context,
+                              MediaQuery.sizeOf(context).width / 3,
+                            ),
+                          )
                         : Image.file(File(path), fit: BoxFit.cover),
                   ),
                   if (_statusBadge(index) != null) _statusBadge(index)!,

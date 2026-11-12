@@ -1,9 +1,10 @@
 import '../../../core/notifications/push_center.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../bloc/interests_bloc.dart';
 import '../bloc/interests_event.dart';
 import '../bloc/interests_state.dart';
@@ -60,7 +61,19 @@ class _InterestsScreenState extends State<InterestsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<InterestsBloc, InterestsState>(
+    return BlocConsumer<InterestsBloc, InterestsState>(
+      listenWhen: (_, curr) =>
+          curr is InterestsLoaded && curr.actionError != null,
+      listener: (context, state) {
+        final msg = (state as InterestsLoaded).actionError!;
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text(msg),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      },
       builder: (context, state) {
         int receivedCount = 0;
         int matchedCount = 0;
@@ -92,8 +105,8 @@ class _InterestsScreenState extends State<InterestsScreen>
               ],
             ),
           ),
-          body: state is InterestsLoading
-              ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+          body: state is InterestsLoading || state is InterestsInitial
+              ? const SkeletonList()
               : state is InterestsError
               ? Center(
                   child: Text(
@@ -172,6 +185,7 @@ class _InterestsScreenState extends State<InterestsScreen>
       itemCount: items.length,
       itemBuilder: (context, index) {
         final profile = items[index];
+        final avatar = thumbOr(profile, 'photo_url_200', 'photo_url');
         return GestureDetector(
           onTap: () {
             final id =
@@ -202,16 +216,14 @@ class _InterestsScreenState extends State<InterestsScreen>
                         shape: BoxShape.circle,
                         color: AppColors.surfaceHighest,
                         border: Border.all(color: AppColors.goldMild, width: 2),
-                        image: profile['photo_url'] != null
+                        image: avatar != null
                             ? DecorationImage(
-                                image: CachedNetworkImageProvider(
-                                  profile['photo_url'],
-                                ),
+                                image: avatarImage(context, avatar, 56),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: profile['photo_url'] == null
+                      child: avatar == null
                           ? const Icon(
                               Icons.person,
                               color: AppColors.textTertiary,

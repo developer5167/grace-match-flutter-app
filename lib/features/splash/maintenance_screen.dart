@@ -14,9 +14,15 @@ class MaintenanceGate {
   static String message =
       'GraceMatch is temporarily unavailable. Please try again shortly.';
 
+  /// The policy the last check fetched (null if it failed). It carries the
+  /// update prompt too, so splash hands it to [UpdateGate.maybePrompt]
+  /// instead of fetching the same thing again.
+  static AppUpdatePolicy? policy;
+
   static Future<bool> blocked({bool refresh = false}) async {
     if (!refresh && _blocked != null) return _blocked!;
     final policy = await UpdateGate.fetch();
+    MaintenanceGate.policy = policy;
     _blocked = policy?.maintenanceForDevice ?? false;
     if (policy != null && policy.maintenanceMessage.trim().isNotEmpty) {
       message = policy.maintenanceMessage.trim();

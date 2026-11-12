@@ -7,6 +7,7 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/net_image.dart';
 
 /// Logged-out view of a shared profile. Same fields as the website preview.
 /// Interest, chat and contact stay behind login.
@@ -109,7 +110,11 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
             borderRadius: BorderRadius.circular(24),
             child: AspectRatio(
               aspectRatio: 3 / 4,
-              child: CachedNetworkImage(imageUrl: photo, fit: BoxFit.cover),
+              child: CachedNetworkImage(
+                imageUrl: photo,
+                fit: BoxFit.cover,
+                memCacheWidth: decodePx(context, MediaQuery.sizeOf(context).width),
+              ),
             ),
           ),
         const SizedBox(height: 20),

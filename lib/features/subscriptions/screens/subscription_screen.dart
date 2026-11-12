@@ -11,6 +11,7 @@ import '../../offers/data/offers_repository.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/store_policy.dart';
+import '../../calls/data/call_manager.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   /// Prefilled when the member arrived by tapping an offer, so they never have
@@ -103,6 +104,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             context.read<ProfileBloc>().add(
               const FetchProfileEvent(silentRefresh: true),
             );
+            // Chats read call buttons from a short cache; a plan that adds
+            // calls should show them on the next chat opened.
+            CallManager.instance.entitlements(refresh: true);
             // Auto close premium screen after a successful purchase so user
             // instantly sees updated profile state without manual restart.
             Future.delayed(const Duration(milliseconds: 350), () {

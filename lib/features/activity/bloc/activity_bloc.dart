@@ -5,6 +5,7 @@ import '../data/activity_repository.dart';
 
 class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
   final ActivityRepository _repository;
+  bool _fetchingAll = false;
 
   ActivityBloc(this._repository) : super(ActivityInitial()) {
     on<FetchActivityEvent>(_onFetchAll);
@@ -25,7 +26,12 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     FetchActivityEvent event,
     Emitter<ActivityState> emit,
   ) async {
-    emit(ActivityLoading());
+    // One bootstrap at a time.
+    if (_fetchingAll) return;
+    _fetchingAll = true;
+    // Tabs already on screen stay there while they refresh.
+    final hadData = state is ActivityLoaded;
+    if (!hadData) emit(ActivityLoading());
     try {
       final d = await _repository.fetchBootstrap();
 
@@ -41,7 +47,12 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
         ),
       );
     } catch (e) {
-      emit(ActivityError(e.toString()));
+      // A failed refresh keeps what the member was looking at.
+      if (!(hadData && state is ActivityLoaded)) {
+        emit(ActivityError(e.toString()));
+      }
+    } finally {
+      _fetchingAll = false;
     }
   }
 
@@ -107,15 +118,36 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     Emitter<ActivityState> emit,
   ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
+    // Optimistic: the list is on screen and the call is idempotent.
+    if (prev != null) {
+      final updated = prev.notifications.map((n) {
+        return {...n, 'is_read': true};
+      }).toList();
+      emit(prev.copyWith(notifications: updated, unreadNotifications: 0));
+    }
     try {
       await _repository.markAllRead();
-      if (prev != null) {
-        final updated = prev.notifications.map((n) {
-          return {...n, 'is_read': true};
+    } catch (_) {
+      // Put the unread ones back as they were.
+      final now = state is ActivityLoaded ? state as ActivityLoaded : null;
+      if (prev != null && now != null) {
+        final wasUnread = {
+          for (final n in prev.notifications)
+            if (n['is_read'] != true) n['id'],
+        };
+        final reverted = now.notifications.map((n) {
+          return wasUnread.contains(n['id']) ? {...n, 'is_read': false} : n;
         }).toList();
-        emit(prev.copyWith(notifications: updated, unreadNotifications: 0));
+        emit(
+          now.copyWith(
+            notifications: reverted,
+            unreadNotifications: reverted
+                .where((n) => n['is_read'] != true)
+                .length,
+          ),
+        );
       }
-    } catch (_) {}
+    }
   }
 
   Future<void> _onMarkOneRead(
@@ -124,15 +156,24 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
   ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
     if (prev == null) return;
+    // Optimistic: the tap already opened what it was about.
+    emit(_withRead(prev, event.notificationId, true));
     try {
       await _repository.markOneRead(event.notificationId);
-      final updated = prev.notifications.map((n) {
-        if (n['id'] == event.notificationId) return {...n, 'is_read': true};
-        return n;
-      }).toList();
-      final unread = updated.where((n) => n['is_read'] != true).length;
-      emit(prev.copyWith(notifications: updated, unreadNotifications: unread));
-    } catch (_) {}
+    } catch (_) {
+      final now = state is ActivityLoaded ? state as ActivityLoaded : null;
+      if (now != null) emit(_withRead(now, event.notificationId, false));
+    }
+  }
+
+  ActivityLoaded _withRead(ActivityLoaded s, String id, bool read) {
+    final updated = s.notifications.map((n) {
+      // Compared as strings: the tile sends `n['id'].toString()`.
+      if (n['id']?.toString() == id) return {...n, 'is_read': read};
+      return n;
+    }).toList();
+    final unread = updated.where((n) => n['is_read'] != true).length;
+    return s.copyWith(notifications: updated, unreadNotifications: unread);
   }
 
   Future<void> _onToggleShortlist(
@@ -140,12 +181,32 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     Emitter<ActivityState> emit,
   ) async {
     final prev = state is ActivityLoaded ? state as ActivityLoaded : null;
+    // Already shortlisted means this toggle removes them: take them off the
+    // list now. (Adding needs the server's copy of the profile, which the
+    // refresh below brings.)
+    final removing =
+        prev != null &&
+        prev.shortlists.any(
+          (p) => p['user_id']?.toString() == event.targetUserId,
+        );
+    if (removing) {
+      emit(
+        prev.copyWith(
+          shortlists: prev.shortlists
+              .where((p) => p['user_id']?.toString() != event.targetUserId)
+              .toList(),
+        ),
+      );
+    }
     try {
       await _repository.toggleShortlist(event.targetUserId);
       // Refresh shortlist
       add(const FetchShortlistsEvent());
     } catch (e) {
-      if (prev != null) emit(prev);
+      if (removing) {
+        final now = state is ActivityLoaded ? state as ActivityLoaded : null;
+        if (now != null) emit(now.copyWith(shortlists: prev.shortlists));
+      }
     }
   }
 

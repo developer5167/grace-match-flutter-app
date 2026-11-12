@@ -56,11 +56,12 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // A release signed with the debug key is rejected by Play and cannot
+            // be updated later, so a missing key.properties is a hard error.
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException("android/key.properties is missing: release builds must be signed with the upload key")
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

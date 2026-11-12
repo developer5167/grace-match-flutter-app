@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import '../constants/app_constants.dart';
 import '../storage/app_storage.dart';
 
@@ -25,9 +26,38 @@ class DioClient {
       ),
     );
 
-    dio.interceptors.addAll([_AuthInterceptor(dio), _LoggingInterceptor()]);
+    dio.interceptors.addAll([
+      _AuthInterceptor(dio),
+      // Reads only. A POST that timed out may still have gone through, and
+      // sending it again could send an interest or a payment twice.
+      RetryInterceptor(
+        dio: dio,
+        retries: 2,
+        retryDelays: const [Duration(seconds: 1), Duration(seconds: 3)],
+        retryEvaluator: _retryGet,
+      ),
+      _LoggingInterceptor(),
+    ]);
 
     return dio;
+  }
+
+  /// Retry a GET that failed on a dropped or refused connection, or on a
+  /// gateway/server hiccup (5xx, 408, 429). Not on timeouts: each one already
+  /// waited 15-20 s, and three in a row would hold a screen for a minute.
+  static bool _retryGet(DioException error, int attempt) {
+    if (error.requestOptions.method.toUpperCase() != 'GET') return false;
+    switch (error.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.unknown:
+        return error.error is! FormatException;
+      case DioExceptionType.badResponse:
+        final code = error.response?.statusCode ?? 0;
+        return code == 408 || code == 429 || (code >= 500 && code <= 599);
+      default:
+        // Timeouts, cancellations, bad certificates.
+        return false;
+    }
   }
 
   static Future<String>? _refreshing;
@@ -43,7 +73,15 @@ class DioClient {
       if (refreshToken == null) {
         throw StateError('no refresh token');
       }
-      final response = await Dio().post(
+      // Bounded like every other request. Without timeouts a refresh stuck
+      // on a dead connection held every request queued behind it for good.
+      final response = await Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 20),
+          sendTimeout: const Duration(seconds: 20),
+        ),
+      ).post(
         '${AppConstants.baseUrl}${ApiEndpoints.refreshToken}',
         data: {'refresh_token': refreshToken},
       );
@@ -100,6 +138,12 @@ class _AuthInterceptor extends Interceptor {
 
   _AuthInterceptor(this._dio);
 
+  static bool _isTimeout(Object e) =>
+      e is DioException &&
+      (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout);
+
   bool _isRefreshCall(RequestOptions options) =>
       options.path.contains(ApiEndpoints.refreshToken);
 
@@ -132,14 +176,25 @@ class _AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
+    final String access;
     try {
-      final access = await DioClient.refreshTokens();
+      access = await DioClient.refreshTokens();
+    } catch (e) {
+      // A refresh that timed out says nothing about the session: keep it and
+      // let the next request try again, rather than signing the member out.
+      if (!_isTimeout(e)) await AppStorage.clearAll();
+      return handler.next(err);
+    }
+
+    try {
       err.requestOptions.headers['Authorization'] = 'Bearer $access';
       err.requestOptions.extra['retried'] = true;
       final retryResponse = await _dio.fetch(err.requestOptions);
       handler.resolve(retryResponse);
     } catch (_) {
-      await AppStorage.clearAll();
+      // The session was renewed; only the repeated request failed (a 401 on
+      // it has already signed out above). A server or network error there is
+      // not a reason to sign the member out.
       handler.next(err);
     }
   }

@@ -38,6 +38,8 @@ class _DeviceTiltState extends State<DeviceTilt>
   static const _fullTiltG = 0.28;
   static const _restDrift = 0.012;
   static const _ease = 0.14;
+  // A frame step smaller than this is invisible; the ticker stops there.
+  static const _settle = 0.0005;
 
   late final Ticker _ticker = createTicker(_onTick);
   StreamSubscription<AccelerometerEvent>? _sub;
@@ -83,12 +85,22 @@ class _DeviceTiltState extends State<DeviceTilt>
     _restY = restY + (gy - restY) * _restDrift;
     _targetX = ((gx - _restX!) / _fullTiltG).clamp(-1.0, 1.0);
     _targetY = ((gy - _restY!) / _fullTiltG).clamp(-1.0, 1.0);
+    // Wake the ticker only when the card has somewhere visible to go.
+    if (_sub != null && !_ticker.isActive && _hasStep) _ticker.start();
   }
 
+  bool get _hasStep =>
+      ((_targetX - _x) * _ease).abs() >= _settle ||
+      ((_targetY - _y) * _ease).abs() >= _settle;
+
   void _onTick(Duration _) {
+    if (!_hasStep) {
+      // Settled: no frames while the phone is held still.
+      _ticker.stop();
+      return;
+    }
     final nx = _x + (_targetX - _x) * _ease;
     final ny = _y + (_targetY - _y) * _ease;
-    if ((nx - _x).abs() < 0.0005 && (ny - _y).abs() < 0.0005) return;
     setState(() {
       _x = nx;
       _y = ny;
@@ -117,7 +129,9 @@ class _DeviceTiltState extends State<DeviceTilt>
       child: Stack(
         fit: StackFit.passthrough,
         children: [
-          widget.child,
+          // The card itself does not change as it tilts; only the transform
+          // and the sheen above it do.
+          RepaintBoundary(child: widget.child),
           if (shine > 0.005)
             Positioned.fill(
               child: IgnorePointer(

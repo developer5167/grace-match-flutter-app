@@ -30,6 +30,11 @@ class AppConstants {
         'Rebuild with --dart-define=API_BASE_URL=https://<your-api-host>/api/v1',
       );
     }
+    // OTPs, tokens and chats must never travel in plain text. Release builds
+    // also no longer allow cleartext at the Android network layer.
+    if (kReleaseMode && !baseUrl.startsWith('https://')) {
+      throw StateError('Release build API_BASE_URL must be https://, got $baseUrl');
+    }
   }
 
   static const String appName = 'GraceMatch';

@@ -10,6 +10,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final SocketService _socketService;
 
   String? _currentConversationId;
+  Object? _currentOwner;
   // Keep latest conversation list so we can update previews/unread counts
   // even while the state is MessagesLoaded (inside a chat screen).
   List<Map<String, dynamic>> _conversationCache = [];
@@ -21,6 +22,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Delivered receipts that arrived before the HTTP response came back
   // (socket is faster than HTTP round-trip). Flushed when HTTP confirms.
   final Set<String> _pendingDelivered = {};
+
+  // Which conversation the current MessagesLoaded belongs to, and which
+  // fetches are out, so an open chat is not blanked or fetched twice.
+  String? _messagesConversationId;
+  final Set<String> _fetchingMessages = {};
+  bool _fetchingConversations = false;
+  // Asked for again while a fetch was out: run once more after it, so a
+  // refresh after closing a chat is not answered by an older request.
+  bool _conversationsAskedAgain = false;
+
+  // markRead is sent at most once a second per conversation while messages
+  // stream in: the first straight away, the rest folded into one trailing
+  // call.
+  final Map<String, DateTime> _lastMarkRead = {};
+  final Map<String, Timer> _pendingMarkRead = {};
 
   StreamSubscription? _socketSubscription;
   StreamSubscription? _deliveredSubscription;
@@ -66,23 +82,60 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     SetCurrentConversationEvent event,
     Emitter<ChatState> emit,
   ) {
-    _currentConversationId = event.conversationId.isEmpty
-        ? null
-        : event.conversationId;
+    if (event.conversationId.isEmpty) {
+      if (event.owner != null && event.owner != _currentOwner) return;
+      _currentConversationId = null;
+      _currentOwner = null;
+    } else {
+      _currentConversationId = event.conversationId;
+      _currentOwner = event.owner;
+    }
+    // Chat closed: hand the list (refreshed while the chat was open) back to
+    // the conversations screen.
+    if (_currentConversationId == null &&
+        state is MessagesLoaded &&
+        _conversationsLoaded) {
+      emit(
+        ConversationsLoaded(
+          List<Map<String, dynamic>>.from(_conversationCache),
+        ),
+      );
+    }
   }
+
+  bool _conversationsLoaded = false;
 
   // ── Conversations list ────────────────────────────────────────
   Future<void> _onFetchConversations(
     FetchConversationsEvent event,
     Emitter<ChatState> emit,
   ) async {
-    emit(ChatLoading());
+    if (_fetchingConversations) {
+      _conversationsAskedAgain = true;
+      return;
+    }
+    _fetchingConversations = true;
+    // Only a first load shows a placeholder. A refresh keeps the list, and
+    // never blanks a chat that is open.
+    if (state is ChatInitial || state is ChatError) emit(ChatLoading());
     try {
       final conversations = await _repository.fetchConversations();
       _conversationCache = List<Map<String, dynamic>>.from(conversations);
+      _conversationsLoaded = true;
+      // A chat is open on its messages: keep them as the state (sending and
+      // live messages need it) and update only the cache. Closing the chat
+      // emits the list.
+      if (_currentConversationId != null && state is MessagesLoaded) return;
       emit(ConversationsLoaded(conversations));
     } catch (e) {
+      if (_currentConversationId != null && state is MessagesLoaded) return;
       emit(ChatError(e.toString()));
+    } finally {
+      _fetchingConversations = false;
+      if (_conversationsAskedAgain && !isClosed) {
+        _conversationsAskedAgain = false;
+        add(FetchConversationsEvent());
+      }
     }
   }
 
@@ -91,7 +144,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     FetchMessagesEvent event,
     Emitter<ChatState> emit,
   ) async {
-    emit(ChatLoading());
+    if (!_fetchingMessages.add(event.conversationId)) return;
+    // Messages of this same chat already on screen stay while they refresh.
+    final showing =
+        state is MessagesLoaded &&
+        _messagesConversationId == event.conversationId;
+    if (!showing) emit(ChatLoading());
     try {
       final messages = await _repository.fetchMessages(event.conversationId);
       // Tag historical messages with derived status so UI can render ticks
@@ -108,12 +166,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               : 'sent',
         };
       }).toList();
+      _messagesConversationId = event.conversationId;
       emit(MessagesLoaded(tagged));
-      // Ensure backend emits read receipts for any unread incoming messages
-      // that existed before opening this chat.
-      unawaited(_repository.markRead(event.conversationId));
+      // No markRead here: GET messages already marks them read on the server
+      // and sends the read receipts.
     } catch (e) {
       emit(ChatError(e.toString()));
+    } finally {
+      _fetchingMessages.remove(event.conversationId);
     }
   }
 
@@ -169,6 +229,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
       // Also update conversation preview immediately for sender.
       _applyConversationPreview(
+        emit,
         conversationId: event.conversationId,
         message: <String, dynamic>{
           'content': sentMsg['content'] ?? event.text,
@@ -228,13 +289,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
       // User is viewing this chat → mark as read silently so sender gets gold ticks
       if (msgConvId != null) {
-        _repository.markRead(msgConvId);
+        _markReadSoon(msgConvId);
       }
     } else {
       // Update conversation preview for every state except current-open-chat case.
       // This fixes missing unread/last-message updates when user is inside a
       // different chat screen (state == MessagesLoaded).
       _applyConversationPreview(
+        emit,
         conversationId: msgConvId,
         message: <String, dynamic>{
           'content': msg['content'],
@@ -255,7 +317,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  void _applyConversationPreview({
+  void _markReadSoon(String conversationId) {
+    if (_pendingMarkRead.containsKey(conversationId)) return;
+    final last = _lastMarkRead[conversationId];
+    final wait = last == null
+        ? Duration.zero
+        : const Duration(seconds: 1) - DateTime.now().difference(last);
+    if (wait <= Duration.zero) {
+      _lastMarkRead[conversationId] = DateTime.now();
+      unawaited(_repository.markRead(conversationId));
+      return;
+    }
+    _pendingMarkRead[conversationId] = Timer(wait, () {
+      _pendingMarkRead.remove(conversationId);
+      _lastMarkRead[conversationId] = DateTime.now();
+      unawaited(_repository.markRead(conversationId));
+    });
+  }
+
+  void _applyConversationPreview(
+    Emitter<ChatState> emit, {
     required String? conversationId,
     required Map<String, dynamic> message,
     required bool incrementUnread,
@@ -340,6 +421,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   @override
   Future<void> close() {
+    for (final t in _pendingMarkRead.values) {
+      t.cancel();
+    }
+    _pendingMarkRead.clear();
     _socketSubscription?.cancel();
     _deliveredSubscription?.cancel();
     _readSubscription?.cancel();

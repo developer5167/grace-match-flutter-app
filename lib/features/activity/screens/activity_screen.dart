@@ -1,13 +1,16 @@
+import 'dart:math' as math;
+
 import '../../../core/notifications/push_center.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../bloc/activity_bloc.dart';
 import '../bloc/activity_event.dart';
 import '../bloc/activity_state.dart';
@@ -190,8 +193,11 @@ class _ActivityScreenState extends State<ActivityScreen>
               ],
             ),
           ),
-          body: state is ActivityLoading
-              ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+          body: state is ActivityLoading || state is ActivityInitial
+              ? const SkeletonList(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  avatarSize: 44,
+                )
               : state is ActivityError
               ? _buildError(state.message)
               : TabBarView(
@@ -321,7 +327,7 @@ class _NotificationsTab extends StatelessWidget {
           return _NotifTile(
             n: n,
             isRead: isRead,
-          ).animate().fadeIn(duration: 300.ms, delay: (i * 40).ms);
+          ).animate().fadeIn(duration: 300.ms, delay: (math.min(i, 6) * 40).ms);
         },
       ),
     );
@@ -578,7 +584,7 @@ class _ViewsTab extends StatelessWidget {
                     final uid = v['user_id']?.toString();
                     if (uid != null) context.push('/profile/$uid');
                   },
-                ).animate().fadeIn(duration: 300.ms, delay: (i * 50).ms),
+                ).animate().fadeIn(duration: 300.ms, delay: (math.min(i, 6) * 50).ms),
               );
             }),
           ],
@@ -631,7 +637,7 @@ class _ShortlistsTab extends StatelessWidget {
               final uid = p['user_id']?.toString();
               if (uid != null) context.push('/profile/$uid');
             },
-          ).animate().fadeIn(duration: 300.ms, delay: (i * 40).ms);
+          ).animate().fadeIn(duration: 300.ms, delay: (math.min(i, 6) * 40).ms);
         },
       ),
     );
@@ -658,7 +664,7 @@ class _ProfileMiniCard extends StatelessWidget {
     final age = profile['age'];
     final city = profile['location_city']?.toString() ?? '';
     final denom = profile['denomination']?.toString() ?? '';
-    final photoUrl = profile['photo_url']?.toString();
+    final photoUrl = thumbOr(profile, 'photo_url_200', 'photo_url');
     final isTrusted = profile['trust_badge'] == true;
 
     return Material(
@@ -684,7 +690,7 @@ class _ProfileMiniCard extends StatelessWidget {
                   border: Border.all(color: AppColors.goldMild),
                   image: photoUrl != null
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(photoUrl),
+                          image: avatarImage(context, photoUrl, 56),
                           fit: BoxFit.cover,
                         )
                       : null,
@@ -856,7 +862,7 @@ class _ContactRequestsTab extends StatelessWidget {
           final r = requests[i];
           final status = r['status'] as String? ?? 'pending';
           final name = r['first_name'] as String? ?? 'Someone';
-          final photo = r['primary_photo'] as String?;
+          final photo = thumbOr(r, 'primary_photo_200', 'primary_photo');
           final userId = r['user_id']?.toString();
           final reqAt = r['requested_at'] ?? r['created_at'];
           final date = reqAt != null
@@ -895,7 +901,7 @@ class _ContactRequestsTab extends StatelessWidget {
                       radius: 28,
                       backgroundColor: AppColors.surface,
                       backgroundImage: photo != null
-                          ? CachedNetworkImageProvider(photo)
+                          ? avatarImage(context, photo, 56)
                           : null,
                       child: photo == null
                           ? const Icon(

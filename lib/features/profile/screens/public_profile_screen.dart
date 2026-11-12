@@ -15,6 +15,8 @@ import '../bloc/profile_bloc.dart';
 import '../bloc/profile_state.dart';
 import '../bloc/profile_event.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/utils/screen_guard.dart';
 import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
@@ -81,7 +83,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Future<void> _loadCallOptions() async {
-    final calls = await CallManager.instance.entitlements(refresh: true);
+    final calls = await CallManager.instance.entitlements(refresh: false);
     if (mounted) setState(() => _calls = calls);
   }
 
@@ -341,14 +343,26 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
+    return BlocConsumer<ProfileBloc, ProfileState>(
+      // A failed send/accept/decline: the button is already back as it was.
+      listenWhen: (_, curr) =>
+          curr is ProfileLoaded &&
+          curr.actionError != null &&
+          curr.userId == widget.userId,
+      listener: (context, state) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text((state as ProfileLoaded).actionError!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      },
       builder: (context, state) {
         if (state is ProfileLoading) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
-            ),
+            body: const SkeletonProfile(headerHeight: 480),
           );
         }
 
@@ -367,9 +381,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         if (state is ProfileLoaded && state.userId != widget.userId) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
-            ),
+            body: const SkeletonProfile(headerHeight: 480),
           );
         }
 
@@ -1465,6 +1477,11 @@ class _PublicProfilePhotoTile extends StatelessWidget {
     final base = CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
+      // Blurred beyond recognition anyway: a 64px decode looks the same
+      // under the blur and costs a fraction of the memory.
+      memCacheWidth: locked
+          ? 64
+          : decodePx(context, MediaQuery.sizeOf(context).width),
       placeholder: (context, url) =>
           Center(child: CircularProgressIndicator(color: AppColors.gold)),
       errorWidget: (context, url, error) =>

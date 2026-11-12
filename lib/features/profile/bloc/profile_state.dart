@@ -14,10 +14,14 @@ class ProfileLoading extends ProfileState {}
 class ProfileLoaded extends ProfileState {
   final Map<String, dynamic> profile;
   final String? userId;
-  const ProfileLoaded(this.profile, {this.userId});
+
+  /// Why the last send/accept/decline failed. The profile is already back as
+  /// it was; the screen shows this once as a snackbar.
+  final String? actionError;
+  const ProfileLoaded(this.profile, {this.userId, this.actionError});
 
   @override
-  List<Object?> get props => [profile, userId];
+  List<Object?> get props => [profile, userId, actionError];
 }
 
 class ProfileError extends ProfileState {

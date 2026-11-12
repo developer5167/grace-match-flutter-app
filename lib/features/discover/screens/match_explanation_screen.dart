@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/net_image.dart';
 
 /// Displays an AI-generated explanation of why two profiles are a good match.
 /// Accessible via the public profile screen ("Why We Match" button).
@@ -187,6 +188,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                 ? CachedNetworkImage(
                     imageUrl: photo,
                     fit: BoxFit.cover,
+                    memCacheWidth: decodePx(context, 72),
                     placeholder: (_, __) =>
                         Container(color: AppColors.surfaceHighest),
                     errorWidget: (_, __, ___) =>

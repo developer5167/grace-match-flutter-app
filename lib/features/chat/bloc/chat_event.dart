@@ -19,7 +19,13 @@ class FetchMessagesEvent extends ChatEvent {
 
 class SetCurrentConversationEvent extends ChatEvent {
   final String conversationId;
-  const SetCurrentConversationEvent(this.conversationId);
+
+  /// The chat screen that sent this. An empty [conversationId] (leaving)
+  /// only clears the conversation that same screen set, so a chat closing
+  /// late — still animating out while the next one opens — cannot clear
+  /// the one now on screen. Null clears whatever is set.
+  final Object? owner;
+  const SetCurrentConversationEvent(this.conversationId, {this.owner});
 
   @override
   List<Object?> get props => [conversationId];

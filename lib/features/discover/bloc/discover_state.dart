@@ -19,12 +19,18 @@ class DiscoverLoaded extends DiscoverState {
   final List<Map<String, dynamic>> dailyMatches;
   final bool limitReached;
 
+  /// Bumped each time the feed is replaced (first load, refresh, new
+  /// filters), not when more profiles are appended. Discover goes back to the
+  /// first card when it changes.
+  final int generation;
+
   const DiscoverLoaded({
     required this.profiles,
     this.hasReachedMax = false,
     this.activeFilters = const DiscoverFilters(),
     this.dailyMatches = const [],
     this.limitReached = false,
+    this.generation = 0,
   });
 
   DiscoverLoaded copyWith({
@@ -33,6 +39,7 @@ class DiscoverLoaded extends DiscoverState {
     DiscoverFilters? activeFilters,
     List<Map<String, dynamic>>? dailyMatches,
     bool? limitReached,
+    int? generation,
   }) {
     return DiscoverLoaded(
       profiles: profiles ?? this.profiles,
@@ -40,6 +47,7 @@ class DiscoverLoaded extends DiscoverState {
       activeFilters: activeFilters ?? this.activeFilters,
       dailyMatches: dailyMatches ?? this.dailyMatches,
       limitReached: limitReached ?? this.limitReached,
+      generation: generation ?? this.generation,
     );
   }
 
@@ -50,6 +58,7 @@ class DiscoverLoaded extends DiscoverState {
     activeFilters,
     dailyMatches,
     limitReached,
+    generation,
   ];
 }
 

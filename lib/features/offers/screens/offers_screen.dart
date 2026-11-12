@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -102,7 +104,7 @@ class _OffersScreenState extends State<OffersScreen> {
               itemCount: offers.length,
               itemBuilder: (context, i) => _OfferCard(offer: offers[i])
                   .animate()
-                  .fadeIn(delay: Duration(milliseconds: i * 70))
+                  .fadeIn(delay: Duration(milliseconds: math.min(i, 6) * 70))
                   .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
             ),
           );

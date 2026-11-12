@@ -17,6 +17,11 @@ class FetchFeedEvent extends DiscoverEvent {
   List<Object?> get props => [page, filters];
 }
 
+/// More cards for the current feed, appended to the ones already loaded.
+class FetchMoreFeedEvent extends DiscoverEvent {
+  const FetchMoreFeedEvent();
+}
+
 class FetchDailyMatchesEvent extends DiscoverEvent {
   const FetchDailyMatchesEvent();
 }

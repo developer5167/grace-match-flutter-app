@@ -6,8 +6,47 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/net_image.dart';
 
 class ProfileCard extends StatefulWidget {
+  /// Decode width for card photos. Shared with Discover's precache so both
+  /// land on the same image-cache entry.
+  static int photoDecodeWidth(BuildContext context) =>
+      decodePx(context, MediaQuery.sizeOf(context).width);
+
+  /// Card photo URLs: the 800px variant when the server has made one.
+  static List<String>? photoUrls(Map<String, dynamic> profile) {
+    final photos = profile['photos'] as List?;
+    if (photos == null) return null;
+
+    String? nonEmpty(dynamic v) {
+      final s = v?.toString();
+      return (s != null && s.isNotEmpty) ? s : null;
+    }
+
+    final urls = <String>[];
+    for (final photo in photos) {
+      if (photo is String) {
+        if (photo.isNotEmpty) urls.add(photo);
+        continue;
+      }
+
+      if (photo is Map) {
+        final photoMap = photo.cast<dynamic, dynamic>();
+        final url =
+            nonEmpty(photoMap['url_800']) ??
+            photoMap['url']?.toString() ??
+            photoMap['photo_url']?.toString() ??
+            photoMap['image_url']?.toString() ??
+            photoMap['secure_url']?.toString() ??
+            photoMap['file_url']?.toString();
+        if (url != null && url.isNotEmpty) urls.add(url);
+      }
+    }
+
+    return urls;
+  }
+
   final Map<String, dynamic> profile;
   final VoidCallback? onSwipeLeft;
   final VoidCallback? onSwipeRight;
@@ -30,8 +69,9 @@ class _ProfileCardState extends State<ProfileCard>
   late AnimationController _dragController;
   late PageController _pageController;
   int _currentPhotoIndex = 0;
-  Offset _dragOffset = Offset.zero;
-  double _rotation = 0;
+  // Drag position lives in a notifier: a pan update repaints the moving card
+  // and its stamps, not the whole card tree.
+  final ValueNotifier<Offset> _drag = ValueNotifier(Offset.zero);
   bool _isDragging = false;
   Timer? _photoTimer;
 
@@ -48,6 +88,10 @@ class _ProfileCardState extends State<ProfileCard>
 
   void _startPhotoTimer() {
     _photoTimer?.cancel();
+    _photoTimer = null;
+    // Only the top card cycles photos. The card behind it is barely visible
+    // and would otherwise rebuild every 2 seconds for nothing.
+    if (widget.onSwipeLeft == null) return;
     _photoTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       if (!mounted) return;
       final photos = _extractPhotoUrls();
@@ -67,6 +111,7 @@ class _ProfileCardState extends State<ProfileCard>
   @override
   void dispose() {
     _photoTimer?.cancel();
+    _drag.dispose();
     _dragController.dispose();
     _pageController.dispose();
     super.dispose();
@@ -83,6 +128,9 @@ class _ProfileCardState extends State<ProfileCard>
         _pageController.jumpToPage(0);
       }
       _startPhotoTimer();
+    } else if ((oldWidget.onSwipeLeft == null) !=
+        (widget.onSwipeLeft == null)) {
+      _startPhotoTimer();
     }
   }
 
@@ -91,38 +139,32 @@ class _ProfileCardState extends State<ProfileCard>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _dragOffset += details.delta;
-      _rotation = _dragOffset.dx / 350; // max ~25 degree rotation
-    });
+    _drag.value += details.delta;
   }
 
-  void _onPanEnd(DragEndDetails details) async {
+  void _onPanEnd(DragEndDetails details) {
     final threshold = MediaQuery.of(context).size.width * 0.35;
+    final dx = _drag.value.dx;
 
-    if (_dragOffset.dx > threshold) {
+    // Haptics are fired, not awaited: the next card should not wait on the
+    // vibration motor.
+    if (dx > threshold) {
       // Swipe right = Like
-      await AppHaptics.heavy();
+      AppHaptics.heavy();
       widget.onSwipeRight?.call();
-    } else if (_dragOffset.dx < -threshold) {
+    } else if (dx < -threshold) {
       // Swipe left = Pass
-      await AppHaptics.light();
+      AppHaptics.light();
       widget.onSwipeLeft?.call();
     } else {
       // Snap back
-      setState(() {
-        _dragOffset = Offset.zero;
-        _rotation = 0;
-        _isDragging = false;
-      });
+      setState(() => _isDragging = false);
+      _drag.value = Offset.zero;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final likeOpacity = (_dragOffset.dx / 120).clamp(0.0, 1.0);
-    final passOpacity = (-_dragOffset.dx / 120).clamp(0.0, 1.0);
-
     return Transform.scale(
       scale: widget.scale,
       child:
@@ -141,15 +183,19 @@ class _ProfileCardState extends State<ProfileCard>
                     );
                   }
                 },
-                child: AnimatedContainer(
-                  duration: _isDragging
-                      ? Duration.zero
-                      : const Duration(milliseconds: 300),
-                  transform: Matrix4.translationValues(
-                    _dragOffset.dx,
-                    _dragOffset.dy * 0.3,
-                    0,
-                  )..rotateZ(_rotation * 0.3),
+                child: ValueListenableBuilder<Offset>(
+                  valueListenable: _drag,
+                  builder: (context, offset, card) => AnimatedContainer(
+                    duration: _isDragging
+                        ? Duration.zero
+                        : const Duration(milliseconds: 300),
+                    transform: Matrix4.translationValues(
+                      offset.dx,
+                      offset.dy * 0.3,
+                      0,
+                    )..rotateZ(offset.dx / 350 * 0.3), // max ~25 degree rotation
+                    child: card,
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(28),
                     child: Stack(
@@ -196,8 +242,12 @@ class _ProfileCardState extends State<ProfileCard>
                         Positioned(
                           top: 40,
                           left: 24,
-                          child: Opacity(
-                            opacity: likeOpacity,
+                          child: ValueListenableBuilder<Offset>(
+                            valueListenable: _drag,
+                            builder: (context, offset, stamp) => Opacity(
+                              opacity: (offset.dx / 120).clamp(0.0, 1.0),
+                              child: stamp,
+                            ),
                             child: Transform.rotate(
                               angle: -0.3,
                               child: _stampBadge(
@@ -210,8 +260,12 @@ class _ProfileCardState extends State<ProfileCard>
                         Positioned(
                           top: 40,
                           right: 24,
-                          child: Opacity(
-                            opacity: passOpacity,
+                          child: ValueListenableBuilder<Offset>(
+                            valueListenable: _drag,
+                            builder: (context, offset, stamp) => Opacity(
+                              opacity: (-offset.dx / 120).clamp(0.0, 1.0),
+                              child: stamp,
+                            ),
                             child: Transform.rotate(
                               angle: 0.3,
                               child: _stampBadge('PASS', AppColors.error),
@@ -418,6 +472,7 @@ class _ProfileCardState extends State<ProfileCard>
       );
     }
 
+    final decodeWidth = ProfileCard.photoDecodeWidth(context);
     return PageView.builder(
       controller: _pageController,
       physics: const NeverScrollableScrollPhysics(),
@@ -432,6 +487,7 @@ class _ProfileCardState extends State<ProfileCard>
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
+          memCacheWidth: decodeWidth,
           placeholder: (_, __) => Container(
             color: AppColors.surfaceElevated,
             child: Center(
@@ -455,31 +511,7 @@ class _ProfileCardState extends State<ProfileCard>
     );
   }
 
-  List<String>? _extractPhotoUrls() {
-    final photos = widget.profile['photos'] as List?;
-    if (photos == null) return null;
-
-    final urls = <String>[];
-    for (final photo in photos) {
-      if (photo is String) {
-        if (photo.isNotEmpty) urls.add(photo);
-        continue;
-      }
-
-      if (photo is Map) {
-        final photoMap = photo.cast<dynamic, dynamic>();
-        final url =
-            photoMap['url']?.toString() ??
-            photoMap['photo_url']?.toString() ??
-            photoMap['image_url']?.toString() ??
-            photoMap['secure_url']?.toString() ??
-            photoMap['file_url']?.toString();
-        if (url != null && url.isNotEmpty) urls.add(url);
-      }
-    }
-
-    return urls;
-  }
+  List<String>? _extractPhotoUrls() => ProfileCard.photoUrls(widget.profile);
 
   Widget _trustBadge() {
     return Container(

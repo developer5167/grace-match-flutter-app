@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,7 @@ import '../../../core/notifications/push_center.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/net_image.dart';
 import '../data/support_repository.dart';
 
 /// One support conversation.
@@ -464,11 +466,12 @@ class _Bubble extends StatelessWidget {
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  message.attachmentUrl!,
+                child: CachedNetworkImage(
+                  imageUrl: message.attachmentUrl!,
                   height: 150,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  memCacheHeight: decodePx(context, 150),
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
             ],

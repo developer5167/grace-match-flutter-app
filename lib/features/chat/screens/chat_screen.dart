@@ -2,9 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/state/active_chat_state.dart';
 import '../../../core/di/injection.dart' as di;
@@ -42,6 +43,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final _scrollCtrl = ScrollController();
   String? _myUserId;
   int _prevMessageCount = 0;
+  // Set once this chat's messages are on screen; after that only new
+  // messages rebuild the list.
+  bool _hasMessages = false;
 
   bool _isOnline = false;
   String? _lastSeenAt;
@@ -72,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     di.sl<SocketService>().ensureConnected();
     ActiveChatState.conversationId = widget.conversationId;
     final bloc = context.read<ChatBloc>();
-    bloc.add(SetCurrentConversationEvent(widget.conversationId));
+    bloc.add(SetCurrentConversationEvent(widget.conversationId, owner: this));
     bloc.add(FetchMessagesEvent(widget.conversationId));
 
     // Fetch initial status then keep updated via socket
@@ -172,7 +176,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _peerTypingTimeout?.cancel();
     ActiveChatState.conversationId = null;
     _statusSubscription?.cancel();
-    context.read<ChatBloc>().add(SetCurrentConversationEvent(''));
+    context.read<ChatBloc>().add(SetCurrentConversationEvent('', owner: this));
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
@@ -278,30 +282,43 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ChatBloc, ChatState>(
-      listener: (context, state) {
-        if (state is MessagesLoaded) {
-          // Auto-scroll to newest when message count grows
-          if (state.messages.length > _prevMessageCount) {
-            _prevMessageCount = state.messages.length;
-            _scrollToNewest();
-          } else {
-            _prevMessageCount = state.messages.length;
-          }
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: _buildAppBar(),
-          body: Column(
-            children: [
-              Expanded(child: _buildBody(state)),
-              _buildInputBar(),
-            ],
+    // Only the message list listens to the bloc. The bloc also carries the
+    // conversations list, and its states must neither blank an open chat
+    // nor rebuild the app bar and input with it.
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          Expanded(
+            child: BlocConsumer<ChatBloc, ChatState>(
+              listenWhen: (_, curr) => curr is MessagesLoaded,
+              listener: (context, state) {
+                if (state is MessagesLoaded) {
+                  // Auto-scroll to newest when message count grows
+                  if (state.messages.length > _prevMessageCount) {
+                    _prevMessageCount = state.messages.length;
+                    _scrollToNewest();
+                  } else {
+                    _prevMessageCount = state.messages.length;
+                  }
+                }
+              },
+              buildWhen: (_, curr) {
+                if (curr is MessagesLoaded) {
+                  _hasMessages = true;
+                  return true;
+                }
+                if (curr is ConversationsLoaded) return false;
+                // Loading / error states matter until the messages arrive.
+                return !_hasMessages;
+              },
+              builder: (context, state) => _buildBody(state),
+            ),
           ),
-        );
-      },
+          _buildInputBar(),
+        ],
+      ),
     );
   }
 
@@ -340,8 +357,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       widget.otherUserPhoto != null &&
                           widget.otherUserPhoto!.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(
+                          image: avatarImage(
+                            context,
                             widget.otherUserPhoto!,
+                            38,
                           ),
                           fit: BoxFit.cover,
                         )
@@ -445,7 +464,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadCallOptions() async {
-    final calls = await CallManager.instance.entitlements(refresh: true);
+    final calls = await CallManager.instance.entitlements(refresh: false);
     if (!mounted) return;
     setState(() => _calls = calls);
     if (calls.voice || calls.video) {
@@ -639,7 +658,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Widget _buildBody(ChatState state) {
     if (state is ChatLoading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.gold));
+      return const SkeletonChat();
     }
     if (state is ChatError) {
       return Center(

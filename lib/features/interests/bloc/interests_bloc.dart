@@ -5,6 +5,10 @@ import '../data/interests_repository.dart';
 
 class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
   final InterestsRepository _repository;
+  bool _fetching = false;
+  // Bumped by every accept/decline. A fetch that started before one would
+  // put the answered interest back on screen, so its result is dropped.
+  int _actionSeq = 0;
 
   InterestsBloc(this._repository) : super(InterestsInitial()) {
     on<FetchInterestsEvent>(_onFetchInterests);
@@ -15,9 +19,17 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
     FetchInterestsEvent event,
     Emitter<InterestsState> emit,
   ) async {
-    emit(InterestsLoading());
+    // One request at a time; a second open or pull while one is out would
+    // only fetch the same lists again.
+    if (_fetching) return;
+    _fetching = true;
+    // Lists already on screen stay there while they refresh.
+    final hadData = state is InterestsLoaded;
+    if (!hadData) emit(InterestsLoading());
+    final seq = _actionSeq;
     try {
       final data = await _repository.fetchInterests();
+      if (seq != _actionSeq && state is InterestsLoaded) return;
       emit(
         InterestsLoaded(
           received: data['received']!,
@@ -26,7 +38,12 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
         ),
       );
     } catch (e) {
-      emit(InterestsError(e.toString()));
+      // A failed refresh keeps the lists the member was looking at.
+      if (!(hadData && state is InterestsLoaded)) {
+        emit(InterestsError(e.toString()));
+      }
+    } finally {
+      _fetching = false;
     }
   }
 
@@ -34,6 +51,7 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
     InterestActionEvent event,
     Emitter<InterestsState> emit,
   ) async {
+    _actionSeq++;
     if (state is! InterestsLoaded) {
       // No cached state — fall back to full re-fetch
       try {
@@ -89,9 +107,16 @@ class InterestsBloc extends Bloc<InterestsEvent, InterestsState> {
       }
       // For reject: updatedReceived is already emitted above, nothing else needed
     } catch (e) {
-      // Revert optimistic update on failure
-      emit(current);
-      emit(InterestsError(e.toString()));
+      // Put the item back and say why, without replacing the tabs with an
+      // error screen.
+      emit(
+        InterestsLoaded(
+          received: current.received,
+          matches: current.matches,
+          sent: current.sent,
+          actionError: e.toString().replaceFirst('Exception: ', ''),
+        ),
+      );
     }
   }
 }

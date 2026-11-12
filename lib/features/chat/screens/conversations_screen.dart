@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
 import '../bloc/chat_state.dart';
@@ -56,6 +57,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ChatBloc, ChatState>(
+      // An open chat's messages draw nothing here (the cached list is shown
+      // either way), and a failed refresh keeps the list rather than
+      // replacing it with an error.
+      buildWhen: (_, curr) =>
+          curr is ConversationsLoaded ||
+          (curr is! MessagesLoaded && _cachedConversations.isEmpty),
       builder: (context, state) {
         // Keep the cache warm whenever we get fresh data.
         if (state is ConversationsLoaded) {
@@ -79,9 +86,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         } else if (_cachedConversations.isNotEmpty) {
           body = _buildConversationList(_cachedConversations);
         } else {
-          body = Center(
-            child: CircularProgressIndicator(color: AppColors.gold),
-          );
+          body = const SkeletonList(padding: EdgeInsets.fromLTRB(24, 24, 24, 0));
         }
 
         return Scaffold(
@@ -136,7 +141,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         final name = (conv['other_user_name'] ?? 'Match').toString();
         final lastMsg = _extractLastMessage(conv['last_message']);
         final time = _formatTime(conv['last_message_at']);
+        // Full photo for the chat header and call screen; 200px for the row.
         final photo = conv['other_user_photo']?.toString();
+        final avatar = thumbOr(conv, 'other_user_photo_200', 'other_user_photo');
         final conversationId = conv['conversation_id']?.toString();
         final otherUserId = conv['other_user_id']?.toString();
         final isOnline = conv['is_online'] == true;
@@ -168,14 +175,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         border: isUnread
                             ? Border.all(color: AppColors.gold, width: 2)
                             : null,
-                        image: photo != null && photo.isNotEmpty
+                        image: avatar != null
                             ? DecorationImage(
-                                image: CachedNetworkImageProvider(photo),
+                                image: avatarImage(context, avatar, 56),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: photo == null || photo.isEmpty
+                      child: avatar == null
                           ? const Icon(
                               Icons.person,
                               color: AppColors.textTertiary,

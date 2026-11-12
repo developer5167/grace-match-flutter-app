@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:app_links/app_links.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/constants/app_constants.dart';
 import 'core/storage/app_storage.dart';
 import 'core/state/active_chat_state.dart';
@@ -106,35 +107,32 @@ void _handleAppLink(Uri uri) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Every font the app uses is bundled in assets/fonts; never download one.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   // A release build pinned to the dev tunnel cannot be fixed without a new
   // store submission, so fail loudly here rather than silently in the field.
   AppConstants.assertReleaseConfig();
 
-  final firebaseReady = await _initFirebase();
+  di.init();
+
+  // Firebase, local storage and the call-kit setup do not depend on one
+  // another (the answered-call check reads the token from secure storage,
+  // not Hive), so they run together. Each is bounded by its own timeout and
+  // none throws.
+  final startup = await Future.wait<Object?>([
+    _initFirebase(),
+    // Init storage before any authenticated network calls (e.g. FCM token
+    // sync): nothing below runs until this finishes.
+    _initStorage(),
+    _initCallKit(),
+  ]);
+  final firebaseReady = startup[0] as bool;
+  final answeredOnLaunch = startup[2] as IncomingCallData?;
+
   if (firebaseReady) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
-  // Android only. iOS has no registerBackgroundHandler; calling it throws
-  // MissingPluginException and the error is async, so a try/catch here misses it.
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    await FlutterCallkitIncoming.onBackgroundMessage(_callKitBackgroundHandler);
-  }
-
-  di.init();
-
-  // Init storage before any authenticated network calls (e.g. FCM token sync)
-  try {
-    await AppStorage.init().timeout(const Duration(seconds: 5));
-    MembershipTheme.bindPersist(AppStorage.saveMembershipPlan);
-    MembershipTheme.restore(AppStorage.getMembershipPlan());
-  } catch (e, st) {
-    debugPrint('Storage init failed: $e\n$st');
-  }
-
-  // Answered on the lock screen while the app was closed: the call is
-  // already accepted, and the app opens straight into it. Bounded so a
-  // stuck native call cannot hold the white launch screen up.
-  final answeredOnLaunch = await _answeredCallOnLaunch();
 
   // Connect early: answering needs the socket, and every second here is a
   // second the caller hears ringing after the member picked up.
@@ -187,6 +185,29 @@ Future<bool> _initFirebase() async {
   } catch (e, st) {
     debugPrint('Firebase init failed: $e\n$st');
     return false;
+  }
+}
+
+/// Registers the call UI's background handler, then checks for a call
+/// answered on the lock screen while the app was closed: that call is
+/// already accepted, and the app opens straight into it.
+Future<IncomingCallData?> _initCallKit() async {
+  // Android only. iOS has no registerBackgroundHandler; calling it throws
+  // MissingPluginException and the error is async, so a try/catch here misses it.
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    await FlutterCallkitIncoming.onBackgroundMessage(_callKitBackgroundHandler);
+  }
+  // Bounded so a stuck native call cannot hold the white launch screen up.
+  return _answeredCallOnLaunch();
+}
+
+Future<void> _initStorage() async {
+  try {
+    await AppStorage.init().timeout(const Duration(seconds: 5));
+    MembershipTheme.bindPersist(AppStorage.saveMembershipPlan);
+    MembershipTheme.restore(AppStorage.getMembershipPlan());
+  } catch (e, st) {
+    debugPrint('Storage init failed: $e\n$st');
   }
 }
 
@@ -270,7 +291,7 @@ Future<void> _prepareNotifications(bool firebaseReady) async {
     unawaited(_syncFcmToken(authRepository));
 
     FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-      debugPrint('FCM_TOKEN_REFRESHED: $token');
+      if (kDebugMode) debugPrint('FCM_TOKEN_REFRESHED: $token');
       await authRepository.updateFcmToken(token);
     });
 
@@ -324,7 +345,7 @@ Future<void> _syncFcmToken(AuthRepository authRepository) async {
     }
     final startupToken = await FirebaseMessaging.instance.getToken();
     if (startupToken != null && startupToken.isNotEmpty) {
-      debugPrint('FCM_TOKEN: $startupToken');
+      if (kDebugMode) debugPrint('FCM_TOKEN: $startupToken');
       await authRepository.updateFcmToken(startupToken);
     } else {
       debugPrint('FCM_TOKEN: <null>');
@@ -374,6 +395,9 @@ class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserv
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // A call declined from the lock screen runs in another isolate and may
+      // have rotated the tokens meanwhile.
+      AppStorage.reloadTokens();
       di.sl<SocketService>().ensureConnected();
       CallManager.instance.onAppResumed();
     }

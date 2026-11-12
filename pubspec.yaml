@@ -1,7 +1,7 @@
 name: grace_match
 description: "GraceMatch – Premium Telugu Christian Matrimony"
 publish_to: 'none'
-version: 1.0.9+13
+version: 1.0.10+14
 
 environment:
   sdk: ^3.9.2
@@ -85,6 +85,10 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/icons/
+    # Playfair Display 600/700 and Plus Jakarta Sans 400-700, named the way
+    # google_fonts looks them up, so text never waits on (or fails for want
+    # of) a font download. Runtime fetching is off in main.dart.
+    - assets/fonts/
 
 # ─── App icon ────────────────────────────────────────────────
 # Settled splash RingsMark (face-on circles) in assets/icons.

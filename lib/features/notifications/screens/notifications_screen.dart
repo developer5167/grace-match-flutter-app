@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../data/notifications_repository.dart';
 
 /// Everything the app has ever told this member, in one place.
@@ -272,9 +273,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildBody() {
-    if (_loading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+    // Only the first load shows a placeholder. A pull-to-refresh keeps the
+    // list on screen under the refresh indicator.
+    if (_loading && _items.isEmpty) {
+      return const SkeletonList(
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+        avatarSize: 40,
       );
     }
 

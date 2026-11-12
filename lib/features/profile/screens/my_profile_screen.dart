@@ -2,11 +2,12 @@ import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,10 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(FetchProfileEvent());
+    // Silent: a profile already on screen stays there while it refreshes.
+    context.read<ProfileBloc>().add(
+      const FetchProfileEvent(silentRefresh: true),
+    );
   }
 
   String? _idFromProfile(Map<String, dynamic> data) {
@@ -106,9 +110,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         if (state is ProfileLoading) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
-            ),
+            body: const SkeletonProfile(roundAvatar: true),
           );
         }
 
@@ -253,8 +255,10 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                       color: AppColors.surfaceElevated,
                                       image: photoUrl != null
                                           ? DecorationImage(
-                                              image: CachedNetworkImageProvider(
+                                              image: avatarImage(
+                                                context,
                                                 photoUrl,
+                                                116,
                                               ),
                                               fit: BoxFit.cover,
                                             )
@@ -870,7 +874,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
             color: AppColors.surface,
             image: url.isNotEmpty
                 ? DecorationImage(
-                    image: CachedNetworkImageProvider(url),
+                    // A third of the screen wide (3-column grid).
+                    image: avatarImage(
+                      context,
+                      url,
+                      MediaQuery.sizeOf(context).width / 3,
+                    ),
                     fit: BoxFit.cover,
                   )
                 : null,

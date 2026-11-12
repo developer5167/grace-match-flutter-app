@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart' as ck;
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
@@ -15,6 +16,7 @@ import '../../../core/storage/app_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/net_image.dart';
 import 'call_kit.dart';
 import 'call_notifications.dart';
 import 'call_session.dart';
@@ -563,10 +565,11 @@ class CallAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: photo.startsWith('http')
-          ? Image.network(
-              photo,
+          ? CachedNetworkImage(
+              imageUrl: photo,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => initial,
+              memCacheWidth: decodePx(context, size),
+              errorWidget: (_, __, ___) => initial,
             )
           : initial,
     );

@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/net_image.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/action_buttons.dart';
 import '../widgets/device_tilt.dart';
@@ -25,8 +27,17 @@ class DiscoverScreen extends StatefulWidget {
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
   int _currentIndex = 0;
-  bool _isAnimatingOut = false;
+  // Set while a super interest is on its way; stops a second tap sending it
+  // twice (or to the next card) before the first returns.
+  bool _superBusy = false;
+  // Bumped to rebuild the top card from scratch, centred: a drag-swipe made
+  // while a super interest was out was ignored and left the card off-screen.
+  int _cardEpoch = 0;
   List<Map<String, dynamic>> _profiles = [];
+  // Feed generation the deck position belongs to. A replaced feed starts at
+  // its first card.
+  int? _generation;
+  final Set<String> _precached = {};
 
   @override
   void initState() {
@@ -35,18 +46,21 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   void _onSwipe(bool liked, {bool superLike = false}) async {
-    if (_isAnimatingOut || _currentIndex >= _profiles.length) return;
+    if (_superBusy || _currentIndex >= _profiles.length) return;
 
     final currentProfile = _profiles[_currentIndex];
 
     if (superLike) {
+      _superBusy = true;
       try {
         await DiscoverRepository().sendInterest(
           currentProfile['id'].toString(),
           isSuperInterest: true,
         );
       } catch (e) {
+        _superBusy = false;
         if (!mounted) return;
+        setState(() => _cardEpoch++);
         final msg = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.red),
@@ -59,7 +73,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         }
         return;
       }
-      await _advanceCard(liked: true);
+      _superBusy = false;
+      if (!mounted) return;
+      _advanceCard(liked: true);
       return;
     }
 
@@ -70,25 +86,47 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       ),
     );
 
-    await _advanceCard(liked: liked);
+    _advanceCard(liked: liked);
   }
 
-  Future<void> _advanceCard({required bool liked}) async {
-    setState(() => _isAnimatingOut = true);
-
+  void _advanceCard({required bool liked}) {
+    // Fired, not awaited: the next card shows at once.
     if (liked) {
-      await AppHaptics.heavy();
+      AppHaptics.heavy();
     } else {
-      await AppHaptics.light();
+      AppHaptics.light();
     }
+    setState(() => _currentIndex++);
+    _maybeFetchMore();
+  }
 
-    await Future.delayed(const Duration(milliseconds: 300));
+  /// Top the deck up while a few cards are still left to swipe.
+  void _maybeFetchMore() {
+    final state = context.read<DiscoverBloc>().state;
+    if (state is! DiscoverLoaded || state.hasReachedMax) return;
+    if (_profiles.length - _currentIndex <= 3) {
+      context.read<DiscoverBloc>().add(const FetchMoreFeedEvent());
+    }
+  }
 
-    if (!mounted) return;
-    setState(() {
-      _isAnimatingOut = false;
-      _currentIndex++;
-    });
+  /// Start downloading the photos the member will see next, at the size the
+  /// card decodes them, so the next swipe does not land on a spinner.
+  void _precacheUpcoming() {
+    final urls = <String>[
+      if (_currentIndex + 1 < _profiles.length)
+        ...?ProfileCard.photoUrls(_profiles[_currentIndex + 1]),
+      if (_currentIndex + 2 < _profiles.length)
+        ...?ProfileCard.photoUrls(_profiles[_currentIndex + 2])?.take(1),
+    ].where(_precached.add).toList();
+    if (urls.isEmpty) return;
+    final width = ProfileCard.photoDecodeWidth(context);
+    for (final url in urls) {
+      precacheImage(
+        ResizeImage(CachedNetworkImageProvider(url), width: width),
+        context,
+        onError: (_, __) {},
+      );
+    }
   }
 
   Future<void> _openFilterSheet(DiscoverFilters current) async {
@@ -100,7 +138,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       builder: (_) => DiscoverFilterSheet(currentFilters: current),
     );
     if (result != null && mounted) {
-      setState(() => _currentIndex = 0);
+      // The deck goes back to its first card when the filtered feed arrives.
       context.read<DiscoverBloc>().add(FetchFeedEvent(filters: result));
     }
   }
@@ -109,11 +147,24 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DiscoverBloc, DiscoverState>(
       builder: (context, state) {
-        if (state is DiscoverLoading && _profiles.isEmpty) {
+        if ((state is DiscoverLoading || state is DiscoverInitial) &&
+            _profiles.isEmpty) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  _buildHeader(DiscoverFilters.defaults()),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: SkeletonCard(),
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.paddingOf(context).bottom + 8),
+                ],
+              ),
             ),
           );
         }
@@ -139,9 +190,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
         if (state is DiscoverLoaded) {
           _profiles = state.profiles;
+          if (_generation != state.generation) {
+            // A new feed (refresh, filters, or the first load after coming
+            // back to this tab) starts from its first card.
+            _generation = state.generation;
+            _currentIndex = 0;
+          }
         }
 
         final hasProfiles = _currentIndex < _profiles.length;
+        if (hasProfiles) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _precacheUpcoming();
+          });
+        }
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -182,7 +244,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                 child: DeviceTilt(
                                   child: ProfileCard(
                                     key: ValueKey(
-                                      _profiles[_currentIndex]['id'],
+                                      '${_profiles[_currentIndex]['id']}#$_cardEpoch',
                                     ),
                                     profile: _profiles[_currentIndex],
                                     onSwipeLeft: () => _onSwipe(false),
@@ -310,7 +372,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (ctx, i) {
               final m = matches[i];
-              final photo = m['primary_photo'] as String?;
+              final photo = thumbOr(m, 'primary_photo_200', 'primary_photo');
               final name = m['first_name'] as String? ?? '?';
               final compat = m['compatibility'] as int? ?? 0;
               final uid = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
@@ -335,6 +397,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                 ? CachedNetworkImage(
                                     imageUrl: photo,
                                     fit: BoxFit.cover,
+                                    memCacheWidth: decodePx(context, 56),
                                     placeholder: (_, __) => Container(
                                       color: AppColors.surfaceHighest,
                                     ),
@@ -429,6 +492,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             )
           else
             TextButton(
+              // The deck goes back to its first card when the new feed
+              // arrives (see `generation` in build).
               onPressed: () =>
                   context.read<DiscoverBloc>().add(const FetchFeedEvent()),
               child: Text(

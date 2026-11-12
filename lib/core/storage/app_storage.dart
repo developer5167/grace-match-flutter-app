@@ -11,18 +11,52 @@ class AppStorage {
   );
 
   // ─── Secure Storage (Tokens) ──────────────────────────────────
+  //
+  // The access token is read on every request and every route change. It is
+  // kept in memory once read, so those reads stop going to the keychain /
+  // keystore. Every write in this isolate goes through [saveTokens] and
+  // [clearAll], which update the copy. A background isolate (a call declined
+  // from the lock screen) can rotate the tokens on its own, so the copy is
+  // dropped when the app comes back to the foreground ([reloadTokens]).
+  static String? _accessToken;
+  static bool _accessTokenLoaded = false;
+  // Bumped by every write, so a read that started before it cannot put the
+  // old value back into memory.
+  static int _tokenWrites = 0;
+
   static Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
+    _tokenWrites++;
+    _accessToken = accessToken;
+    _accessTokenLoaded = true;
     await Future.wait([
       _secure.write(key: StorageKeys.accessToken, value: accessToken),
       _secure.write(key: StorageKeys.refreshToken, value: refreshToken),
     ]);
   }
 
-  static Future<String?> getAccessToken() =>
-      _secure.read(key: StorageKeys.accessToken);
+  static Future<String?> getAccessToken() async {
+    if (_accessTokenLoaded) return _accessToken;
+    final writes = _tokenWrites;
+    final token = await _secure.read(key: StorageKeys.accessToken);
+    if (writes != _tokenWrites) {
+      // Written while this read was out; the write is newer.
+      return _accessTokenLoaded ? _accessToken : token;
+    }
+    _accessToken = token;
+    _accessTokenLoaded = true;
+    return token;
+  }
+
+  /// Forget the in-memory access token; the next read goes to secure
+  /// storage. For when another isolate may have written it.
+  static void reloadTokens() {
+    _tokenWrites++;
+    _accessToken = null;
+    _accessTokenLoaded = false;
+  }
 
   static Future<String?> getRefreshToken() =>
       _secure.read(key: StorageKeys.refreshToken);
@@ -33,6 +67,9 @@ class AppStorage {
   static Future<String?> getUserId() => _secure.read(key: StorageKeys.userId);
 
   static Future<void> clearAll() async {
+    _tokenWrites++;
+    _accessToken = null;
+    _accessTokenLoaded = true;
     await _secure.deleteAll();
     if (_prefs.isOpen) {
       await _prefs.delete(StorageKeys.onboardingStep);

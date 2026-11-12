@@ -58,33 +58,14 @@ class _SplashScreenState extends State<SplashScreen>
     // Permission and the cold-start notification are handled after the first
     // frame. Waiting here keeps that tap from losing the race with Discover.
     final maintenanceCheck = MaintenanceGate.blocked();
+    // The bootstrap does not depend on the maintenance check or on the
+    // notification prompt, so it runs alongside them. It only stores what it
+    // learns; every decision below still waits for both.
+    final bootstrap = _bootstrap();
     await PushCenter.launchReady;
     final startTime = DateTime.now();
 
-    final token = await AppStorage.getAccessToken();
-
-    if (token != null) {
-      try {
-        // Single bootstrap call — replaces the old GET /profile/me and also
-        // returns badge counts + subscription status for the app session.
-        final resp = await DioClient.instance.get(ApiEndpoints.appBootstrap);
-        final data = resp.data['data'];
-        if (data is Map) {
-          MembershipTheme.instance.applyFrom(data['subscription']);
-          final user = data['user'];
-          if (user is Map) {
-            AppStorage.saveOnboardingComplete(
-              user['is_onboarding_complete'] ?? false,
-            );
-            AppStorage.saveReviewStatus(user['review_status']?.toString());
-          }
-        }
-      } on DioException catch (e) {
-        debugPrint('Splash bootstrap error: ${e.message}');
-      } catch (e) {
-        debugPrint('Splash error: $e');
-      }
-    }
+    final token = await bootstrap;
 
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
     // A notification tap should not sit on the splash screen. Everything
@@ -107,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Admin-controlled update gate. Fail-open: if the check cannot run,
     // members still get into the app.
     try {
-      await UpdateGate.maybePrompt(context);
+      await UpdateGate.maybePrompt(context, fetched: MaintenanceGate.policy);
     } catch (e) {
       debugPrint('Update gate error: $e');
     }
@@ -136,6 +117,36 @@ class _SplashScreenState extends State<SplashScreen>
     // Opened by tapping a notification: go to what it was about.
     if (PushCenter.finishStartup()) return;
     context.go('/discover');
+  }
+
+  /// Reads the session and, when there is one, loads the bootstrap. Returns
+  /// the access token (null when signed out).
+  Future<String?> _bootstrap() async {
+    final token = await AppStorage.getAccessToken();
+
+    if (token != null) {
+      try {
+        // Single bootstrap call — replaces the old GET /profile/me and also
+        // returns badge counts + subscription status for the app session.
+        final resp = await DioClient.instance.get(ApiEndpoints.appBootstrap);
+        final data = resp.data['data'];
+        if (data is Map) {
+          MembershipTheme.instance.applyFrom(data['subscription']);
+          final user = data['user'];
+          if (user is Map) {
+            AppStorage.saveOnboardingComplete(
+              user['is_onboarding_complete'] ?? false,
+            );
+            AppStorage.saveReviewStatus(user['review_status']?.toString());
+          }
+        }
+      } on DioException catch (e) {
+        debugPrint('Splash bootstrap error: ${e.message}');
+      } catch (e) {
+        debugPrint('Splash error: $e');
+      }
+    }
+    return token;
   }
 
   @override
