@@ -5,6 +5,7 @@ import '../../features/auth/screens/phone_input_screen.dart';
 import '../../features/auth/screens/otp_verification_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/discover/screens/discover_screen.dart';
+import '../../features/browse/screens/browse_screen.dart';
 import '../../features/interests/screens/interests_screen.dart';
 import '../../features/chat/screens/conversations_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
@@ -134,6 +135,10 @@ class AppRouter {
             GoRoute(
               path: '/discover',
               builder: (_, __) => const DiscoverScreen(),
+            ),
+            GoRoute(
+              path: '/browse',
+              builder: (_, __) => const BrowseScreen(),
             ),
             GoRoute(
               path: '/interests',

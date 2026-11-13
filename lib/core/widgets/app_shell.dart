@@ -18,16 +18,22 @@ class _AppShellState extends State<AppShell> {
     try {
       final location = GoRouterState.of(context).uri.path;
       if (location.startsWith('/discover')) return 0;
-      if (location.startsWith('/interests')) return 1;
-      if (location.startsWith('/chat')) return 2;
-      if (location.startsWith('/activity')) return 3;
-      if (location.startsWith('/profile')) return 4;
+      if (location.startsWith('/browse')) return 1;
+      if (location.startsWith('/interests')) return 2;
+      if (location.startsWith('/chat')) return 3;
+      if (location.startsWith('/activity')) return 4;
+      if (location.startsWith('/profile')) return 5;
     } catch (_) {}
     return 0;
   }
 
   static const _tabs = [
     _NavTab(path: '/discover', icon: Icons.explore_rounded, label: 'Discover'),
+    _NavTab(
+      path: '/browse',
+      icon: Icons.manage_search_rounded,
+      label: 'Browse',
+    ),
     _NavTab(
       path: '/interests',
       icon: Icons.favorite_rounded,
@@ -151,7 +157,13 @@ class _PremiumNavBar extends StatelessWidget {
                                   color: AppColors.gold,
                                 )
                               : AppTextStyles.labelSmall,
-                          child: Text(tabs[i].label),
+                          // Six tabs on a narrow phone: one line, never wrapped.
+                          child: Text(
+                            tabs[i].label,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.fade,
+                          ),
                         ),
                       ],
                     ),

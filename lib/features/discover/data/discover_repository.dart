@@ -34,6 +34,43 @@ class DiscoverRepository {
     }
   }
 
+  /// People this member already passed or sent an interest to, newest first.
+  /// [action] is 'passed', 'liked' or null for both; [q] is a name or a
+  /// profile ID ("GM-5786407D").
+  Future<({List<Map<String, dynamic>> profiles, bool hasMore, int total})>
+  fetchSeen({
+    int page = 1,
+    int limit = 20,
+    String? q,
+    String? action,
+    DiscoverFilters? filters,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+        if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+        if (action != null) 'action': action,
+        ...?filters?.toQueryParams(),
+      };
+      final response = await _dio.get(
+        ApiEndpoints.discoverSeen,
+        queryParameters: params,
+      );
+      final data = response.data['data'];
+      final profiles = data is Map && data['profiles'] is List
+          ? List<Map<String, dynamic>>.from(data['profiles'])
+          : <Map<String, dynamic>>[];
+      return (
+        profiles: profiles,
+        hasMore: data is Map && data['has_more'] == true,
+        total: data is Map && data['total'] is int ? data['total'] as int : 0,
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchDailyMatches() async {
     try {
       final response = await _dio.get(ApiEndpoints.dailyMatches);

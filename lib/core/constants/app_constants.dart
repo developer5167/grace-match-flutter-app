@@ -75,6 +75,7 @@ class ApiEndpoints {
 
   // Discover
   static const String discoverFeed = '/discover/feed';
+  static const String discoverSeen = '/discover/seen';
 
   // Interests
   static const String sendInterest = '/interests';

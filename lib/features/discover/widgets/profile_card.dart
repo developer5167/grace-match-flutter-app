@@ -189,11 +189,11 @@ class _ProfileCardState extends State<ProfileCard>
                     duration: _isDragging
                         ? Duration.zero
                         : const Duration(milliseconds: 300),
-                    transform: Matrix4.translationValues(
-                      offset.dx,
-                      offset.dy * 0.3,
-                      0,
-                    )..rotateZ(offset.dx / 350 * 0.3), // max ~25 degree rotation
+                    transform:
+                        Matrix4.translationValues(offset.dx, offset.dy * 0.3, 0)
+                          ..rotateZ(
+                            offset.dx / 350 * 0.3,
+                          ), // max ~25 degree rotation
                     child: card,
                   ),
                   child: ClipRRect(

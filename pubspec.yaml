@@ -1,7 +1,7 @@
 name: grace_match
 description: "GraceMatch – Premium Telugu Christian Matrimony"
 publish_to: 'none'
-version: 1.0.10+14
+version: 1.0.11+14
 
 environment:
   sdk: ^3.9.2

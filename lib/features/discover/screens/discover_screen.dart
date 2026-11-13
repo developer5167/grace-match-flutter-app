@@ -485,6 +485,23 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             style: AppTextStyles.bodyMedium,
           ),
           const SizedBox(height: 24),
+          // Browse is never limited: profiles already come across, and any
+          // profile by its ID.
+          OutlinedButton.icon(
+            onPressed: () => context.go('/browse'),
+            icon: Icon(Icons.manage_search_rounded, color: AppColors.gold),
+            label: Text(
+              'Browse profiles',
+              style: TextStyle(color: AppColors.gold),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.gold),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           if (limitReached)
             TextButton(
               onPressed: () => context.push('/subscription'),

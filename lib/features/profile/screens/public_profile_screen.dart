@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/profile_code.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 import 'package:dio/dio.dart';
@@ -676,6 +677,17 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           color: AppColors.gold,
                         ),
                       ),
+                      if (profileCode(
+                        profile['user_id'] ?? widget.userId,
+                      ).isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Profile ID: ${profileCode(profile['user_id'] ?? widget.userId)}',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
 
                       _sectionTitle('About Me'),
