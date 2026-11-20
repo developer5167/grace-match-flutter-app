@@ -1,9 +1,12 @@
 // App Store screenshots from the real app, against a LOCAL server seeded with
-// dummy data (scripts/dev-device.sh). Never point this at the live API.
+// dummy data (grace-match-backend/scripts/dev-device.sh). Never point this at
+// the live API. App Store Connect's slot for this app is 6.1"/6.3"
+// (1206 x 2622): use the iPhone 17 Pro simulator.
 //
+//   python3 integration_test/shot_server.py <sim-udid> build/store_screenshots &
 //   flutter drive --driver=test_driver/integration_test.dart \
-//     --target=integration_test/store_screenshots_test.dart -d <iPhone 17 Pro Max sim> \
-//     --dart-define=API_BASE_URL=http://127.0.0.1:5050/api/v1
+//     --target=integration_test/store_screenshots_test.dart -d <sim-udid> \
+//     --dart-define=API_BASE_URL=http://127.0.0.1:5050/api/v1 --dart-define=STORE_SCREENSHOTS=true
 import 'dart:io';
 
 import 'package:flutter/material.dart';
