@@ -865,13 +865,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(
-              Icons.add_photo_alternate_rounded,
-              color: AppColors.gold,
-            ),
-            onPressed: () {},
-          ),
           Expanded(
             child: Container(
               decoration: BoxDecoration(

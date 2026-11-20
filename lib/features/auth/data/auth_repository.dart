@@ -8,7 +8,9 @@ import '../../../../core/storage/app_storage.dart';
 class AuthRepository {
   final Dio _dio = DioClient.instance;
 
-  Future<void> sendOtp(String phone) async {
+  /// Returns the code only when talking to a local test server that echoes
+  /// it (STATIC_OTP); always null against the live API.
+  Future<String?> sendOtp(String phone) async {
     try {
       String countryCode = '+91';
       String phoneNumber = phone;
@@ -17,10 +19,14 @@ class AuthRepository {
         countryCode = phone.substring(0, 3);
         phoneNumber = phone.substring(3);
       }
-      await _dio.post(
+      final res = await _dio.post(
         ApiEndpoints.sendOtp,
         data: {'phone_number': phoneNumber, 'country_code': countryCode},
       );
+      if (!AppConstants.isLocalServer) return null;
+      final data = res.data;
+      final otp = data is Map ? data['otp']?.toString() : null;
+      return (otp != null && otp.isNotEmpty) ? otp : null;
     } on DioException catch (e) {
       throw _handleError(e);
     }

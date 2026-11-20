@@ -34,11 +34,7 @@ class _AppShellState extends State<AppShell> {
       icon: Icons.manage_search_rounded,
       label: 'Browse',
     ),
-    _NavTab(
-      path: '/interests',
-      icon: Icons.favorite_rounded,
-      label: 'Interests',
-    ),
+    _NavTab(path: '/interests', icon: Icons.mail_rounded, label: 'Interests'),
     _NavTab(path: '/chat', icon: Icons.chat_bubble_rounded, label: 'Chat'),
     _NavTab(
       path: '/activity',

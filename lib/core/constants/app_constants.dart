@@ -20,6 +20,12 @@ class AppConstants {
   /// True when the app is still pointing at the development tunnel.
   static bool get isUsingDevTunnel => baseUrl.contains('ngrok');
 
+  /// True when built against a local/test server rather than the live API
+  /// (any host outside sotersystems.in). Only then does the app accept the
+  /// test OTP the local server echoes back and fill it in by itself.
+  static bool get isLocalServer =>
+      !Uri.parse(baseUrl).host.endsWith('sotersystems.in');
+
   /// Fails fast in a release build that forgot --dart-define=API_BASE_URL.
   /// A store release pinned to a dev tunnel is unrecoverable without a new
   /// submission, so this is worth crashing over at startup.

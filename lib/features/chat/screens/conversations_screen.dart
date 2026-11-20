@@ -86,7 +86,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         } else if (_cachedConversations.isNotEmpty) {
           body = _buildConversationList(_cachedConversations);
         } else {
-          body = const SkeletonList(padding: EdgeInsets.fromLTRB(24, 24, 24, 0));
+          body = const SkeletonList(
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+          );
         }
 
         return Scaffold(
@@ -97,14 +99,106 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             backgroundColor: AppColors.background,
             actions: [
               IconButton(
+                tooltip: 'Chatting safely',
                 icon: Icon(Icons.shield_rounded, color: AppColors.gold),
-                onPressed: () {},
+                onPressed: () => _showSafety(context),
               ),
             ],
           ),
           body: body,
         );
       },
+    );
+  }
+
+  /// Shield in the app bar: how to talk safely and how to report or block.
+  void _showSafety(BuildContext context) {
+    const tips = <(IconData, String)>[
+      (
+        Icons.lock_outline_rounded,
+        'Your phone number stays hidden. Use voice and video calls inside '
+            'Grace Match until you are sure.',
+      ),
+      (
+        Icons.money_off_rounded,
+        'Never send money, gifts or bank details to anyone you meet here, '
+            'whatever the reason given.',
+      ),
+      (
+        Icons.family_restroom_rounded,
+        'Involve your family early, and meet in a public place with family '
+            'present.',
+      ),
+      (
+        Icons.flag_rounded,
+        'Report or block anyone from the ⋯ menu in their chat or on their '
+            'profile. Our team reviews every report, and they will not be '
+            'told who reported them.',
+      ),
+    ];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surfaceHighest,
+      showDragHandle: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Chatting safely', style: AppTextStyles.headlineSmall),
+              const SizedBox(height: 16),
+              for (final (icon, text) in tips)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, color: AppColors.gold, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(sheet).pop();
+                      context.push('/terms');
+                    },
+                    child: Text(
+                      'Community rules',
+                      style: TextStyle(color: AppColors.gold),
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(sheet).pop();
+                      context.push('/support');
+                    },
+                    child: Text(
+                      'Contact support',
+                      style: TextStyle(color: AppColors.gold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -123,7 +217,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             Text('No active chats', style: AppTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
-              'Matches will appear here once both like each other.',
+              'When an interest is accepted, you can talk here.',
               style: AppTextStyles.bodyMedium,
             ),
           ],
@@ -138,12 +232,16 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         final conv = conversations[index];
         final unreadCount = int.tryParse('${conv['unread_count'] ?? 0}') ?? 0;
         final isUnread = unreadCount > 0;
-        final name = (conv['other_user_name'] ?? 'Match').toString();
+        final name = (conv['other_user_name'] ?? 'Member').toString();
         final lastMsg = _extractLastMessage(conv['last_message']);
         final time = _formatTime(conv['last_message_at']);
         // Full photo for the chat header and call screen; 200px for the row.
         final photo = conv['other_user_photo']?.toString();
-        final avatar = thumbOr(conv, 'other_user_photo_200', 'other_user_photo');
+        final avatar = thumbOr(
+          conv,
+          'other_user_photo_200',
+          'other_user_photo',
+        );
         final conversationId = conv['conversation_id']?.toString();
         final otherUserId = conv['other_user_id']?.toString();
         final isOnline = conv['is_online'] == true;

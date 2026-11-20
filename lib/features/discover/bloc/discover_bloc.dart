@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'discover_event.dart';
 import 'discover_state.dart';
 import 'discover_filters.dart';
@@ -10,12 +11,16 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
   DiscoverFilters _activeFilters = DiscoverFilters.defaults();
   int _generation = 0;
   bool _fetchingMore = false;
+  // Everyone answered (interest or pass) since the feed was last replaced.
+  // The server leaves them out, so they are not counted when asking for more.
+  final Set<String> _acted = {};
 
   DiscoverBloc(this._repository) : super(DiscoverInitial()) {
     on<FetchFeedEvent>(_onFetchFeed);
     on<FetchMoreFeedEvent>(_onFetchMoreFeed);
     on<FetchDailyMatchesEvent>(_onFetchDailyMatches);
     on<SwipeProfileEvent>(_onSwipeProfile);
+    on<ProfileActedEvent>((e, _) => _acted.add(e.targetUserId));
   }
 
   Future<void> _onFetchFeed(
@@ -47,6 +52,7 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
           ? (state as DiscoverLoaded)
           : null;
       _generation++;
+      _acted.clear();
       emit(
         DiscoverLoaded(
           profiles: feed.profiles,
@@ -70,10 +76,10 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     }
   }
 
-  /// Tops the deck up before it runs out. Always page 1: the server leaves out
-  /// everyone already liked or passed, so page 2 would skip as many unseen
-  /// profiles as the member has swiped. Anything already in the deck (a swipe
-  /// still in flight) is dropped by id.
+  /// Loads more of the list. Always page 1: the server leaves out everyone
+  /// already answered, so offsets shift as the member acts. Instead page 1 is
+  /// asked for everything still unanswered in the list plus 10 more, and
+  /// anything already shown is dropped by id.
   Future<void> _onFetchMoreFeed(
     FetchMoreFeedEvent event,
     Emitter<DiscoverState> emit,
@@ -84,8 +90,13 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     }
     _fetchingMore = true;
     try {
+      final pending = start.profiles
+          .where((p) => !_acted.contains(_idOf(p)))
+          .length;
+      final limit = (pending + 10).clamp(10, 100);
       final feed = await _repository.fetchFeed(
         page: 1,
+        limit: limit,
         filters: _activeFilters,
       );
       final now = state;
@@ -105,12 +116,16 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
       emit(
         now.copyWith(
           profiles: fresh.isEmpty ? null : [...now.profiles, ...fresh],
-          hasReachedMax: feed.profiles.length < 10 || feed.limitReached,
+          hasReachedMax:
+              feed.profiles.length < limit ||
+              fresh.isEmpty ||
+              limit >= 100 ||
+              feed.limitReached,
           limitReached: now.limitReached || feed.limitReached,
         ),
       );
     } catch (_) {
-      // Non-critical: the deck still has cards and the next swipe asks again.
+      // Non-critical: the list still has profiles and scrolling asks again.
     } finally {
       _fetchingMore = false;
     }
@@ -139,6 +154,7 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     SwipeProfileEvent event,
     Emitter<DiscoverState> emit,
   ) async {
+    _acted.add(event.targetUserId);
     try {
       if (event.isInterest) {
         await _repository.sendInterest(
@@ -149,7 +165,7 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
         await _repository.passProfile(event.targetUserId);
       }
     } catch (e) {
-      print('Swipe Error: $e');
+      debugPrint('Discover action failed: $e');
     }
   }
 }

@@ -18,8 +18,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onSendOtp(SendOtpEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await _repository.sendOtp(event.phone);
-      emit(OtpSentSuccess(event.phone));
+      final testOtp = await _repository.sendOtp(event.phone);
+      emit(OtpSentSuccess(event.phone, testOtp: testOtp));
     } catch (e) {
       emit(_errorFrom(e));
     }

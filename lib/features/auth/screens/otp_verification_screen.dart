@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinput/pinput.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/support/contact_support.dart';
 import '../../../core/theme/app_colors.dart';
@@ -17,7 +18,11 @@ import '../bloc/auth_state.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
-  const OtpVerificationScreen({super.key, required this.phone});
+
+  /// Local test server only (see AppConstants.isLocalServer): filled in and
+  /// submitted automatically so no SMS is needed.
+  final String? testOtp;
+  const OtpVerificationScreen({super.key, required this.phone, this.testOtp});
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -34,6 +39,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void initState() {
     super.initState();
     _startTimer();
+    final testOtp = widget.testOtp;
+    if (testOtp != null && AppConstants.isLocalServer) {
+      pinputController.text = testOtp;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _verifyOtp(testOtp);
+      });
+    }
   }
 
   void _startTimer() {

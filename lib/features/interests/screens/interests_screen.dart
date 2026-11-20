@@ -100,7 +100,7 @@ class _InterestsScreenState extends State<InterestsScreen>
               dividerColor: AppColors.surfaceHighest,
               tabs: [
                 Tab(text: 'Received ($receivedCount)'),
-                Tab(text: 'Matches ($matchedCount)'),
+                Tab(text: 'Accepted ($matchedCount)'),
                 Tab(text: 'Sent ($sentCount)'),
               ],
             ),
@@ -163,11 +163,13 @@ class _InterestsScreenState extends State<InterestsScreen>
   }) {
     if (items.isEmpty) {
       String title = isMatch
-          ? 'No matches yet'
+          ? 'No accepted interests yet'
           : (isReceived ? 'No interests received' : 'No interests sent');
       String desc = isMatch
-          ? 'Keep exploring the discover feed.'
-          : 'You haven\'t received any likes recently.';
+          ? 'When an interest is accepted on either side, you can talk here.'
+          : isReceived
+          ? 'Interests other members send you will appear here.'
+          : 'Send an interest from Discover to start a conversation.';
       return LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -355,7 +357,7 @@ class _InterestsScreenState extends State<InterestsScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(
-            Icons.favorite_outline_rounded,
+            Icons.mark_email_unread_outlined,
             size: 64,
             color: AppColors.surfaceHighest,
           ),

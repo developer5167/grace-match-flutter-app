@@ -464,7 +464,7 @@ class _NotifTile extends StatelessWidget {
         // They accepted → go straight to conversations
         final convId = d['conversation_id']?.toString();
         if (convId != null) {
-          context.push('/chat/$convId', extra: {'name': 'Match'});
+          context.push('/chat/$convId', extra: {'name': 'Member'});
         } else {
           context.go('/chat');
         }
@@ -578,13 +578,17 @@ class _ViewsTab extends StatelessWidget {
               final v = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _ProfileMiniCard(
-                  profile: v,
-                  onTap: () {
-                    final uid = v['user_id']?.toString();
-                    if (uid != null) context.push('/profile/$uid');
-                  },
-                ).animate().fadeIn(duration: 300.ms, delay: (math.min(i, 6) * 50).ms),
+                child:
+                    _ProfileMiniCard(
+                      profile: v,
+                      onTap: () {
+                        final uid = v['user_id']?.toString();
+                        if (uid != null) context.push('/profile/$uid');
+                      },
+                    ).animate().fadeIn(
+                      duration: 300.ms,
+                      delay: (math.min(i, 6) * 50).ms,
+                    ),
               );
             }),
           ],

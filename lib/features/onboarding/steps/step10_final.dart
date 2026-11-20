@@ -1,4 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -13,6 +17,21 @@ class Step10Final extends StatefulWidget {
 
 class _Step10FinalState extends OnboardingStepState<Step10Final> {
   String? _managedBy;
+  late final _termsTap = TapGestureRecognizer()
+    ..onTap = () => context.push('/terms');
+  late final _privacyTap = TapGestureRecognizer()
+    ..onTap = () => launchUrl(
+      Uri.parse('${AppConstants.siteUrl}/privacy'),
+      mode: LaunchMode.inAppBrowserView,
+    );
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
+
   bool _agreeTerms = false;
 
   // Maps: display label → API value
@@ -128,7 +147,8 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
                     style: AppTextStyles.bodyMedium,
                     children: [
                       TextSpan(
-                        text: 'Terms of Service',
+                        text: 'Terms & Community Rules',
+                        recognizer: _termsTap,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.gold,
                           decoration: TextDecoration.underline,
@@ -137,12 +157,18 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
                       const TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
+                        recognizer: _privacyTap,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.gold,
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                      const TextSpan(text: '.'),
+                      const TextSpan(
+                        text:
+                            '. I understand there is zero tolerance for abusive '
+                            'or objectionable content, and accounts that post it '
+                            'are removed.',
+                      ),
                     ],
                   ),
                 ),

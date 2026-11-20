@@ -8,8 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/net_image.dart';
 import '../../../core/widgets/skeleton.dart';
-import '../widgets/profile_card.dart';
-import '../widgets/action_buttons.dart';
+import '../widgets/profile_list_card.dart';
 import '../widgets/device_tilt.dart';
 import '../widgets/discover_filter_sheet.dart';
 import '../bloc/discover_bloc.dart';
@@ -18,6 +17,9 @@ import '../bloc/discover_state.dart';
 import '../bloc/discover_filters.dart';
 import '../data/discover_repository.dart';
 
+/// Discover: a scrolling list of reviewed profiles, each shown like a
+/// marriage biodata with "Send interest" and "Not now". (Was a one-at-a-time
+/// swipe deck; App Review read that as a dating app, guideline 4.3(b).)
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -26,107 +28,89 @@ class DiscoverScreen extends StatefulWidget {
 }
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
-  int _currentIndex = 0;
-  // Set while a super interest is on its way; stops a second tap sending it
-  // twice (or to the next card) before the first returns.
-  bool _superBusy = false;
-  // Bumped to rebuild the top card from scratch, centred: a drag-swipe made
-  // while a super interest was out was ignored and left the card off-screen.
-  int _cardEpoch = 0;
-  List<Map<String, dynamic>> _profiles = [];
-  // Feed generation the deck position belongs to. A replaced feed starts at
-  // its first card.
+  final _scroll = ScrollController();
+  final _repo = DiscoverRepository();
+  // Per profile id: interest on its way or sent. Profiles put aside with
+  // "Not now" are hidden for the rest of this feed.
+  final Map<String, ListAction> _actions = {};
+  final Set<String> _hidden = {};
   int? _generation;
-  final Set<String> _precached = {};
 
   @override
   void initState() {
     super.initState();
     context.read<DiscoverBloc>().add(const FetchFeedEvent());
-  }
-
-  void _onSwipe(bool liked, {bool superLike = false}) async {
-    if (_superBusy || _currentIndex >= _profiles.length) return;
-
-    final currentProfile = _profiles[_currentIndex];
-
-    if (superLike) {
-      _superBusy = true;
-      try {
-        await DiscoverRepository().sendInterest(
-          currentProfile['id'].toString(),
-          isSuperInterest: true,
-        );
-      } catch (e) {
-        _superBusy = false;
-        if (!mounted) return;
-        setState(() => _cardEpoch++);
-        final msg = e.toString().replaceFirst('Exception: ', '');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
-        );
-        final lower = msg.toLowerCase();
-        if (lower.contains('plan') ||
-            lower.contains('upgrade') ||
-            lower.contains('super')) {
-          context.push('/subscription');
-        }
-        return;
+    _scroll.addListener(() {
+      if (_scroll.position.pixels > _scroll.position.maxScrollExtent - 600) {
+        _maybeFetchMore();
       }
-      _superBusy = false;
-      if (!mounted) return;
-      _advanceCard(liked: true);
-      return;
-    }
-
-    context.read<DiscoverBloc>().add(
-      SwipeProfileEvent(
-        targetUserId: currentProfile['id'].toString(),
-        isInterest: liked,
-      ),
-    );
-
-    _advanceCard(liked: liked);
+    });
   }
 
-  void _advanceCard({required bool liked}) {
-    // Fired, not awaited: the next card shows at once.
-    if (liked) {
-      AppHaptics.heavy();
-    } else {
-      AppHaptics.light();
-    }
-    setState(() => _currentIndex++);
-    _maybeFetchMore();
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
   }
 
-  /// Top the deck up while a few cards are still left to swipe.
+  static String _idOf(Map<String, dynamic> p) =>
+      (p['id'] ?? p['user_id'])?.toString() ?? '';
+
   void _maybeFetchMore() {
     final state = context.read<DiscoverBloc>().state;
     if (state is! DiscoverLoaded || state.hasReachedMax) return;
-    if (_profiles.length - _currentIndex <= 3) {
-      context.read<DiscoverBloc>().add(const FetchMoreFeedEvent());
+    context.read<DiscoverBloc>().add(const FetchMoreFeedEvent());
+  }
+
+  Future<void> _sendInterest(String id, {bool priority = false}) async {
+    if (id.isEmpty || _actions[id] != null) return;
+    AppHaptics.heavy();
+    setState(() => _actions[id] = ListAction.sending);
+    try {
+      await _repo.sendInterest(id, isSuperInterest: priority);
+      if (!mounted) return;
+      context.read<DiscoverBloc>().add(ProfileActedEvent(id));
+      setState(() => _actions[id] = ListAction.sent);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(priority ? 'Priority interest sent' : 'Interest sent'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _actions.remove(id));
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      final lower = msg.toLowerCase();
+      final needsPlan =
+          lower.contains('plan') ||
+          lower.contains('upgrade') ||
+          lower.contains('limit') ||
+          lower.contains('super');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: AppColors.error,
+          action: needsPlan
+              ? SnackBarAction(
+                  label: 'See plans',
+                  textColor: Colors.white,
+                  onPressed: () => context.push('/subscription'),
+                )
+              : null,
+        ),
+      );
     }
   }
 
-  /// Start downloading the photos the member will see next, at the size the
-  /// card decodes them, so the next swipe does not land on a spinner.
-  void _precacheUpcoming() {
-    final urls = <String>[
-      if (_currentIndex + 1 < _profiles.length)
-        ...?ProfileCard.photoUrls(_profiles[_currentIndex + 1]),
-      if (_currentIndex + 2 < _profiles.length)
-        ...?ProfileCard.photoUrls(_profiles[_currentIndex + 2])?.take(1),
-    ].where(_precached.add).toList();
-    if (urls.isEmpty) return;
-    final width = ProfileCard.photoDecodeWidth(context);
-    for (final url in urls) {
-      precacheImage(
-        ResizeImage(CachedNetworkImageProvider(url), width: width),
-        context,
-        onError: (_, __) {},
-      );
-    }
+  void _notNow(String id) {
+    if (id.isEmpty) return;
+    AppHaptics.light();
+    context.read<DiscoverBloc>().add(
+      SwipeProfileEvent(targetUserId: id, isInterest: false),
+    );
+    setState(() => _hidden.add(id));
+    _maybeFetchMore();
   }
 
   Future<void> _openFilterSheet(DiscoverFilters current) async {
@@ -138,7 +122,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       builder: (_) => DiscoverFilterSheet(currentFilters: current),
     );
     if (result != null && mounted) {
-      // The deck goes back to its first card when the filtered feed arrives.
       context.read<DiscoverBloc>().add(FetchFeedEvent(filters: result));
     }
   }
@@ -147,8 +130,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DiscoverBloc, DiscoverState>(
       builder: (context, state) {
-        if ((state is DiscoverLoading || state is DiscoverInitial) &&
-            _profiles.isEmpty) {
+        if (state is DiscoverLoading || state is DiscoverInitial) {
           return Scaffold(
             backgroundColor: AppColors.background,
             body: SafeArea(
@@ -157,53 +139,69 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 children: [
                   _buildHeader(DiscoverFilters.defaults()),
                   const Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
-                      child: SkeletonCard(),
+                    child: SkeletonList(
+                      padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
                     ),
                   ),
-                  SizedBox(height: MediaQuery.paddingOf(context).bottom + 8),
                 ],
               ),
             ),
           );
         }
 
-        if (state is DiscoverError && _profiles.isEmpty) {
+        if (state is DiscoverError) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(
-              child: Text(
-                state.message,
-                style: const TextStyle(color: Colors.white),
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  _buildHeader(DiscoverFilters.defaults()),
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              state.message,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: () => context.read<DiscoverBloc>().add(
+                                const FetchFeedEvent(),
+                              ),
+                              child: Text(
+                                'Try again',
+                                style: TextStyle(color: AppColors.gold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         }
 
-        final activeFilters = state is DiscoverLoaded
-            ? state.activeFilters
-            : DiscoverFilters.defaults();
-        final dailyMatches = state is DiscoverLoaded
-            ? state.dailyMatches
-            : <Map<String, dynamic>>[];
-
-        if (state is DiscoverLoaded) {
-          _profiles = state.profiles;
-          if (_generation != state.generation) {
-            // A new feed (refresh, filters, or the first load after coming
-            // back to this tab) starts from its first card.
-            _generation = state.generation;
-            _currentIndex = 0;
-          }
+        final loaded = state as DiscoverLoaded;
+        if (_generation != loaded.generation) {
+          // A replaced feed (refresh, filters) starts clean.
+          _generation = loaded.generation;
+          _actions.clear();
+          _hidden.clear();
         }
-
-        final hasProfiles = _currentIndex < _profiles.length;
-        if (hasProfiles) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _precacheUpcoming();
-          });
-        }
+        final profiles = loaded.profiles
+            .where((p) => !_hidden.contains(_idOf(p)))
+            .toList();
+        final picks = loaded.dailyMatches;
+        final bottom = MediaQuery.paddingOf(context).bottom + 24;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -211,63 +209,69 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             bottom: false,
             child: Column(
               children: [
-                _buildHeader(activeFilters),
-                if (dailyMatches.isNotEmpty) _buildDailyMatches(dailyMatches),
+                _buildHeader(loaded.activeFilters),
                 Expanded(
-                  child: hasProfiles
-                      ? Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (_currentIndex + 1 < _profiles.length)
-                              Positioned.fill(
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    32,
-                                    14,
-                                    32,
-                                    8,
-                                  ),
-                                  child: ProfileCard(
-                                    profile: _profiles[_currentIndex + 1],
-                                    scale: 0.95,
-                                  ),
-                                ),
-                              ),
-                            Positioned.fill(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  4,
-                                  16,
-                                  8,
-                                ),
-                                child: DeviceTilt(
-                                  child: ProfileCard(
-                                    key: ValueKey(
-                                      '${_profiles[_currentIndex]['id']}#$_cardEpoch',
+                  child: RefreshIndicator(
+                    color: AppColors.gold,
+                    onRefresh: () async => context.read<DiscoverBloc>().add(
+                      FetchFeedEvent(filters: loaded.activeFilters),
+                    ),
+                    child: ListView.separated(
+                      controller: _scroll,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(16, 4, 16, bottom),
+                      // Today's picks, the profiles, then the end message.
+                      itemCount: 1 + profiles.length + 1,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, i) {
+                        if (i == 0) {
+                          return picks.isEmpty
+                              ? const SizedBox.shrink()
+                              : _buildDailyMatches(picks);
+                        }
+                        if (i == profiles.length + 1) {
+                          return loaded.hasReachedMax
+                              ? _buildEndState(
+                                  loaded.limitReached,
+                                  empty: profiles.isEmpty,
+                                )
+                              : const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
                                     ),
-                                    profile: _profiles[_currentIndex],
-                                    onSwipeLeft: () => _onSwipe(false),
-                                    onSwipeRight: () => _onSwipe(true),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : _buildEmptyState(),
-                ),
-                if (hasProfiles)
-                  DiscoverActionButtons(
-                    onPass: () => _onSwipe(false),
-                    onInterest: () => _onSwipe(true),
-                    onSuperInterest: () => _onSwipe(true, superLike: true),
+                                );
+                        }
+                        final p = profiles[i - 1];
+                        final id = _idOf(p);
+                        // The card tilts with the phone (as the old swipe
+                        // card did), gently, so it stays easy to tap.
+                        return DeviceTilt(
+                          key: ValueKey(id),
+                          maxAngle: 0.09,
+                          borderRadius: BorderRadius.circular(20),
+                          child: ProfileListCard(
+                            profile: p,
+                            action: _actions[id] ?? ListAction.none,
+                            onOpen: () {
+                              if (id.isNotEmpty) context.push('/profile/$id');
+                            },
+                            onInterest: () => _sendInterest(id),
+                            onPriorityInterest: () =>
+                                _sendInterest(id, priority: true),
+                            onNotNow: () => _notNow(id),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                // The shell's nav bar floats over the page (extendBody), and
-                // Flutter reports its full height, home indicator included,
-                // as bottom padding. A fixed 100 was shorter than the bar on
-                // Face ID iPhones, so it covered the action buttons.
-                SizedBox(height: MediaQuery.paddingOf(context).bottom + 8),
+                ),
               ],
             ),
           ),
@@ -287,7 +291,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             children: [
               Text('Discover', style: AppTextStyles.headlineLarge),
               Text(
-                'Telugu Christian Matches',
+                'Reviewed profiles for marriage',
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.gold),
               ),
             ],
@@ -339,152 +343,157 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   // ── Today's Picks ─────────────────────────────────────────────
+  /// Today's recommendations: small biodata cards (photo, name, age,
+  /// denomination and city). No score on the photo: a number on a face reads
+  /// as rating people; compatibility is shown inside each profile card.
   Widget _buildDailyMatches(List<Map<String, dynamic>> matches) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
           child: Row(
             children: [
               Icon(Icons.auto_awesome, color: AppColors.gold, size: 16),
               const SizedBox(width: 8),
               Text(
-                "Today's Picks",
+                'Recommended for you today',
                 style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '· ${matches.length} curated for you',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 88,
+          height: 206,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
             itemCount: matches.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (ctx, i) {
-              final m = matches[i];
-              final photo = thumbOr(m, 'primary_photo_200', 'primary_photo');
-              final name = m['first_name'] as String? ?? '?';
-              final compat = m['compatibility'] as int? ?? 0;
-              final uid = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
-              return GestureDetector(
-                onTap: () {
-                  if (uid.isNotEmpty) context.push('/profile/$uid');
-                },
-                child: Column(
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.gold, width: 2),
-                          ),
-                          child: ClipOval(
-                            child: photo != null
-                                ? CachedNetworkImage(
-                                    imageUrl: photo,
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: decodePx(context, 56),
-                                    placeholder: (_, __) => Container(
-                                      color: AppColors.surfaceHighest,
-                                    ),
-                                    errorWidget: (_, __, ___) => Icon(
-                                      Icons.person,
-                                      color: AppColors.gold,
-                                    ),
-                                  )
-                                : Container(
-                                    color: AppColors.surfaceHighest,
-                                    child: Icon(
-                                      Icons.person,
-                                      color: AppColors.gold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: -2,
-                          right: -2,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.gold,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '$compat%',
-                              style: const TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textOnGold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      width: 60,
-                      child: Text(
-                        name,
-                        style: AppTextStyles.bodySmall,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            // Tilt with the phone, like the profile cards below.
+            itemBuilder: (ctx, i) => DeviceTilt(
+              maxAngle: 0.12,
+              borderRadius: BorderRadius.circular(16),
+              child: _pickCard(matches[i]),
+            ),
           ),
         ),
-        const SizedBox(height: 8),
       ],
     ).animate().fadeIn(delay: 200.ms, duration: 400.ms);
   }
 
-  Widget _buildEmptyState() {
-    final limitReached =
-        context.read<DiscoverBloc>().state is DiscoverLoaded &&
-        (context.read<DiscoverBloc>().state as DiscoverLoaded).limitReached;
-    return Center(
+  Widget _pickCard(Map<String, dynamic> m) {
+    final photo = thumbOr(m, 'primary_photo_200', 'primary_photo');
+    final name = m['first_name']?.toString() ?? 'Member';
+    final age = m['age'];
+    final uid = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
+    final denom = denominationLabels[m['denomination']?.toString()];
+    final city = m['location_city']?.toString();
+    final place = [
+      if (denom != null) denom,
+      if (city != null && city.isNotEmpty) city,
+    ].join(' · ');
+    const w = 132.0;
+    return SizedBox(
+      width: w,
+      child: Material(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: uid.isEmpty ? null : () => context.push('/profile/$uid'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: w,
+                height: 120,
+                child: photo != null
+                    ? CachedNetworkImage(
+                        imageUrl: photo,
+                        fit: BoxFit.cover,
+                        alignment: const Alignment(0, -0.5),
+                        memCacheWidth: decodePx(context, w),
+                        placeholder: (_, __) =>
+                            Container(color: AppColors.surfaceHighest),
+                        errorWidget: (_, __, ___) => Container(
+                          color: AppColors.surfaceHighest,
+                          child: Icon(Icons.person, color: AppColors.gold),
+                        ),
+                      )
+                    : Container(
+                        color: AppColors.surfaceHighest,
+                        child: Icon(Icons.person, color: AppColors.gold),
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      age == null ? name : '$name, $age',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (place.isNotEmpty)
+                      Text(
+                        place,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.gold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (m['profession'] != null)
+                      Text(
+                        m['profession'].toString(),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Shown below the last profile once there are no more to load.
+  Widget _buildEndState(bool limitReached, {required bool empty}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('✝', style: TextStyle(fontSize: 56, color: AppColors.goldMild)),
-          const SizedBox(height: 16),
+          Text('✝', style: TextStyle(fontSize: 44, color: AppColors.goldMild)),
+          const SizedBox(height: 12),
           Text(
             limitReached
-                ? "Today's matches are done"
-                : "You've seen everyone for now",
+                ? "You've seen today's profiles"
+                : empty
+                ? 'No new profiles right now'
+                : "That's everyone for now",
             style: AppTextStyles.headlineSmall,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             limitReached
-                ? 'Upgrade for unlimited daily matches'
-                : 'Check back tomorrow for new matches',
+                ? 'New profiles arrive tomorrow, or see plans for more each day.'
+                : 'New members are reviewed by our team every day. Check back '
+                      'soon, or widen your filters.',
             style: AppTextStyles.bodyMedium,
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           // Browse is never limited: profiles already come across, and any
           // profile by its ID.
           OutlinedButton.icon(
@@ -501,22 +510,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
           if (limitReached)
             TextButton(
               onPressed: () => context.push('/subscription'),
               child: Text('See plans', style: TextStyle(color: AppColors.gold)),
-            )
-          else
-            TextButton(
-              // The deck goes back to its first card when the new feed
-              // arrives (see `generation` in build).
-              onPressed: () =>
-                  context.read<DiscoverBloc>().add(const FetchFeedEvent()),
-              child: Text(
-                'Refresh Feed',
-                style: TextStyle(color: AppColors.gold),
-              ),
             ),
         ],
       ),

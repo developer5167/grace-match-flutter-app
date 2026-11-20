@@ -17,7 +17,7 @@ class FetchFeedEvent extends DiscoverEvent {
   List<Object?> get props => [page, filters];
 }
 
-/// More cards for the current feed, appended to the ones already loaded.
+/// More profiles for the current feed, appended to the ones already loaded.
 class FetchMoreFeedEvent extends DiscoverEvent {
   const FetchMoreFeedEvent();
 }
@@ -39,4 +39,15 @@ class SwipeProfileEvent extends DiscoverEvent {
 
   @override
   List<Object?> get props => [targetUserId, isInterest, isSuperInterest];
+}
+
+/// The member answered [targetUserId] outside [SwipeProfileEvent] (an
+/// interest sent and confirmed from the list). Only recorded, so paging
+/// knows the server will no longer return them.
+class ProfileActedEvent extends DiscoverEvent {
+  final String targetUserId;
+  const ProfileActedEvent(this.targetUserId);
+
+  @override
+  List<Object?> get props => [targetUserId];
 }

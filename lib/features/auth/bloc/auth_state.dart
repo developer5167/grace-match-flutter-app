@@ -13,10 +13,13 @@ class AuthLoading extends AuthState {}
 
 class OtpSentSuccess extends AuthState {
   final String phone;
-  const OtpSentSuccess(this.phone);
+
+  /// Local test server only: the code it generated, filled in for you.
+  final String? testOtp;
+  const OtpSentSuccess(this.phone, {this.testOtp});
 
   @override
-  List<Object?> get props => [phone];
+  List<Object?> get props => [phone, testOtp];
 }
 
 class AuthAuthenticated extends AuthState {

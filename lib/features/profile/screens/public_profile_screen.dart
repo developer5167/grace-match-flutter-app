@@ -23,7 +23,9 @@ import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
 import '../../discover/screens/match_explanation_screen.dart';
 import '../../discover/widgets/profile_card.dart' show PhotoVerifiedLabel;
+import '../../discover/widgets/profile_list_card.dart' show denominationLabels;
 import '../../calls/data/call_manager.dart';
+import '../widgets/profile_safety_menu.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String? userId; // If null, shows own profile preview
@@ -469,6 +471,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             );
                           },
                         ),
+                        ProfileSafetyMenu(
+                          userId: viewedUserId,
+                          name: name.toString(),
+                        ),
                       ]
                     : null,
                 flexibleSpace: FlexibleSpaceBar(
@@ -672,7 +678,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        '${profile['denomination'] ?? 'CSI'} • ${profile['location_city'] ?? 'Unknown'}',
+                        [
+                          if (profile['denomination'] != null)
+                            denominationLabels[profile['denomination']
+                                    .toString()] ??
+                                formatValue(profile['denomination'].toString()),
+                          if (profile['location_city'] != null)
+                            profile['location_city'].toString(),
+                        ].join(' • '),
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: AppColors.gold,
                         ),
@@ -688,6 +701,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           ),
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      _trustStrip(profile),
                       const SizedBox(height: 24),
 
                       _sectionTitle('About Me'),
@@ -697,37 +712,6 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                       ),
                       const SizedBox(height: 32),
-
-                      if (hobbies.isNotEmpty) ...[
-                        _sectionTitle('Interests & Hobbies'),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: hobbies
-                              .map(
-                                (h) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surfaceElevated,
-                                    borderRadius: BorderRadius.circular(100),
-                                    border: Border.all(
-                                      color: AppColors.surfaceHighest,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    h,
-                                    style: AppTextStyles.labelSmall,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
 
                       _sectionTitle('Faith & Lifestyle'),
                       const SizedBox(height: 16),
@@ -760,18 +744,18 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ]),
                       const SizedBox(height: 32),
 
-                      _sectionTitle('Profession & Education'),
+                      _sectionTitle('Education & Career'),
                       const SizedBox(height: 16),
                       _infoGrid([
                         _infoTile(
                           Icons.work_rounded,
                           'Profession',
-                          profile['profession'] ?? 'Professional',
+                          profile['profession'] ?? 'Not specified',
                         ),
                         _infoTile(
                           Icons.school_rounded,
                           'Education',
-                          profile['education'] ?? 'Degree',
+                          profile['education'] ?? 'Not specified',
                         ),
                         _infoTile(
                           Icons.payments_rounded,
@@ -781,7 +765,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         _infoTile(
                           Icons.height_rounded,
                           'Height',
-                          '${profile['height_cm'] ?? 170} cm',
+                          profile['height_cm'] == null
+                              ? 'Not specified'
+                              : '${profile['height_cm']} cm',
                         ),
                       ]),
                       const SizedBox(height: 32),
@@ -884,6 +870,38 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         ),
                       ],
 
+                      const SizedBox(height: 32),
+                      if (hobbies.isNotEmpty) ...[
+                        _sectionTitle('Interests & Hobbies'),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: hobbies
+                              .map(
+                                (h) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceElevated,
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(
+                                      color: AppColors.surfaceHighest,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    h,
+                                    style: AppTextStyles.labelSmall,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -945,7 +963,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.favorite_rounded),
+                    Icon(Icons.mail_rounded),
                     SizedBox(width: 8),
                     Text(
                       'SEND INTEREST',
@@ -1084,8 +1102,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       final outStatus = outgoing?['status'] as String?;
 
       final otherName = data['profile'] is Map
-          ? (data['profile'] as Map)['first_name']?.toString() ?? 'Match'
-          : 'Match';
+          ? (data['profile'] as Map)['first_name']?.toString() ?? 'Member'
+          : 'Member';
       final photos = data['photos'];
       String otherPhoto = '';
       if (photos is List && photos.isNotEmpty) {
@@ -1171,7 +1189,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   context.push(
                     '/chat/$conversationId',
                     extra: {
-                      'name': otherName ?? 'Match',
+                      'name': otherName ?? 'Member',
                       'userId': widget.userId,
                     },
                   );
@@ -1225,7 +1243,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     final profile = data['profile'] is Map
         ? data['profile'] as Map<String, dynamic>
         : data;
-    final name = profile['first_name']?.toString() ?? 'your match';
+    final name = profile['first_name']?.toString() ?? 'this member';
     final photos = data['photos'] as List?;
     final primaryPhoto = photos != null && photos.isNotEmpty
         ? photos.firstWhere(
@@ -1262,7 +1280,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         children: [
           Icon(Icons.auto_awesome, size: 16, color: AppColors.gold),
           SizedBox(width: 8),
-          Text('Why We Match', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            'Why you are compatible',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -1283,6 +1304,51 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Icon(icon, color: color, size: 28),
+      ),
+    );
+  }
+
+  /// What sets a profile here apart, said up front: staff review before it
+  /// is shown, who manages it, and how contact works.
+  Widget _trustStrip(Map<String, dynamic> profile) {
+    final rows = <(IconData, String)>[
+      if (profile['review_status'] == 'approved')
+        (Icons.fact_check_rounded, 'Reviewed by the Grace Match team'),
+      if (profile['trust_badge'] == true)
+        (Icons.verified_rounded, 'ID verified'),
+      if (profile['profile_managed_by'] == 'parents')
+        (Icons.family_restroom_rounded, 'Profile managed by parents'),
+      (Icons.lock_outline_rounded, 'Phone number hidden until both agree'),
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.blessingSubtle,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final (icon, text) in rows)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  Icon(icon, size: 16, color: AppColors.blessing),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -38,9 +38,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>GraceMatch needs your camera so you can take profile photos and make video calls to your matches before sharing personal contact details.</string>
+	<string>GraceMatch uses your camera so you can take profile photos and make video calls to people you have connected with, before sharing personal contact details.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>GraceMatch needs your microphone so you can speak to your matches on voice and video calls.</string>
+	<string>GraceMatch uses your microphone for voice and video calls with people you have connected with.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>GraceMatch may save a photo you take for your profile.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

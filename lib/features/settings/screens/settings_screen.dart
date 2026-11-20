@@ -227,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _switchTile(
                     title: 'Typing notifications',
                     subtitle:
-                        'Get a banner when a match starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                        'Get a banner when someone you are connected with starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
                     value: typingPush,
                     onChanged: (v) => _patch({'typing_push_enabled': v}),
                   ),

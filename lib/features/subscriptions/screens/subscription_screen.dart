@@ -188,7 +188,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Unlock Your God-Given Match Faster',
+                  'Find your life partner sooner',
                   style: AppTextStyles.displaySmall,
                   textAlign: TextAlign.center,
                 ),

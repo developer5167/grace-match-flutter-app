@@ -54,7 +54,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       listener: (context, state) {
         if (state is OtpSentSuccess) {
           final fullPhone = '$_selectedCode${_phoneController.text}';
-          context.push('/auth/phone/otp', extra: fullPhone);
+          context.push(
+            '/auth/phone/otp',
+            extra: {'phone': fullPhone, 'testOtp': state.testOtp},
+          );
         } else if (state is AuthError) {
           if (state.isSuspended) {
             ContactSupport.showSuspendedDialog(context, message: state.message);
@@ -115,9 +118,24 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
 
                   // Terms text
                   Center(
-                    child: Text(
-                      'By continuing, you agree to our Terms of Service',
-                      style: AppTextStyles.labelSmall,
+                    child: GestureDetector(
+                      onTap: () => context.push('/terms'),
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'By continuing, you agree to our ',
+                          style: AppTextStyles.labelSmall,
+                          children: [
+                            TextSpan(
+                              text: 'Terms & Community Rules',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.gold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
                   ),
 

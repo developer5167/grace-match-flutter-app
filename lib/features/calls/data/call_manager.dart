@@ -344,7 +344,7 @@ class CallManager {
         title: Text('Show incoming calls', style: AppTextStyles.headlineMedium),
         content: Text(
           'Allow GraceMatch to show calls on your lock screen, so you can answer '
-          'when your match calls.',
+          'when someone you are connected with calls.',
           style: AppTextStyles.bodyMedium,
         ),
         actions: [

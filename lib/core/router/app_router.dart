@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/legal/terms_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/screens/phone_input_screen.dart';
@@ -50,6 +51,8 @@ class AppRouter {
         final path = state.uri.path;
 
         if (path == '/splash' || path == '/maintenance') return null;
+        // Readable before sign-up, during onboarding and under review.
+        if (path == '/terms') return null;
 
         if (await MaintenanceGate.blocked()) return '/maintenance';
 
@@ -88,6 +91,7 @@ class AppRouter {
           builder: (_, __) => const ReviewStatusScreen(),
         ),
         GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+        GoRoute(path: '/terms', builder: (_, __) => const TermsScreen()),
         GoRoute(
           path: '/maintenance',
           builder: (_, __) => const MaintenanceScreen(),
@@ -101,8 +105,12 @@ class AppRouter {
             GoRoute(
               path: 'otp',
               builder: (_, state) {
-                final phone = state.extra as String? ?? '';
-                return OtpVerificationScreen(phone: phone);
+                final extra = state.extra;
+                final args = extra is Map ? extra : const {};
+                return OtpVerificationScreen(
+                  phone: extra is String ? extra : args['phone'] as String? ?? '',
+                  testOtp: args['testOtp'] as String?,
+                );
               },
             ),
           ],
@@ -136,10 +144,7 @@ class AppRouter {
               path: '/discover',
               builder: (_, __) => const DiscoverScreen(),
             ),
-            GoRoute(
-              path: '/browse',
-              builder: (_, __) => const BrowseScreen(),
-            ),
+            GoRoute(path: '/browse', builder: (_, __) => const BrowseScreen()),
             GoRoute(
               path: '/interests',
               builder: (_, state) =>
