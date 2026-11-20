@@ -278,6 +278,7 @@ class ProfileListCard extends StatelessWidget {
           style: TextButton.styleFrom(
             foregroundColor: AppColors.textSecondary,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            minimumSize: const Size(0, 48),
             textStyle: AppTextStyles.labelLarge,
           ),
           child: const Text('Not now'),
@@ -307,6 +308,9 @@ class ProfileListCard extends StatelessWidget {
             foregroundColor: AppColors.textOnGold,
             disabledBackgroundColor: AppColors.goldMild,
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            // The app theme makes buttons full width; in a Row that is an
+            // infinite width.
+            minimumSize: const Size(0, 48),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),

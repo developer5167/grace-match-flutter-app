@@ -229,9 +229,12 @@ Future<void> _prepareNotifications(bool firebaseReady) async {
     if (!firebaseReady) return;
 
     final messaging = FirebaseMessaging.instance;
-    await messaging
-        .requestPermission(alert: true, badge: true, sound: true)
-        .timeout(const Duration(seconds: 20));
+    // Store-screenshot runs (integration_test) cannot tap the system prompt.
+    if (!const bool.fromEnvironment('STORE_SCREENSHOTS')) {
+      await messaging
+          .requestPermission(alert: true, badge: true, sound: true)
+          .timeout(const Duration(seconds: 20));
+    }
     await messaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,

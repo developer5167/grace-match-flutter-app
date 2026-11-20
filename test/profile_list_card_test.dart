@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:grace_match/core/theme/app_theme.dart';
 import 'package:grace_match/features/discover/widgets/profile_list_card.dart';
 
 void main() {
@@ -24,6 +25,8 @@ void main() {
     VoidCallback? onInterest,
   }) => t.pumpWidget(
     MaterialApp(
+      // The real theme: its full-width buttons once broke the actions row.
+      theme: AppTheme.dark,
       home: Scaffold(
         body: SingleChildScrollView(
           child: ProfileListCard(

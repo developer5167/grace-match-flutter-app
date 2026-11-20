@@ -1,4 +1,5 @@
 import '../../../core/notifications/push_center.dart';
+import '../../discover/widgets/profile_list_card.dart' show denominationLabels;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
@@ -239,15 +240,24 @@ class _InterestsScreenState extends State<InterestsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${profile['name'] ?? 'Member'}, ${profile['age'] ?? ''}'
-                                .trim(),
+                            [
+                              profile['name']?.toString() ?? 'Member',
+                              if (profile['age'] != null) '${profile['age']}',
+                            ].join(', '),
                             style: AppTextStyles.labelLarge,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${profile['denomination'] ?? ''} • ${profile['profession'] ?? ''}',
+                            [
+                                  denominationLabels[profile['denomination']
+                                      ?.toString()],
+                                  profile['profession']?.toString(),
+                                ]
+                                .whereType<String>()
+                                .where((x) => x.isNotEmpty)
+                                .join(' • '),
                             style: AppTextStyles.bodySmall,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
