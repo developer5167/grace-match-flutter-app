@@ -46,6 +46,9 @@ class PublicProfileScreen extends StatefulWidget {
 
 class _PublicProfileScreenState extends State<PublicProfileScreen> {
   late PageController _headerPageController;
+  // The star after a tap; null until then, when the server's
+  // is_shortlisted decides.
+  bool? _shortlisted;
   int _currentPhotoIndex = 0;
   String? _myUserId;
 
@@ -455,23 +458,50 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 backgroundColor: AppColors.background,
                 actions: viewedUserId != null
                     ? [
-                        IconButton(
-                          tooltip: tr('Shortlist'),
-                          icon: Icon(
-                            Icons.star_border_rounded,
-                            color: AppColors.gold,
-                          ),
-                          onPressed: () {
-                            AppHaptics.medium();
-                            context.read<ActivityBloc>().add(
-                              ToggleShortlistEvent(viewedUserId),
-                            );
-                            ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                              SnackBar(
-                                behavior: SnackBarBehavior.floating,
-                                content: Text(tr('Shortlist updated')),
-                                duration: Duration(seconds: 2),
+                        Builder(
+                          builder: (_) {
+                            final starred =
+                                _shortlisted ?? data['is_shortlisted'] == true;
+                            return IconButton(
+                              tooltip: tr(
+                                starred
+                                    ? 'Remove from shortlist'
+                                    : 'Add to shortlist',
                               ),
+                              icon: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                transitionBuilder: (child, anim) =>
+                                    ScaleTransition(scale: anim, child: child),
+                                child: Icon(
+                                  starred
+                                      ? Icons.star_rounded
+                                      : Icons.star_border_rounded,
+                                  key: ValueKey(starred),
+                                  color: AppColors.gold,
+                                ),
+                              ),
+                              onPressed: () {
+                                AppHaptics.medium();
+                                setState(() => _shortlisted = !starred);
+                                context.read<ActivityBloc>().add(
+                                  ToggleShortlistEvent(viewedUserId),
+                                );
+                                ScaffoldMessenger.maybeOf(context)
+                                  ?..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      content: Text(
+                                        tr(
+                                          starred
+                                              ? 'Removed from shortlist'
+                                              : 'Added to shortlist',
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                              },
                             );
                           },
                         ),

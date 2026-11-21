@@ -254,7 +254,10 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
           children: [
             _sectionLabel(tr('Age Range')),
             Text(
-              '${_ageRange.start.round()} – ${_ageRange.end.round()} yrs',
+              tr('{a} – {b} yrs', {
+                'a': _ageRange.start.round(),
+                'b': _ageRange.end.round(),
+              }),
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
             ),
           ],
@@ -290,7 +293,10 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
           children: [
             _sectionLabel(tr('Height Range')),
             Text(
-              '${_heightRange.start.round()} – ${_heightRange.end.round()} cm',
+              tr('{a} – {b} cm', {
+                'a': _heightRange.start.round(),
+                'b': _heightRange.end.round(),
+              }),
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
             ),
           ],

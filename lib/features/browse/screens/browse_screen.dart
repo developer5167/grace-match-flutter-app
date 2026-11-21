@@ -125,6 +125,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
     final result = await AppShell.withNavBarHidden(
       () => showModalBottomSheet<DiscoverFilters>(
         context: context,
+        // Over the whole app, not just the tab: inside the tab the sheet kept
+        // empty room at the bottom for the (hidden) bottom bar.
+        useRootNavigator: true,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (_) => DiscoverFilterSheet(currentFilters: _filters),
