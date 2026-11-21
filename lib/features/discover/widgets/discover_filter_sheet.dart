@@ -27,6 +27,16 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   late bool _casteFlexible;
   late String _professionPref;
   late TextEditingController _locationCtrl;
+  late Set<String> _intents;
+  late bool _baptisedOnly;
+  late bool _servesInChurch;
+
+  static const _intentOptions = {
+    'ready_now': 'Ready now',
+    'within_6_months': 'Within 6 months',
+    'within_1_year': 'Within 1 year',
+    'within_2_years': 'Within 2 years',
+  };
 
   static const _denomOptions = [
     'Any',
@@ -62,6 +72,9 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
       orElse: () => 'Any',
     );
     _locationCtrl = TextEditingController(text: f.location ?? '');
+    _intents = {...f.marriageIntents};
+    _baptisedOnly = f.baptisedOnly;
+    _servesInChurch = f.servesInChurch;
   }
 
   @override
@@ -89,6 +102,9 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         professionPreference: _professionOptions[_professionPref] ?? 'any',
         salaryMin: _salaryRange.start.round(),
         salaryMax: _salaryRange.end.round(),
+        marriageIntents: _intentOptions.keys.where(_intents.contains).toList(),
+        baptisedOnly: _baptisedOnly,
+        servesInChurch: _servesInChurch,
       ),
     );
   }
@@ -123,7 +139,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
             padding: const EdgeInsets.fromLTRB(24, 8, 8, 4),
             child: Row(
               children: [
-                Text('Filter Matches', style: AppTextStyles.headlineMedium),
+                Text('Filter profiles', style: AppTextStyles.headlineMedium),
                 const Spacer(),
                 TextButton(
                   onPressed: _resetFilters,
@@ -150,6 +166,8 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                   _buildHeightSection(),
                   _divider(),
                   _buildDenominationSection(),
+                  _divider(),
+                  _buildFaithSection(),
                   _divider(),
                   _buildProfessionSection(),
                   _divider(),
@@ -335,6 +353,103 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
               ),
             );
           }).toList(),
+        ),
+      ],
+    );
+  }
+
+  // ── Faith: marriage timeline, baptised, serving ────────────────
+  Widget _buildFaithSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionLabel('Planning to marry'),
+        Text(
+          _intents.isEmpty ? 'Any timeline' : 'Only the timelines you choose',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _intentOptions.entries.map((e) {
+            final selected = _intents.contains(e.key);
+            return GestureDetector(
+              onTap: () => setState(
+                () => selected ? _intents.remove(e.key) : _intents.add(e.key),
+              ),
+              child: AnimatedContainer(
+                duration: 180.ms,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppColors.goldSubtle
+                      : AppColors.surfaceHighest,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                    color: selected ? AppColors.gold : AppColors.surfaceHighest,
+                    width: selected ? 1.5 : 1,
+                  ),
+                ),
+                child: Text(
+                  e.value,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: selected ? AppColors.gold : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        _faithSwitch(
+          'Baptised only',
+          'Show only members who are baptised',
+          _baptisedOnly,
+          (v) => setState(() => _baptisedOnly = v),
+        ),
+        const SizedBox(height: 8),
+        _faithSwitch(
+          'Serves in church',
+          'Choir, worship, Sunday school, youth and other ministries',
+          _servesInChurch,
+          (v) => setState(() => _servesInChurch = v),
+        ),
+      ],
+    );
+  }
+
+  Widget _faithSwitch(
+    String title,
+    String hint,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTextStyles.labelLarge),
+              Text(
+                hint,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: AppColors.gold,
         ),
       ],
     );

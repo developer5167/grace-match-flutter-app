@@ -9,6 +9,7 @@ import '../../../core/utils/app_haptics.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/constants/app_constants.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../core/widgets/full_screen_gallery.dart';
@@ -473,6 +474,24 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             );
                           },
                         ),
+                        // The public page only works for approved profiles
+                        // visible to everyone, so only offer it for those.
+                        if (profile['profile_visibility'] == 'everyone' &&
+                            profile['review_status'] == 'approved')
+                          Builder(
+                            builder: (anchor) => IconButton(
+                              tooltip: 'Share profile',
+                              icon: Icon(
+                                Icons.ios_share_rounded,
+                                color: AppColors.gold,
+                              ),
+                              onPressed: () => _shareOtherProfile(
+                                anchor,
+                                viewedUserId,
+                                name.toString(),
+                              ),
+                            ),
+                          ),
                         ProfileSafetyMenu(
                           userId: viewedUserId,
                           name: name.toString(),
@@ -1382,6 +1401,35 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         ],
       ),
     );
+  }
+
+  /// Shares this member's public profile link (the same page as "Share my
+  /// profile"), so a family can look at it together.
+  Future<void> _shareOtherProfile(
+    BuildContext anchor,
+    String userId,
+    String name,
+  ) async {
+    final url = '${AppConstants.siteUrl}/p/$userId';
+    final box = anchor.findRenderObject();
+    final origin = box is RenderBox && box.hasSize
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
+    try {
+      await Share.share(
+        'A profile on GraceMatch, the Telugu Christian matrimony app: $name\n$url',
+        subject: 'GraceMatch – $name',
+        sharePositionOrigin: origin,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Could not open the share sheet. Try again.'),
+        ),
+      );
+    }
   }
 
   /// The member's own words about their faith, and their favourite verse.

@@ -15,6 +15,10 @@ class DiscoverFilters extends Equatable {
   final String professionPreference; // 'any' | 'pvt' | 'govt' | 'other'
   final int salaryMin; // in Lakhs
   final int salaryMax; // in Lakhs
+  // Faith filters. Empty list = any timeline.
+  final List<String> marriageIntents;
+  final bool baptisedOnly;
+  final bool servesInChurch;
 
   const DiscoverFilters({
     this.ageMin = 18,
@@ -29,6 +33,9 @@ class DiscoverFilters extends Equatable {
     this.professionPreference = 'any',
     this.salaryMin = 0,
     this.salaryMax = 100,
+    this.marriageIntents = const [],
+    this.baptisedOnly = false,
+    this.servesInChurch = false,
   });
 
   factory DiscoverFilters.defaults() => const DiscoverFilters();
@@ -44,7 +51,10 @@ class DiscoverFilters extends Equatable {
       !casteFlexible &&
       professionPreference == 'any' &&
       salaryMin == 0 &&
-      salaryMax == 100;
+      salaryMax == 100 &&
+      marriageIntents.isEmpty &&
+      !baptisedOnly &&
+      !servesInChurch;
 
   /// Builds query-string params to pass to the discover feed endpoint.
   Map<String, String> toQueryParams() {
@@ -72,6 +82,11 @@ class DiscoverFilters extends Equatable {
     }
     if (salaryMin != 0) params['salary_min'] = salaryMin.toString();
     if (salaryMax != 100) params['salary_max'] = salaryMax.toString();
+    if (marriageIntents.isNotEmpty) {
+      params['marriage_intents'] = marriageIntents.join(',');
+    }
+    if (baptisedOnly) params['baptised_only'] = 'true';
+    if (servesInChurch) params['serves_in_church'] = 'true';
 
     return params;
   }
@@ -90,5 +105,8 @@ class DiscoverFilters extends Equatable {
     professionPreference,
     salaryMin,
     salaryMax,
+    marriageIntents,
+    baptisedOnly,
+    servesInChurch,
   ];
 }
