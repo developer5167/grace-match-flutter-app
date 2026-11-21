@@ -137,7 +137,15 @@ class ProfileListCard extends StatelessWidget {
                 children: [
                   Text(
                     heading,
-                    style: AppTextStyles.headlineSmall,
+                    // The recommended cards' font (Plus Jakarta), bold and a
+                    // size up: the display serif read thin on the dark card.
+                    // The serif stays everywhere else in the app.
+                    style: AppTextStyles.labelLarge.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: 0.1,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
