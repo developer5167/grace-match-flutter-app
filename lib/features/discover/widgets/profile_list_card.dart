@@ -8,6 +8,46 @@ import 'profile_card.dart';
 /// What the member has done with a profile in the Discover list.
 enum ListAction { none, sending, sent }
 
+/// "How soon are you planning to get married?" from onboarding
+/// (marriage_intent), worded for families reading a profile.
+String? marriagePlanLabel(Object? intent) => switch (intent?.toString()) {
+  'ready_now' => 'Ready to marry now',
+  'within_6_months' => 'Plans to marry within 6 months',
+  'within_1_year' => 'Plans to marry within 1 year',
+  'within_2_years' => 'Plans to marry within 2 years',
+  _ => null,
+};
+
+/// The marriage timeline as a small highlighted line, shown near the top of
+/// a profile so families see it first.
+class MarriagePlanTag extends StatelessWidget {
+  const MarriagePlanTag(this.label, {super.key});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.goldSubtle,
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: AppColors.goldMild),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.event_available_rounded, size: 14, color: AppColors.gold),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 const denominationLabels = {
   'protestant': 'Protestant',
   'catholic': 'Catholic',
@@ -77,6 +117,7 @@ class ProfileListCard extends StatelessWidget {
       if (denom != null) denom,
       if (city != null) city,
     ].join('  ·  ');
+    final plan = marriagePlanLabel(p['marriage_intent']);
 
     return Material(
       color: AppColors.surfaceElevated,
@@ -107,6 +148,10 @@ class ProfileListCard extends StatelessWidget {
                         color: AppColors.gold,
                       ),
                     ),
+                  ],
+                  if (plan != null) ...[
+                    const SizedBox(height: 8),
+                    MarriagePlanTag(plan),
                   ],
                   const SizedBox(height: 10),
                   if (education != null)

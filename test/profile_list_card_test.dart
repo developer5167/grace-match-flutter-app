@@ -16,6 +16,7 @@ void main() {
     'church_name': 'Bethel Church',
     'profile_managed_by': 'parents',
     'compatibility': 77,
+    'marriage_intent': 'within_2_years',
     'photos': <dynamic>[],
   };
 
@@ -49,6 +50,7 @@ void main() {
     expect(find.text('Pentecostal  ·  Hyderabad'), findsOneWidget);
     expect(find.text('Reviewed by our team'), findsOneWidget);
     expect(find.text('Profile managed by parents'), findsOneWidget);
+    expect(find.text('Plans to marry within 2 years'), findsOneWidget);
     expect(find.text('Not now'), findsOneWidget);
     await t.ensureVisible(find.text('Send interest'));
     await t.pump();
@@ -69,4 +71,17 @@ void main() {
     expect(ProfileListCard.height(null), isNull);
     expect(ProfileListCard.height(20), isNull);
   });
+
+  test(
+    'timeline labels are worded for families; unknown values show nothing',
+    () {
+      expect(marriagePlanLabel('ready_now'), 'Ready to marry now');
+      expect(
+        marriagePlanLabel('within_1_year'),
+        'Plans to marry within 1 year',
+      );
+      expect(marriagePlanLabel(null), isNull);
+      expect(marriagePlanLabel('someday'), isNull);
+    },
+  );
 }

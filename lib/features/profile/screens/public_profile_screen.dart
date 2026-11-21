@@ -23,7 +23,8 @@ import '../../activity/bloc/activity_bloc.dart';
 import '../../activity/bloc/activity_event.dart';
 import '../../discover/screens/match_explanation_screen.dart';
 import '../../discover/widgets/profile_card.dart' show PhotoVerifiedLabel;
-import '../../discover/widgets/profile_list_card.dart' show denominationLabels;
+import '../../discover/widgets/profile_list_card.dart'
+    show denominationLabels, marriagePlanLabel, MarriagePlanTag;
 import '../../calls/data/call_manager.dart';
 import '../widgets/profile_safety_menu.dart';
 
@@ -700,6 +701,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             color: AppColors.textTertiary,
                           ),
                         ),
+                      ],
+                      if (marriagePlanLabel(profile['marriage_intent'])
+                          case final plan?) ...[
+                        const SizedBox(height: 10),
+                        MarriagePlanTag(plan),
                       ],
                       const SizedBox(height: 16),
                       _trustStrip(profile),
