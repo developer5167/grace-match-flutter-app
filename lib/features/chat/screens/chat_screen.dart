@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
+  late final ChatBloc _chatBloc;
+
   final _msgCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   String? _myUserId;
@@ -75,7 +78,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     // from it must not be the first thing to find that out.
     di.sl<SocketService>().ensureConnected();
     ActiveChatState.conversationId = widget.conversationId;
-    final bloc = context.read<ChatBloc>();
+    final bloc = _chatBloc = context.read<ChatBloc>();
     bloc.add(SetCurrentConversationEvent(widget.conversationId, owner: this));
     bloc.add(FetchMessagesEvent(widget.conversationId));
 
@@ -176,7 +179,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _peerTypingTimeout?.cancel();
     ActiveChatState.conversationId = null;
     _statusSubscription?.cancel();
-    context.read<ChatBloc>().add(SetCurrentConversationEvent('', owner: this));
+    // Kept from initState: looking the bloc up here, after the screen has
+    // left the tree, is unsafe and could fail, leaving the bloc thinking this
+    // chat was still open so the Chat list never refreshed.
+    _chatBloc.add(SetCurrentConversationEvent('', owner: this));
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
@@ -426,13 +432,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         // Only the kinds of call the member's plan includes are offered.
         if (_calls?.voice == true)
           IconButton(
-            tooltip: 'Voice call',
+            tooltip: tr('Voice call'),
             icon: const Icon(Icons.call_rounded, size: 21),
             onPressed: () => _startCall(video: false),
           ),
         if (_calls?.video == true)
           IconButton(
-            tooltip: 'Video call',
+            tooltip: tr('Video call'),
             icon: const Icon(Icons.videocam_rounded, size: 22),
             onPressed: () => _startCall(video: true),
           ),
@@ -498,19 +504,19 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             // journeys, and someone being harassed right now is the least
             // likely person to go and find the second one.
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.flag_rounded,
                 color: AppColors.error,
                 size: 20,
               ),
               title: Text(
-                'Report and stop contact',
+                tr('Report and stop contact'),
                 style: AppTextStyles.labelLarge.copyWith(
                   color: AppColors.error,
                 ),
               ),
               subtitle: Text(
-                'They will not be able to message or call you again.',
+                tr('They will not be able to message or call you again.'),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -520,7 +526,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 _reportAndExit();
               },
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
           ],
         ),
       ),
@@ -551,38 +557,40 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Our team will review this. They will not be told who reported '
-                'them, and they will not be able to reach you again.',
+                tr(
+                  'Our team will review this. They will not be told who reported '
+                  'them, and they will not be able to reach you again.',
+                ),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: reason,
                 dropdownColor: AppColors.surfaceHighest,
                 style: AppTextStyles.bodyMedium,
-                decoration: const InputDecoration(isDense: true),
-                items: const [
+                decoration: InputDecoration(isDense: true),
+                items: [
                   DropdownMenuItem(
                     value: 'harassment',
-                    child: Text('Harassment or abuse'),
+                    child: Text(tr('Harassment or abuse')),
                   ),
                   DropdownMenuItem(
                     value: 'fake_profile',
-                    child: Text('Fake profile'),
+                    child: Text(tr('Fake profile')),
                   ),
                   DropdownMenuItem(
                     value: 'inappropriate',
-                    child: Text('Inappropriate content'),
+                    child: Text(tr('Inappropriate content')),
                   ),
                   DropdownMenuItem(
                     value: 'money_request',
-                    child: Text('Asked me for money'),
+                    child: Text(tr('Asked me for money')),
                   ),
                   DropdownMenuItem(
                     value: 'other',
-                    child: Text('Something else'),
+                    child: Text(tr('Something else')),
                   ),
                 ],
                 onChanged: (v) => setLocal(() => reason = v ?? reason),
@@ -594,7 +602,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 maxLength: 500,
                 style: AppTextStyles.bodySmall,
                 decoration: InputDecoration(
-                  hintText: 'What happened? (optional)',
+                  hintText: tr('What happened? (optional)'),
                   hintStyle: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -606,7 +614,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(
-                'Cancel',
+                tr('Cancel'),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -615,7 +623,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               child: Text(
-                'Report and block',
+                tr('Report and block'),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.error,
                 ),
@@ -640,16 +648,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         },
       );
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Reported. You will not hear from them again.'),
+        SnackBar(
+          content: Text(tr('Reported. You will not hear from them again.')),
           backgroundColor: AppColors.surfaceHighest,
         ),
       );
       router.go('/chat');
     } catch (_) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Could not send the report. Please try again.'),
+        SnackBar(
+          content: Text(tr('Could not send the report. Please try again.')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -675,7 +683,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (messages.isEmpty) {
       return Center(
         child: Text(
-          'Say "Praise the Lord!" to start.',
+          tr('Say "Praise the Lord!" to start.'),
           style: AppTextStyles.bodyMedium,
         ),
       );
@@ -879,8 +887,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   style: AppTextStyles.bodyMedium,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    hintText: 'Type a message...',
+                  decoration: InputDecoration(
+                    hintText: tr('Type a message...'),
                     filled: true,
                     fillColor: AppColors.background,
                     border: InputBorder.none,
