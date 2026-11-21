@@ -27,6 +27,7 @@ import '../../discover/widgets/profile_list_card.dart'
     show denominationLabels, marriagePlanLabel, MarriagePlanTag;
 import '../../calls/data/call_manager.dart';
 import '../widgets/profile_safety_menu.dart';
+import '../../../core/utils/faith_labels.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String? userId; // If null, shows own profile preview
@@ -721,12 +722,36 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
                       _sectionTitle('Faith & Lifestyle'),
                       const SizedBox(height: 16),
+                      if (_faithQuote(profile) case final quote?) ...[
+                        quote,
+                        const SizedBox(height: 12),
+                      ],
                       _infoGrid([
                         _infoTile(
                           Icons.church_rounded,
                           'Church',
                           profile['church_name'] ?? 'Not specified',
                         ),
+                        if (baptismLabels[profile['baptism_status']]
+                            case final b?)
+                          _infoTile(Icons.water_drop_rounded, 'Baptism', b),
+                        if ((profile['ministries'] as List?)
+                                ?.map((m) => ministryLabels['$m'])
+                                .whereType<String>()
+                                .join(', ')
+                            case final serves? when serves.isNotEmpty)
+                          _infoTile(
+                            Icons.volunteer_activism_rounded,
+                            'Serves in',
+                            serves,
+                          ),
+                        if (churchAfterMarriageLabels[profile['church_after_marriage']]
+                            case final after?)
+                          _infoTile(
+                            Icons.favorite_rounded,
+                            'Church after marriage',
+                            after,
+                          ),
                         _infoTile(
                           Icons.auto_awesome_rounded,
                           'Church Involvement',
@@ -1353,6 +1378,52 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   ),
                 ],
               ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The member's own words about their faith, and their favourite verse.
+  Widget? _faithQuote(Map<String, dynamic> profile) {
+    final journey = '${profile['faith_journey'] ?? ''}'.trim();
+    final verse = '${profile['favourite_verse'] ?? ''}'.trim();
+    if (journey.isEmpty && verse.isEmpty) return null;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border(left: BorderSide(color: AppColors.gold, width: 3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (journey.isNotEmpty)
+            Text(
+              journey,
+              style: AppTextStyles.bodyMedium.copyWith(
+                height: 1.5,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          if (journey.isNotEmpty && verse.isNotEmpty)
+            const SizedBox(height: 10),
+          if (verse.isNotEmpty)
+            Row(
+              children: [
+                Icon(Icons.menu_book_rounded, size: 16, color: AppColors.gold),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Favourite verse: $verse',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/utils/faith_labels.dart';
 
 import '../screens/onboarding_screen.dart';
 
@@ -18,6 +19,21 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
   String? _churchInvolvement;
   final _churchNameCtrl = TextEditingController();
   final _casteCtrl = TextEditingController();
+  // Optional faith details (API values).
+  String? _baptism;
+  final Set<String> _ministries = {};
+  String? _afterMarriage;
+  final _verseCtrl = TextEditingController();
+  final _journeyCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _churchNameCtrl.dispose();
+    _casteCtrl.dispose();
+    _verseCtrl.dispose();
+    _journeyCtrl.dispose();
+    super.dispose();
+  }
 
   // Maps: display label → API value
   final _denominations = {
@@ -59,6 +75,27 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           if (profile['church_name'] != null)
             _churchNameCtrl.text = profile['church_name'];
           if (profile['caste'] != null) _casteCtrl.text = profile['caste'];
+          if (baptismLabels.containsKey(profile['baptism_status'])) {
+            _baptism = profile['baptism_status'];
+          }
+          if (profile['ministries'] is List) {
+            _ministries.addAll(
+              (profile['ministries'] as List)
+                  .map((e) => '$e')
+                  .where(ministryLabels.containsKey),
+            );
+          }
+          if (churchAfterMarriageLabels.containsKey(
+            profile['church_after_marriage'],
+          )) {
+            _afterMarriage = profile['church_after_marriage'];
+          }
+          if (profile['favourite_verse'] != null) {
+            _verseCtrl.text = '${profile['favourite_verse']}';
+          }
+          if (profile['faith_journey'] != null) {
+            _journeyCtrl.text = '${profile['faith_journey']}';
+          }
 
           // Reverse lookups
           if (profile['denomination'] != null) {
@@ -118,6 +155,11 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
       'church_involvement': _involvements[_churchInvolvement],
       'church_name': _churchNameCtrl.text.trim(),
       'caste': _casteCtrl.text.trim(),
+      'baptism_status': _baptism ?? '',
+      'ministries': _ministries.toList(),
+      'church_after_marriage': _afterMarriage ?? '',
+      'favourite_verse': _verseCtrl.text.trim(),
+      'faith_journey': _journeyCtrl.text.trim(),
     };
   }
 
@@ -154,7 +196,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Marriage Intent'),
+          _sectionLabel('How soon are you planning to marry?'),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -212,7 +254,126 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 32),
+          Text('More about your faith', style: AppTextStyles.headlineSmall),
+          const SizedBox(height: 4),
+          Text(
+            'Optional. Families often ask about these. Share only what you '
+            'are comfortable with.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          _sectionLabel('Baptism'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in baptismLabels.entries)
+                _choice(
+                  e.value,
+                  _baptism == e.key,
+                  () => setState(
+                    () => _baptism = _baptism == e.key ? null : e.key,
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+          _sectionLabel('I serve in (choose any)'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in ministryLabels.entries)
+                _choice(
+                  e.value,
+                  _ministries.contains(e.key),
+                  () => setState(
+                    () => _ministries.contains(e.key)
+                        ? _ministries.remove(e.key)
+                        : _ministries.add(e.key),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+          _sectionLabel('Church after marriage'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in churchAfterMarriageLabels.entries)
+                _choice(
+                  e.value,
+                  _afterMarriage == e.key,
+                  () => setState(
+                    () =>
+                        _afterMarriage = _afterMarriage == e.key ? null : e.key,
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+          _sectionLabel('Favourite Bible verse'),
+          TextField(
+            controller: _verseCtrl,
+            maxLength: 200,
+            style: AppTextStyles.labelLarge,
+            decoration: const InputDecoration(
+              hintText: 'e.g. Joshua 24:15',
+              counterText: '',
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          _sectionLabel('My faith journey'),
+          TextField(
+            controller: _journeyCtrl,
+            maxLength: 400,
+            minLines: 3,
+            maxLines: 5,
+            style: AppTextStyles.bodyMedium,
+            decoration: const InputDecoration(
+              hintText:
+                  'A few lines about your faith and church life, in your own words.',
+            ),
+          ),
+
+          const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  /// A chip that toggles (unlike _selectChip, which selects one by label).
+  Widget _choice(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: () {
+        AppHaptics.selection();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          color: selected ? AppColors.goldSubtle : AppColors.surfaceElevated,
+          border: Border.all(
+            color: selected ? AppColors.gold : AppColors.surfaceHighest,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: selected ? AppColors.gold : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
