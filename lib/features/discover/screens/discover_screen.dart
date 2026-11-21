@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_shell.dart';
 import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -118,11 +119,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   Future<void> _openFilterSheet(DiscoverFilters current) async {
     AppHaptics.light();
-    final result = await showModalBottomSheet<DiscoverFilters>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DiscoverFilterSheet(currentFilters: current),
+    final result = await AppShell.withNavBarHidden(
+      () => showModalBottomSheet<DiscoverFilters>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => DiscoverFilterSheet(currentFilters: current),
+      ),
     );
     if (result != null && mounted) {
       context.read<DiscoverBloc>().add(FetchFeedEvent(filters: result));

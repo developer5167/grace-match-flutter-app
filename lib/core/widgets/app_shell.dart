@@ -10,6 +10,20 @@ class AppShell extends StatefulWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
 
+  /// True while a full-height sheet (the filters) is open over a tab: the
+  /// bar fades out of its way and back in when it closes.
+  static final ValueNotifier<bool> navBarHidden = ValueNotifier(false);
+
+  /// Runs [open] (a bottom sheet) with the bottom bar hidden.
+  static Future<T?> withNavBarHidden<T>(Future<T?> Function() open) async {
+    navBarHidden.value = true;
+    try {
+      return await open();
+    } finally {
+      navBarHidden.value = false;
+    }
+  }
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -64,10 +78,27 @@ class _AppShellState extends State<AppShell> {
       child: Scaffold(
         extendBody: true,
         body: widget.child,
-        bottomNavigationBar: _PremiumNavBar(
-          selectedIndex: _selectedIndex,
-          tabs: _tabs,
-          onTabSelected: _onTabSelected,
+        bottomNavigationBar: ValueListenableBuilder<bool>(
+          valueListenable: AppShell.navBarHidden,
+          builder: (context, hidden, bar) => IgnorePointer(
+            ignoring: hidden,
+            child: AnimatedSlide(
+              offset: hidden ? const Offset(0, 0.35) : Offset.zero,
+              duration: const Duration(milliseconds: 260),
+              curve: hidden ? Curves.easeIn : Curves.easeOutCubic,
+              child: AnimatedOpacity(
+                opacity: hidden ? 0 : 1,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                child: bar,
+              ),
+            ),
+          ),
+          child: _PremiumNavBar(
+            selectedIndex: _selectedIndex,
+            tabs: _tabs,
+            onTabSelected: _onTabSelected,
+          ),
         ),
       ),
     );

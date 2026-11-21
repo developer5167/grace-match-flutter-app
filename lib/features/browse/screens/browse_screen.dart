@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/widgets/app_shell.dart';
 import '../../../core/l10n/app_language.dart';
 
 import 'package:flutter/material.dart';
@@ -121,11 +122,13 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   Future<void> _openFilters() async {
     AppHaptics.light();
-    final result = await showModalBottomSheet<DiscoverFilters>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DiscoverFilterSheet(currentFilters: _filters),
+    final result = await AppShell.withNavBarHidden(
+      () => showModalBottomSheet<DiscoverFilters>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => DiscoverFilterSheet(currentFilters: _filters),
+      ),
     );
     if (result != null && mounted) {
       _filters = result;
