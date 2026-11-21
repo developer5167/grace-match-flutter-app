@@ -439,6 +439,67 @@ const Map<String, String> teluguStrings = {
   "When an interest is accepted on either side, you can talk here.":
       "ఇరువైపులా ఆసక్తి అంగీకరించబడినప్పుడు, మీరు ఇక్కడ మాట్లాడవచ్చు.",
 
+  // ── Opening screen ─────────────────────────────────────────
+  "GraceMatch": "గ్రేస్ మ్యాచ్",
+  "Where faith meets forever": "విశ్వాసంతో నిత్య బంధం",
+
+  // ── Activity ────────────────────────────────────────────────
+  "Mark all read": "అన్నీ చదివినట్టు గుర్తించు",
+  "All notifications": "అన్ని నోటిఫికేషన్లు",
+  "Offers": "ఆఫర్లు",
+  "Notifications": "నోటిఫికేషన్లు",
+  "Views": "చూసినవారు",
+  "Shortlisted": "షార్ట్‌లిస్ట్ చేసినవి",
+  "Contacts": "ఫోన్ నంబర్లు",
+  "Retry": "మళ్ళీ ప్రయత్నించండి",
+  "No notifications yet": "ఇంకా నోటిఫికేషన్లు లేవు",
+  "Interests, views, and messages will appear here.": "ఆసక్తులు, చూసినవారు మరియు సందేశాలు ఇక్కడ కనిపిస్తాయి.",
+  "Profile views": "ప్రొఫైల్ చూసినవారు",
+  "Upgrade to Silver or above to see who viewed your profile.":
+      "మీ ప్రొఫైల్ ఎవరు చూశారో తెలుసుకోవడానికి సిల్వర్ లేదా అంతకంటే పై ప్లాన్‌కు మారండి.",
+  "No views yet": "ఇంకా ఎవరూ చూడలేదు",
+  "When someone opens your profile, they will appear here.": "ఎవరైనా మీ ప్రొఫైల్ తెరిచినప్పుడు, వారు ఇక్కడ కనిపిస్తారు.",
+  "Who viewed you": "మిమ్మల్ని ఎవరు చూశారు",
+  "No shortlisted profiles": "షార్ట్‌లిస్ట్ చేసిన ప్రొఫైల్స్ లేవు",
+  "Premium Feature": "ప్రీమియం సౌకర్యం",
+  "Upgrade Plan": "ప్లాన్ మార్చండి",
+  "No Contact Requests": "ఫోన్ నంబర్ అభ్యర్థనలు లేవు",
+  "Shared": "పంచుకున్నారు",
+  "Share your number?": "మీ నంబర్ పంచుకోవాలా?",
+  "They will see your number. You will not see theirs unless you request it on a Premium plan that includes contact reveals.":
+      "వారు మీ నంబర్ చూడగలరు. ఫోన్ నంబర్ చూసే సౌకర్యం ఉన్న ప్రీమియం ప్లాన్‌లో మీరు అభ్యర్థిస్తే తప్ప, మీరు వారి నంబర్ చూడలేరు.",
+  "Accept and share": "అంగీకరించి పంచుకోండి",
+  "Stop sharing your number?": "మీ నంబర్ పంచుకోవడం ఆపాలా?",
+  "Keep sharing": "పంచుకోవడం కొనసాగించండి",
+  "Stop sharing": "పంచుకోవడం ఆపండి",
+
+  // ── Chat ────────────────────────────────────────────────────
+  "Chatting safely": "సురక్షితంగా మాట్లాడటం",
+  "Community rules": "సమాజ నియమాలు",
+  "No active chats": "ఇంకా సంభాషణలు లేవు",
+  "Your phone number stays hidden. Use voice and video calls inside Grace Match until you are sure.":
+      "మీ ఫోన్ నంబర్ దాచబడే ఉంటుంది. నమ్మకం కుదిరే వరకు GraceMatch లోపలే వాయిస్, వీడియో కాల్స్ వాడండి.",
+  "Never send money, gifts or bank details to anyone you meet here, whatever the reason given.":
+      "ఇక్కడ పరిచయమైన ఎవరికీ, ఏ కారణం చెప్పినా, డబ్బు, బహుమతులు లేదా బ్యాంక్ వివరాలు పంపకండి.",
+  "Involve your family early, and meet in a public place with family present.":
+      "మొదటి నుండే మీ కుటుంబాన్ని భాగస్వాములను చేయండి; కుటుంబ సభ్యులతో కలిసి బహిరంగ ప్రదేశంలో కలవండి.",
+  "Report or block anyone from the ⋯ menu in their chat or on their profile. Our team reviews every report, and they will not be told who reported them.":
+      "ఎవరినైనా వారి చాట్‌లో లేదా ప్రొఫైల్‌లో ⋯ మెనూ నుండి రిపోర్ట్ లేదా బ్లాక్ చేయండి. ప్రతి రిపోర్ట్‌ను మా బృందం పరిశీలిస్తుంది; ఎవరు రిపోర్ట్ చేశారో వారికి చెప్పబడదు.",
+  "Start a conversation": "సంభాషణ ప్రారంభించండి",
+  "Sent a photo": "ఫోటో పంపారు",
+  "Voice call": "వాయిస్ కాల్",
+  "Video call": "వీడియో కాల్",
+  "Report and stop contact": "రిపోర్ట్ చేసి సంప్రదింపు ఆపండి",
+  "They will not be able to message or call you again.": "వారు మీకు మళ్ళీ సందేశం పంపలేరు, కాల్ చేయలేరు.",
+  "Our team will review this. They will not be told who reported them, and they will not be able to reach you again.":
+      "మా బృందం దీన్ని పరిశీలిస్తుంది. ఎవరు రిపోర్ట్ చేశారో వారికి చెప్పబడదు, వారు మిమ్మల్ని మళ్ళీ సంప్రదించలేరు.",
+  "Inappropriate content": "అనుచితమైన విషయం",
+  "Asked me for money": "నన్ను డబ్బు అడిగారు",
+  "Reported. You will not hear from them again.": "రిపోర్ట్ చేయబడింది. వారి నుండి మీకు ఇక ఏమీ రాదు.",
+  "Could not send the report. Please try again.": "రిపోర్ట్ పంపడం కుదరలేదు. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+  "Say \"Praise the Lord!\" to start.": "\"వందనాలు!\" అని చెప్పి ప్రారంభించండి.",
+  "Type a message...": "సందేశం టైప్ చేయండి...",
+
   // ── Settings ────────────────────────────────────────────────
   "Saved": "సేవ్ చేయబడింది",
   "Log out?": "లాగ్ అవుట్ చేయాలా?",

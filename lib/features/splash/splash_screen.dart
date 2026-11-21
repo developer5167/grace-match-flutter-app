@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_language.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -211,7 +212,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                   // Brand name
                   Text(
-                        'GraceMatch',
+                        tr('GraceMatch'),
                         style: AppTextStyles.displayMedium.copyWith(
                           foreground: Paint()
                             ..shader = LinearGradient(
@@ -236,7 +237,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                   // Tagline
                   Text(
-                        'Where faith meets forever',
+                        tr('Where faith meets forever'),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textTertiary,
                           letterSpacing: 0.5,

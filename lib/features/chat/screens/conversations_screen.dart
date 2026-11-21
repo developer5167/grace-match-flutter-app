@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -43,9 +44,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       final content = map['content']?.toString();
       if (content != null && content.isNotEmpty) return content;
       final type = map['message_type']?.toString();
-      if (type == 'photo') return 'Sent a photo';
+      if (type == 'photo') return tr('Sent a photo');
     }
-    return 'Start a conversation';
+    return tr('Start a conversation');
   }
 
   @override
@@ -94,12 +95,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: Text('Chat', style: AppTextStyles.headlineMedium),
+            title: Text(tr('Chat'), style: AppTextStyles.headlineMedium),
             elevation: 0,
             backgroundColor: AppColors.background,
             actions: [
               IconButton(
-                tooltip: 'Chatting safely',
+                tooltip: tr('Chatting safely'),
                 icon: Icon(Icons.shield_rounded, color: AppColors.gold),
                 onPressed: () => _showSafety(context),
               ),
@@ -151,7 +152,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Chatting safely', style: AppTextStyles.headlineSmall),
+              Text(tr('Chatting safely'), style: AppTextStyles.headlineSmall),
               const SizedBox(height: 16),
               for (final (icon, text) in tips)
                 Padding(
@@ -163,7 +164,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          text,
+                          tr(text),
                           style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
                         ),
                       ),
@@ -178,7 +179,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       context.push('/terms');
                     },
                     child: Text(
-                      'Community rules',
+                      tr('Community rules'),
                       style: TextStyle(color: AppColors.gold),
                     ),
                   ),
@@ -189,7 +190,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       context.push('/support');
                     },
                     child: Text(
-                      'Contact support',
+                      tr('Contact support'),
                       style: TextStyle(color: AppColors.gold),
                     ),
                   ),
@@ -214,7 +215,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               color: AppColors.surfaceHighest,
             ),
             const SizedBox(height: 16),
-            Text('No active chats', style: AppTextStyles.headlineSmall),
+            Text(tr('No active chats'), style: AppTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
               'When an interest is accepted, you can talk here.',
