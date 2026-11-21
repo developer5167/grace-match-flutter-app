@@ -15,38 +15,23 @@ import 'data/auth_repository.dart';
 /// Returns when the request was sent (or was already open), so the caller can
 /// show the pending state. Returns null when the member cancelled or it failed.
 Future<DateTime?> confirmRequestAccountDeletion(BuildContext context) async {
-  final confirmed = await showDialog<bool>(
+  // The member's reason (optional), or null when they cancelled.
+  final reason = await showModalBottomSheet<String>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: AppColors.surfaceElevated,
-      title: Text('Delete your account?', style: AppTextStyles.headlineSmall),
-      content: Text(
-        'We will send a request to the GraceMatch team. They will permanently '
-        'delete your profile, photos, messages and phone number, and sign you '
-        'out. You can keep using the app until then.',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text(
-            'Send request',
-            style: TextStyle(color: AppColors.error),
-          ),
-        ),
-      ],
+    isScrollControlled: true,
+    backgroundColor: AppColors.surfaceElevated,
+    showDragHandle: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
+    builder: (_) => const _LeavingSheet(),
   );
-  if (confirmed != true || !context.mounted) return null;
+  if (reason == null || !context.mounted) return null;
 
   try {
-    final requestedAt = await di.sl<AuthRepository>().requestAccountDeletion();
+    final requestedAt = await di.sl<AuthRepository>().requestAccountDeletion(
+      reason: reason,
+    );
     if (!context.mounted) return requestedAt;
     await showDialog<void>(
       context: context,
@@ -161,6 +146,144 @@ class _DeleteAccountTextButtonState extends State<DeleteAccountTextButton> {
         pending ? 'Account deletion requested' : 'Delete account',
         style: AppTextStyles.labelLarge.copyWith(
           color: pending ? AppColors.textTertiary : AppColors.error,
+        ),
+      ),
+    );
+  }
+}
+
+/// "We're sorry to see you go": asks, politely and optionally, why the member
+/// is leaving, then confirms the deletion request. Pops the reason ('' when
+/// none was given), or null when the member keeps their account.
+class _LeavingSheet extends StatefulWidget {
+  const _LeavingSheet();
+
+  @override
+  State<_LeavingSheet> createState() => _LeavingSheetState();
+}
+
+class _LeavingSheetState extends State<_LeavingSheet> {
+  static const _reasons = [
+    'I found my partner on GraceMatch',
+    'I found my partner elsewhere',
+    'Not enough suitable profiles',
+    'Privacy or safety concerns',
+    'Plans are too expensive',
+    'The app is hard to use',
+    'I am taking a break',
+    'Something else',
+  ];
+
+  final Set<String> _picked = {};
+  final _more = TextEditingController();
+
+  @override
+  void dispose() {
+    _more.dispose();
+    super.dispose();
+  }
+
+  String get _reason {
+    final more = _more.text.trim();
+    return [
+      if (_picked.isNotEmpty) _picked.join(', '),
+      if (more.isNotEmpty) more,
+    ].join('. ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(24, 0, 24, 16 + inset),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "We're sorry to see you go",
+              style: AppTextStyles.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Could you tell us what made you decide to leave? It helps us '
+              'make GraceMatch better for every family. This is optional.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final r in _reasons)
+                  FilterChip(
+                    label: Text(r),
+                    selected: _picked.contains(r),
+                    onSelected: (on) =>
+                        setState(() => on ? _picked.add(r) : _picked.remove(r)),
+                    showCheckmark: false,
+                    labelStyle: AppTextStyles.labelMedium.copyWith(
+                      color: _picked.contains(r)
+                          ? AppColors.textOnGold
+                          : AppColors.textSecondary,
+                    ),
+                    selectedColor: AppColors.gold,
+                    backgroundColor: AppColors.surfaceHighest,
+                    side: BorderSide.none,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _more,
+              maxLines: 3,
+              maxLength: 500,
+              style: AppTextStyles.bodyMedium,
+              decoration: InputDecoration(
+                hintText: 'Anything else you would like to tell us?',
+                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Our team will then permanently delete your profile, photos, '
+              'messages and phone number, and sign you out. You can keep using '
+              'the app until then.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+                    child: const Text('Keep my account'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(_reason),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      minimumSize: const Size(0, 48),
+                    ),
+                    child: const Text('Request deletion'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
