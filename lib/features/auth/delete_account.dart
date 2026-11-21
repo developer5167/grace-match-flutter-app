@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_language.dart';
 
 import '../../core/di/injection.dart' as di;
 import '../../core/network/socket_service.dart';
@@ -37,10 +38,12 @@ Future<DateTime?> confirmRequestAccountDeletion(BuildContext context) async {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Request sent', style: AppTextStyles.headlineSmall),
+        title: Text(tr('Request sent'), style: AppTextStyles.headlineSmall),
         content: Text(
-          'Your account delete request has been sent. Our team will delete '
-          'your account and sign you out.',
+          tr(
+            'Your account delete request has been sent. Our team will delete '
+            'your account and sign you out.',
+          ),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -48,7 +51,7 @@ Future<DateTime?> confirmRequestAccountDeletion(BuildContext context) async {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
+            child: Text(tr('OK')),
           ),
         ],
       ),
@@ -143,7 +146,7 @@ class _DeleteAccountTextButtonState extends State<DeleteAccountTextButton> {
               if (at != null && mounted) setState(() => _pendingSince = at);
             },
       child: Text(
-        pending ? 'Account deletion requested' : 'Delete account',
+        pending ? tr('Account deletion requested') : tr('Delete account'),
         style: AppTextStyles.labelLarge.copyWith(
           color: pending ? AppColors.textTertiary : AppColors.error,
         ),
@@ -207,8 +210,10 @@ class _LeavingSheetState extends State<_LeavingSheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Could you tell us what made you decide to leave? It helps us '
-              'make GraceMatch better for every family. This is optional.',
+              tr(
+                'Could you tell us what made you decide to leave? It helps us '
+                'make GraceMatch better for every family. This is optional.',
+              ),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -221,7 +226,7 @@ class _LeavingSheetState extends State<_LeavingSheet> {
               children: [
                 for (final r in _reasons)
                   FilterChip(
-                    label: Text(r),
+                    label: Text(tr(r)),
                     selected: _picked.contains(r),
                     onSelected: (on) =>
                         setState(() => on ? _picked.add(r) : _picked.remove(r)),
@@ -244,7 +249,7 @@ class _LeavingSheetState extends State<_LeavingSheet> {
               maxLength: 500,
               style: AppTextStyles.bodyMedium,
               decoration: InputDecoration(
-                hintText: 'Anything else you would like to tell us?',
+                hintText: tr('Anything else you would like to tell us?'),
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textTertiary,
                 ),
@@ -252,9 +257,11 @@ class _LeavingSheetState extends State<_LeavingSheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Our team will then permanently delete your profile, photos, '
-              'messages and phone number, and sign you out. You can keep using '
-              'the app until then.',
+              tr(
+                'Our team will then permanently delete your profile, photos, '
+                'messages and phone number, and sign you out. You can keep using '
+                'the app until then.',
+              ),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textTertiary,
                 height: 1.4,
@@ -267,7 +274,7 @@ class _LeavingSheetState extends State<_LeavingSheet> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
-                    child: const Text('Keep my account'),
+                    child: Text(tr('Keep my account')),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -278,7 +285,7 @@ class _LeavingSheetState extends State<_LeavingSheet> {
                       foregroundColor: AppColors.error,
                       minimumSize: const Size(0, 48),
                     ),
-                    child: const Text('Request deletion'),
+                    child: Text(tr('Request deletion')),
                   ),
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -73,7 +74,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       setState(() => _actions[id] = ListAction.sent);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(priority ? 'Priority interest sent' : 'Interest sent'),
+          content: Text(
+            priority ? tr('Priority interest sent') : tr('Interest sent'),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -93,7 +96,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           backgroundColor: AppColors.error,
           action: needsPlan
               ? SnackBarAction(
-                  label: 'See plans',
+                  label: tr('See plans'),
                   textColor: Colors.white,
                   onPressed: () => context.push('/subscription'),
                 )
@@ -175,7 +178,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                 const FetchFeedEvent(),
                               ),
                               child: Text(
-                                'Try again',
+                                tr('Try again'),
                                 style: TextStyle(color: AppColors.gold),
                               ),
                             ),
@@ -289,9 +292,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Discover', style: AppTextStyles.headlineLarge),
+              Text(tr('Discover'), style: AppTextStyles.headlineLarge),
               Text(
-                'Reviewed profiles for marriage',
+                tr('Reviewed profiles for marriage'),
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.gold),
               ),
             ],
@@ -357,7 +360,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               Icon(Icons.auto_awesome, color: AppColors.gold, size: 16),
               const SizedBox(width: 8),
               Text(
-                'Recommended for you today',
+                tr('Recommended for you today'),
                 style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
               ),
             ],
@@ -386,7 +389,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final name = m['first_name']?.toString() ?? 'Member';
     final age = m['age'];
     final uid = m['user_id']?.toString() ?? m['id']?.toString() ?? '';
-    final denom = denominationLabels[m['denomination']?.toString()];
+    final denomEn = denominationLabels[m['denomination']?.toString()];
+    final denom = denomEn == null ? null : tr(denomEn);
     final city = m['location_city']?.toString();
     final place = [
       if (denom != null) denom,
@@ -500,7 +504,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             onPressed: () => context.go('/browse'),
             icon: Icon(Icons.manage_search_rounded, color: AppColors.gold),
             label: Text(
-              'Browse profiles',
+              tr('Browse profiles'),
               style: TextStyle(color: AppColors.gold),
             ),
             style: OutlinedButton.styleFrom(
@@ -513,7 +517,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           if (limitReached)
             TextButton(
               onPressed: () => context.push('/subscription'),
-              child: Text('See plans', style: TextStyle(color: AppColors.gold)),
+              child: Text(
+                tr('See plans'),
+                style: TextStyle(color: AppColors.gold),
+              ),
             ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -161,7 +162,9 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Upload up to 6 photos. The first photo will be your profile picture. Smiles get more matches!',
+            tr(
+              'Upload up to 6 photos. The first photo will be your profile picture. Smiles get more matches!',
+            ),
             style: AppTextStyles.bodyMedium,
           ),
           const SizedBox(height: 8),
@@ -182,7 +185,9 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Photos will be uploaded when you tap Continue. New photos need admin approval before becoming visible.',
+                    tr(
+                      'Photos will be uploaded when you tap Continue. New photos need admin approval before becoming visible.',
+                    ),
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.gold,
                     ),
@@ -273,7 +278,7 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         color: Colors.black54,
                         child: Text(
-                          'Primary',
+                          tr('Primary'),
                           textAlign: TextAlign.center,
                           style: AppTextStyles.overline.copyWith(
                             color: AppColors.gold,
@@ -297,7 +302,7 @@ class _Step8PhotosState extends OnboardingStepState<Step8Photos>
                     if (index == 0) ...[
                       const SizedBox(height: 4),
                       Text(
-                        'Required',
+                        tr('Required'),
                         style: AppTextStyles.overline.copyWith(
                           color: AppColors.gold,
                         ),

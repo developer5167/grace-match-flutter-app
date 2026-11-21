@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -102,19 +103,19 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _fieldLabel('Height (in cm)'),
+          _fieldLabel(tr('Height (in cm)')),
           _inputField(_heightCtrl, 'e.g. 175', isNumber: true),
           const SizedBox(height: 24),
 
-          _fieldLabel('Highest Education'),
+          _fieldLabel(tr('Highest Education')),
           _inputField(_educationCtrl, 'e.g. B.Tech Computer Science'),
           const SizedBox(height: 24),
 
-          _fieldLabel('Current Profession'),
+          _fieldLabel(tr('Current Profession')),
           _inputField(_professionCtrl, 'e.g. Software Engineer'),
           const SizedBox(height: 24),
 
-          _fieldLabel('Working Sector'),
+          _fieldLabel(tr('Working Sector')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -130,7 +131,7 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
           ),
           const SizedBox(height: 24),
 
-          _fieldLabel('Annual Income'),
+          _fieldLabel(tr('Annual Income')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -146,14 +147,15 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
           ),
           const SizedBox(height: 24),
 
-          _fieldLabel('Bio / Self Introduction'),
+          _fieldLabel(tr('Bio / Self Introduction')),
           TextField(
             controller: _bioCtrl,
             maxLines: 4,
             style: AppTextStyles.labelLarge,
-            decoration: const InputDecoration(
-              hintText:
-                  'Tell us about yourself, your faith, and what you are looking for in a partner...',
+            decoration: InputDecoration(
+              hintText: tr(
+                'Tell us about yourself, your faith, and what you are looking for in a partner...',
+              ),
             ),
           ),
           const SizedBox(height: 40),
@@ -200,7 +202,7 @@ class _Step3PersonalState extends OnboardingStepState<Step3Personal> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

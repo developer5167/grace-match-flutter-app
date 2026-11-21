@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -47,7 +48,7 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _fieldLabel('Diet Preferences'),
+          _fieldLabel(tr('Diet Preferences')),
           Row(
             children: [
               _choiceCard(
@@ -69,7 +70,7 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           ),
           const SizedBox(height: 32),
 
-          _fieldLabel('Smoking Habit'),
+          _fieldLabel(tr('Smoking Habit')),
           Row(
             children: [
               _choiceCard(
@@ -91,7 +92,7 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
           ),
           const SizedBox(height: 32),
 
-          _fieldLabel('Drinking Habit'),
+          _fieldLabel(tr('Drinking Habit')),
           Row(
             children: [
               _choiceCard(
@@ -160,7 +161,7 @@ class _Step4LifestyleState extends OnboardingStepState<Step4Lifestyle> {
               Text(emoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(height: 8),
               Text(
-                title,
+                tr(title),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: isSelected ? AppColors.gold : AppColors.textSecondary,
                 ),

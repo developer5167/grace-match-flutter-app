@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
@@ -244,7 +245,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           content: Text(
-            'Photos unlock once you connect.',
+            tr('Photos unlock once you connect.'),
             style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
           ),
         ),
@@ -455,7 +456,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 actions: viewedUserId != null
                     ? [
                         IconButton(
-                          tooltip: 'Shortlist',
+                          tooltip: tr('Shortlist'),
                           icon: Icon(
                             Icons.star_border_rounded,
                             color: AppColors.gold,
@@ -466,9 +467,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                               ToggleShortlistEvent(viewedUserId),
                             );
                             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 behavior: SnackBarBehavior.floating,
-                                content: Text('Shortlist updated'),
+                                content: Text(tr('Shortlist updated')),
                                 duration: Duration(seconds: 2),
                               ),
                             );
@@ -480,7 +481,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             profile['review_status'] == 'approved')
                           Builder(
                             builder: (anchor) => IconButton(
-                              tooltip: 'Share profile',
+                              tooltip: tr('Share profile'),
                               icon: Icon(
                                 Icons.ios_share_rounded,
                                 color: AppColors.gold,
@@ -519,7 +520,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 if (imagesLocked) ...[
                                   const SizedBox(height: 10),
                                   Text(
-                                    'Photos hidden until you connect',
+                                    tr('Photos hidden until you connect'),
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.textTertiary,
                                     ),
@@ -701,9 +702,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       Text(
                         [
                           if (profile['denomination'] != null)
-                            denominationLabels[profile['denomination']
-                                    .toString()] ??
-                                formatValue(profile['denomination'].toString()),
+                            tr(
+                              denominationLabels[profile['denomination']
+                                      .toString()] ??
+                                  formatValue(
+                                    profile['denomination'].toString(),
+                                  ),
+                            ),
                           if (profile['location_city'] != null)
                             profile['location_city'].toString(),
                         ].join(' • '),
@@ -731,7 +736,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       _trustStrip(profile),
                       const SizedBox(height: 24),
 
-                      _sectionTitle('About Me'),
+                      _sectionTitle(tr('About Me')),
                       const SizedBox(height: 12),
                       Text(
                         bio,
@@ -739,7 +744,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ),
                       const SizedBox(height: 32),
 
-                      _sectionTitle('Faith & Lifestyle'),
+                      _sectionTitle(tr('Faith & Lifestyle')),
                       const SizedBox(height: 16),
                       if (_faithQuote(profile) case final quote?) ...[
                         quote,
@@ -748,73 +753,75 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       _infoGrid([
                         _infoTile(
                           Icons.church_rounded,
-                          'Church',
+                          tr('Church'),
                           profile['church_name'] ?? 'Not specified',
                         ),
                         if (baptismLabels[profile['baptism_status']]
                             case final b?)
-                          _infoTile(Icons.water_drop_rounded, 'Baptism', b),
+                          _infoTile(Icons.water_drop_rounded, tr('Baptism'), b),
                         if ((profile['ministries'] as List?)
                                 ?.map((m) => ministryLabels['$m'])
+                                .whereType<String>()
+                                .map(tr)
                                 .whereType<String>()
                                 .join(', ')
                             case final serves? when serves.isNotEmpty)
                           _infoTile(
                             Icons.volunteer_activism_rounded,
-                            'Serves in',
+                            tr('Serves in'),
                             serves,
                           ),
                         if (churchAfterMarriageLabels[profile['church_after_marriage']]
                             case final after?)
                           _infoTile(
                             Icons.favorite_rounded,
-                            'Church after marriage',
+                            tr('Church after marriage'),
                             after,
                           ),
                         _infoTile(
                           Icons.auto_awesome_rounded,
-                          'Church Involvement',
+                          tr('Church Involvement'),
                           formatValue(profile['church_involvement']),
                         ),
                         _infoTile(
                           Icons.smoking_rooms_rounded,
-                          'Smoking',
+                          tr('Smoking'),
                           formatValue(profile['smoking']),
                         ),
                         _infoTile(
                           Icons.local_bar_rounded,
-                          'Drinking',
+                          tr('Drinking'),
                           formatValue(profile['drinking']),
                         ),
                         _infoTile(
                           Icons.restaurant_rounded,
-                          'Diet',
+                          tr('Diet'),
                           formatValue(profile['diet']),
                         ),
                       ]),
                       const SizedBox(height: 32),
 
-                      _sectionTitle('Education & Career'),
+                      _sectionTitle(tr('Education & Career')),
                       const SizedBox(height: 16),
                       _infoGrid([
                         _infoTile(
                           Icons.work_rounded,
-                          'Profession',
+                          tr('Profession'),
                           profile['profession'] ?? 'Not specified',
                         ),
                         _infoTile(
                           Icons.school_rounded,
-                          'Education',
+                          tr('Education'),
                           profile['education'] ?? 'Not specified',
                         ),
                         _infoTile(
                           Icons.payments_rounded,
-                          'Annual Income',
+                          tr('Annual Income'),
                           '₹ ${formatCurrency(profile['annual_income_min'])} - ${formatCurrency(profile['annual_income_max'])}',
                         ),
                         _infoTile(
                           Icons.height_rounded,
-                          'Height',
+                          tr('Height'),
                           profile['height_cm'] == null
                               ? 'Not specified'
                               : '${profile['height_cm']} cm',
@@ -822,17 +829,17 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ]),
                       const SizedBox(height: 32),
 
-                      _sectionTitle('Family Background'),
+                      _sectionTitle(tr('Family Background')),
                       const SizedBox(height: 16),
                       _infoGrid([
                         _infoTile(
                           Icons.family_restroom_rounded,
-                          'Father',
+                          tr('Father'),
                           family['father_occupation'] ?? 'Not specified',
                         ),
                         _infoTile(
                           Icons.face_retouching_natural_rounded,
-                          'Mother',
+                          tr('Mother'),
                           family['mother_occupation'] ?? 'Not specified',
                         ),
                       ]),
@@ -842,7 +849,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         Padding(
                           padding: const EdgeInsets.only(left: 4, bottom: 12),
                           child: Text(
-                            'Siblings',
+                            tr('Siblings'),
                             style: AppTextStyles.labelLarge.copyWith(
                               color: AppColors.goldMild,
                             ),
@@ -915,14 +922,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ] else ...[
                         _infoTile(
                           Icons.people_rounded,
-                          'Siblings',
+                          tr('Siblings'),
                           '${family['brothers_count'] ?? 0} Brothers, ${family['sisters_count'] ?? 0} Sisters',
                         ),
                       ],
 
                       const SizedBox(height: 32),
                       if (hobbies.isNotEmpty) ...[
-                        _sectionTitle('Interests & Hobbies'),
+                        _sectionTitle(tr('Interests & Hobbies')),
                         const SizedBox(height: 16),
                         Wrap(
                           spacing: 8,
@@ -942,7 +949,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    h,
+                                    tr(h),
                                     style: AppTextStyles.labelSmall,
                                   ),
                                 ),
@@ -1010,13 +1017,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.mail_rounded),
                     SizedBox(width: 8),
                     Text(
-                      'SEND INTEREST',
+                      tr('SEND INTEREST'),
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1,
@@ -1057,8 +1064,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                     ),
                     side: const BorderSide(color: AppColors.surfaceHighest),
                   ),
-                  child: const Text(
-                    'DECLINE',
+                  child: Text(
+                    tr('DECLINE'),
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -1080,8 +1087,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'ACCEPT',
+                  child: Text(
+                    tr('ACCEPT'),
                     style: TextStyle(fontWeight: FontWeight.w900),
                   ),
                 ),
@@ -1118,7 +1125,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'INTEREST SENT',
+                        tr('INTEREST SENT'),
                         style: TextStyle(
                           color: AppColors.gold,
                           fontWeight: FontWeight.bold,
@@ -1188,7 +1195,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 video: false,
                               ),
                         icon: const Icon(Icons.call_rounded, size: 18),
-                        label: const Text('Voice'),
+                        label: Text(tr('Voice')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.gold,
                           side: BorderSide(color: AppColors.goldMild),
@@ -1213,7 +1220,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 video: true,
                               ),
                         icon: const Icon(Icons.videocam_rounded, size: 18),
-                        label: const Text('Video'),
+                        label: Text(tr('Video')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.gold,
                           foregroundColor: AppColors.textOnGold,
@@ -1255,13 +1262,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.chat_bubble_rounded, size: 20),
                   SizedBox(width: 10),
                   Text(
-                    'SEND MESSAGE',
+                    tr('SEND MESSAGE'),
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1,
@@ -1331,7 +1338,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           Icon(Icons.auto_awesome, size: 16, color: AppColors.gold),
           SizedBox(width: 8),
           Text(
-            'Why you are compatible',
+            tr('Why you are compatible'),
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ],
@@ -1389,7 +1396,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      text,
+                      tr(text),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textPrimary,
                       ),
@@ -1424,9 +1431,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text('Could not open the share sheet. Try again.'),
+          content: Text(tr('Could not open the share sheet. Try again.')),
         ),
       );
     }
@@ -1480,7 +1487,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   Widget _sectionTitle(String title) {
     return Text(
-      title,
+      tr(title),
       style: AppTextStyles.headlineSmall.copyWith(color: AppColors.textPrimary),
     );
   }
@@ -1525,7 +1532,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           Icon(icon, size: 20, color: AppColors.gold),
           const SizedBox(height: 8),
           Text(
-            label,
+            tr(label),
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.textTertiary,
             ),
@@ -1573,7 +1580,7 @@ class _ContactRevealTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Contact Number',
+                    tr('Contact Number'),
                     style: AppTextStyles.overline.copyWith(
                       color: Colors.green.shade300,
                     ),
@@ -1610,7 +1617,7 @@ class _ContactRevealTile extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Sharing stopped. This reveal still counts on your plan.',
+                tr('Sharing stopped. This reveal still counts on your plan.'),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -1635,7 +1642,7 @@ class _ContactRevealTile extends StatelessWidget {
             Icon(Icons.hourglass_top_rounded, color: AppColors.gold, size: 18),
             const SizedBox(width: 10),
             Text(
-              'Contact request pending…',
+              tr('Contact request pending…'),
               style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold),
             ),
           ],
@@ -1715,7 +1722,7 @@ class _PublicProfilePhotoTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Locked',
+                  tr('Locked'),
                   style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
                 ),
               ],

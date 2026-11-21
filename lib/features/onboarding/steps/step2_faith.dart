@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/app_haptics.dart';
@@ -170,7 +171,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel('Denomination'),
+          _sectionLabel(tr('Denomination')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -186,17 +187,17 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Church Name'),
+          _sectionLabel(tr('Church Name')),
           TextField(
             controller: _churchNameCtrl,
             style: AppTextStyles.labelLarge,
-            decoration: const InputDecoration(
-              hintText: 'e.g. CSI Cathedral Kochi',
+            decoration: InputDecoration(
+              hintText: tr('e.g. CSI Cathedral Kochi'),
             ),
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('How soon are you planning to marry?'),
+          _sectionLabel(tr('How soon are you planning to marry?')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -212,7 +213,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Faith Level'),
+          _sectionLabel(tr('Faith Level')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -228,7 +229,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Church Involvement'),
+          _sectionLabel(tr('Church Involvement')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -244,28 +245,28 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Caste (Optional)'),
+          _sectionLabel(tr('Caste (Optional)')),
           TextField(
             controller: _casteCtrl,
             style: AppTextStyles.labelLarge,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Syrian Christian',
-            ),
+            decoration: InputDecoration(hintText: tr('e.g. Syrian Christian')),
           ),
 
           const SizedBox(height: 32),
-          Text('More about your faith', style: AppTextStyles.headlineSmall),
+          Text(tr('More about your faith'), style: AppTextStyles.headlineSmall),
           const SizedBox(height: 4),
           Text(
-            'Optional. Families often ask about these. Share only what you '
-            'are comfortable with.',
+            tr(
+              'Optional. Families often ask about these. Share only what you '
+              'are comfortable with.',
+            ),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 20),
 
-          _sectionLabel('Baptism'),
+          _sectionLabel(tr('Baptism')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -282,7 +283,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('I serve in (choose any)'),
+          _sectionLabel(tr('I serve in (choose any)')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -301,7 +302,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Church after marriage'),
+          _sectionLabel(tr('Church after marriage')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -319,28 +320,29 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('Favourite Bible verse'),
+          _sectionLabel(tr('Favourite Bible verse')),
           TextField(
             controller: _verseCtrl,
             maxLength: 200,
             style: AppTextStyles.labelLarge,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Joshua 24:15',
+            decoration: InputDecoration(
+              hintText: tr('e.g. Joshua 24:15'),
               counterText: '',
             ),
           ),
 
           const SizedBox(height: 24),
-          _sectionLabel('My faith journey'),
+          _sectionLabel(tr('My faith journey')),
           TextField(
             controller: _journeyCtrl,
             maxLength: 400,
             minLines: 3,
             maxLines: 5,
             style: AppTextStyles.bodyMedium,
-            decoration: const InputDecoration(
-              hintText:
-                  'A few lines about your faith and church life, in your own words.',
+            decoration: InputDecoration(
+              hintText: tr(
+                'A few lines about your faith and church life, in your own words.',
+              ),
             ),
           ),
 
@@ -369,7 +371,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: selected ? AppColors.gold : AppColors.textSecondary,
           ),
@@ -406,7 +408,7 @@ class _Step2FaithState extends OnboardingStepState<Step2Faith> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

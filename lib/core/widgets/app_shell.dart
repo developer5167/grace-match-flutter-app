@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_haptics.dart';
+import '../l10n/app_language.dart';
 
 /// Main bottom navigation shell — premium frosted glass style
 class AppShell extends StatefulWidget {
@@ -155,7 +156,7 @@ class _PremiumNavBar extends StatelessWidget {
                               : AppTextStyles.labelSmall,
                           // Six tabs on a narrow phone: one line, never wrapped.
                           child: Text(
-                            tabs[i].label,
+                            tr(tabs[i].label),
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.fade,

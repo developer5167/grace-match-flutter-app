@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
@@ -61,14 +62,16 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Show it\'s really you',
+            tr('Show it\'s really you'),
             style: AppTextStyles.headlineMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
-            'Take a quick selfie. Our team compares it with your profile photo and adds a '
-            '"Photo verified" label to your profile. The selfie is never shown to other members.',
+            tr(
+              'Take a quick selfie. Our team compares it with your profile photo and adds a '
+              '"Photo verified" label to your profile. The selfie is never shown to other members.',
+            ),
             style: AppTextStyles.bodyMedium,
             textAlign: TextAlign.center,
           ),
@@ -101,7 +104,7 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
                         ),
                         const SizedBox(height: 14),
                         Text(
-                          'Tap to take a selfie',
+                          tr('Tap to take a selfie'),
                           style: AppTextStyles.labelMedium.copyWith(
                             color: AppColors.gold,
                           ),
@@ -114,14 +117,16 @@ class _Step9VerificationState extends OnboardingStepState<Step9Verification> {
             TextButton.icon(
               onPressed: _takeSelfie,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Retake'),
+              label: Text(tr('Retake')),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
               ),
             ),
           const SizedBox(height: 12),
           Text(
-            'Face the camera in good light, without sunglasses. You can also skip this and do it later.',
+            tr(
+              'Face the camera in good light, without sunglasses. You can also skip this and do it later.',
+            ),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textTertiary,
             ),

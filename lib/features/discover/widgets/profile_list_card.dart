@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -39,7 +40,7 @@ class MarriagePlanTag extends StatelessWidget {
           Icon(Icons.event_available_rounded, size: 14, color: AppColors.gold),
           const SizedBox(width: 6),
           Text(
-            label,
+            tr(label),
             style: AppTextStyles.labelMedium.copyWith(color: AppColors.gold),
           ),
         ],
@@ -114,7 +115,7 @@ class ProfileListCard extends StatelessWidget {
       if (ht != null) ht,
     ].join('  ·  ');
     final faithPlace = [
-      if (denom != null) denom,
+      if (denom != null) tr(denom),
       if (city != null) city,
     ].join('  ·  ');
     final plan = marriagePlanLabel(p['marriage_intent']);
@@ -162,7 +163,7 @@ class ProfileListCard extends StatelessWidget {
                   if (byParents)
                     _detail(
                       Icons.family_restroom_rounded,
-                      'Profile managed by parents',
+                      tr('Profile managed by parents'),
                     ),
                   if (compat != null && compat > 0)
                     _detail(
@@ -200,7 +201,7 @@ class ProfileListCard extends StatelessWidget {
                 if (locked) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'Photos shown after you connect',
+                    tr('Photos shown after you connect'),
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.textTertiary,
                     ),
@@ -238,12 +239,12 @@ class ProfileListCard extends StatelessWidget {
 
   Widget _reviewedBadge() => _pill(
     Icons.fact_check_rounded,
-    'Reviewed by our team',
+    tr('Reviewed by our team'),
     AppColors.blessing,
   );
 
   Widget _idVerifiedBadge() =>
-      _pill(Icons.verified_rounded, 'ID verified', AppColors.blessing);
+      _pill(Icons.verified_rounded, tr('ID verified'), AppColors.blessing);
 
   Widget _pill(IconData icon, String text, Color color) {
     return Container(
@@ -258,7 +259,7 @@ class ProfileListCard extends StatelessWidget {
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 4),
           Text(
-            text,
+            tr(text),
             style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
           ),
         ],
@@ -275,7 +276,7 @@ class ProfileListCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              text,
+              tr(text),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -306,7 +307,7 @@ class ProfileListCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Interest sent',
+              tr('Interest sent'),
               style: AppTextStyles.labelLarge.copyWith(
                 color: AppColors.blessing,
               ),
@@ -326,11 +327,11 @@ class ProfileListCard extends StatelessWidget {
             minimumSize: const Size(0, 48),
             textStyle: AppTextStyles.labelLarge,
           ),
-          child: const Text('Not now'),
+          child: Text(tr('Not now')),
         ),
         const Spacer(),
         IconButton(
-          tooltip: 'Send priority interest',
+          tooltip: tr('Send priority interest'),
           onPressed: busy ? null : onPriorityInterest,
           icon: const Icon(Icons.star_rounded, color: AppColors.cross),
         ),
@@ -347,7 +348,7 @@ class ProfileListCard extends StatelessWidget {
                   ),
                 )
               : const Icon(Icons.mail_rounded, size: 18),
-          label: const Text('Send interest'),
+          label: Text(tr('Send interest')),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.gold,
             foregroundColor: AppColors.textOnGold,

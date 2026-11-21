@@ -17,6 +17,8 @@ import 'core/notifications/push_center.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/membership_palette.dart';
 import 'core/di/injection.dart' as di;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/l10n/app_language.dart';
 import 'core/network/dio_client.dart';
 import 'core/network/socket_service.dart';
 import 'features/auth/delete_account.dart';
@@ -219,6 +221,7 @@ Future<void> _initStorage() async {
     await AppStorage.init().timeout(const Duration(seconds: 5));
     MembershipTheme.bindPersist(AppStorage.saveMembershipPlan);
     MembershipTheme.restore(AppStorage.getMembershipPlan());
+    AppLanguage.instance.load();
   } catch (e, st) {
     debugPrint('Storage init failed: $e\n$st');
   }
@@ -439,11 +442,22 @@ class _GraceMatchAppState extends State<GraceMatchApp>
         BlocProvider(create: (_) => di.sl<ActivityBloc>()),
       ],
       child: ListenableBuilder(
-        listenable: MembershipTheme.instance,
+        // Rebuilds the app when the membership colour or the language changes.
+        listenable: Listenable.merge([
+          MembershipTheme.instance,
+          AppLanguage.instance,
+        ]),
         builder: (context, _) {
           return MaterialApp.router(
             title: 'GraceMatch',
             debugShowCheckedModeBanner: false,
+            locale: AppLanguage.instance.locale,
+            supportedLocales: AppLanguage.supported,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             theme: AppTheme.dark,
             routerConfig: AppRouter.router,
             builder: (context, child) {

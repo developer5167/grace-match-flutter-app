@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -260,8 +261,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         duration: const Duration(milliseconds: 300),
                         child: Text(
                           _isFixing
-                              ? 'Edit ${_stepTitles[_currentStep]}'
-                              : _stepTitles[_currentStep],
+                              ? tr('Edit {step}', {
+                                  'step': tr(_stepTitles[_currentStep]),
+                                })
+                              : tr(_stepTitles[_currentStep]),
                           key: ValueKey('title_$_currentStep'),
                           style: AppTextStyles.headlineLarge,
                         ),
@@ -270,7 +273,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: Text(
-                          _stepSubtitles[_currentStep],
+                          tr(_stepSubtitles[_currentStep]),
                           key: ValueKey('sub_$_currentStep'),
                           style: AppTextStyles.bodyMedium,
                         ),
@@ -293,7 +296,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         ? 'Save'
                         : _currentStep == _totalSteps - 1
                         ? 'Complete Profile ✓'
-                        : 'Continue',
+                        : tr('Continue'),
                     isLoading: isLoading,
                     onPressed: _nextStep,
                   ),
@@ -347,7 +350,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                       AppHaptics.light();
                       _onStepSaved();
                     },
-              child: Text('Skip', style: AppTextStyles.labelMedium),
+              child: Text(tr('Skip'), style: AppTextStyles.labelMedium),
             )
           else
             const SizedBox(width: 48),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/language_switch.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -84,9 +86,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const FetchProfileEvent(silentRefresh: true),
       );
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text('Saved'),
+          content: Text(tr('Saved')),
           duration: Duration(seconds: 2),
         ),
       );
@@ -109,9 +111,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Log out?', style: AppTextStyles.headlineSmall),
+        title: Text(tr('Log out?'), style: AppTextStyles.headlineSmall),
         content: Text(
-          'You will be signed out from this device.',
+          tr('You will be signed out from this device.'),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -119,12 +121,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Log out',
+            child: Text(
+              tr('Log out'),
               style: TextStyle(color: AppColors.error),
             ),
           ),
@@ -183,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             title: Text(
-              'Privacy & settings',
+              tr('Privacy & settings'),
               style: AppTextStyles.headlineMedium,
             ),
           ),
@@ -193,81 +195,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                 children: [
                   Text(
-                    'Control who discovers you, how members reach you, and your photos.',
+                    tr(
+                      'Control who discovers you, how members reach you, and your photos.',
+                    ),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _sectionTitle('Who can see your profile'),
+                  Row(
+                    children: [
+                      Expanded(child: _sectionTitle(tr('App language'))),
+                      const LanguageSwitch(),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _sectionTitle(tr('Who can see your profile')),
                   const SizedBox(height: 12),
                   _radioTile<String>(
-                    title: 'Everyone on GraceMatch',
-                    subtitle:
-                        'Your profile can appear in Discover for suitable matches.',
+                    title: tr('Everyone on GraceMatch'),
+                    subtitle: tr(
+                      'Your profile can appear in Discover for suitable matches.',
+                    ),
                     value: 'everyone',
                     group: visibility,
                     onPick: (_) => _patch({'profile_visibility': 'everyone'}),
                   ),
                   _radioTile<String>(
-                    title: 'Interest & connections',
-                    subtitle:
-                        'Only people you have interacted with (sent/received interest) can open your full profile.',
+                    title: tr('Interest & connections'),
+                    subtitle: tr(
+                      'Only people you have interacted with (sent/received interest) can open your full profile.',
+                    ),
                     value: 'interests_only',
                     group: visibility,
                     onPick: (_) =>
                         _patch({'profile_visibility': 'interests_only'}),
                   ),
                   _radioTile<String>(
-                    title: 'Hidden',
-                    subtitle:
-                        'Your profile stays off Discover until you switch back.',
+                    title: tr('Hidden'),
+                    subtitle: tr(
+                      'Your profile stays off Discover until you switch back.',
+                    ),
                     value: 'hidden',
                     group: visibility,
                     onPick: (_) => _patch({'profile_visibility': 'hidden'}),
                   ),
                   const SizedBox(height: 28),
-                  _sectionTitle('Messaging'),
+                  _sectionTitle(tr('Messaging')),
                   const SizedBox(height: 12),
                   _radioTile<String>(
-                    title: 'Matched connections',
-                    subtitle:
-                        'Only after both sides accept interest can chat open (recommended).',
+                    title: tr('Matched connections'),
+                    subtitle: tr(
+                      'Only after both sides accept interest can chat open (recommended).',
+                    ),
                     value: 'interests_only',
                     group: whoChat,
                     onPick: (_) => _patch({'who_can_chat': 'interests_only'}),
                   ),
                   _radioTile<String>(
-                    title: 'Open to messages',
-                    subtitle:
-                        'Stored for your preference; chat still unlocks when you connect in the app.',
+                    title: tr('Open to messages'),
+                    subtitle: tr(
+                      'Stored for your preference; chat still unlocks when you connect in the app.',
+                    ),
                     value: 'everyone',
                     group: whoChat,
                     onPick: (_) => _patch({'who_can_chat': 'everyone'}),
                   ),
                   const SizedBox(height: 28),
-                  _sectionTitle('Contact & photos'),
+                  _sectionTitle(tr('Contact & photos')),
                   const SizedBox(height: 12),
                   _switchTile(
-                    title: 'Allow contact requests',
-                    subtitle:
-                        'Premium members may request your number. You can approve each request or turn this off.',
+                    title: tr('Allow contact requests'),
+                    subtitle: tr(
+                      'Premium members may request your number. You can approve each request or turn this off.',
+                    ),
                     value: contactOk,
                     onChanged: (v) => _patch({'is_contact_sharing_allowed': v}),
                   ),
                   const SizedBox(height: 8),
                   _switchTile(
-                    title: 'Lock photos until connected',
-                    subtitle:
-                        'Hide your photos from people you are not matched with yet. Off by default — turn this on if you want them private.',
+                    title: tr('Lock photos until connected'),
+                    subtitle: tr(
+                      'Hide your photos from people you are not matched with yet. Off by default — turn this on if you want them private.',
+                    ),
                     value: imagesLocked,
                     onChanged: (v) => _patch({'is_images_locked': v}),
                   ),
                   const SizedBox(height: 8),
                   _switchTile(
-                    title: 'Typing notifications',
-                    subtitle:
-                        'Get a banner when someone you are connected with starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                    title: tr('Typing notifications'),
+                    subtitle: tr(
+                      'Get a banner when someone you are connected with starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                    ),
                     value: typingPush,
                     onChanged: (v) => _patch({'typing_push_enabled': v}),
                   ),
@@ -275,13 +294,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // Support, above Profile & matching rather than buried at
                   // the bottom: a member looking for this is usually looking
                   // for it because something has gone wrong.
-                  _sectionTitle('Help'),
+                  _sectionTitle(tr('Help')),
                   const SizedBox(height: 12),
                   _linkTile(
                     icon: Icons.support_agent_rounded,
-                    title: 'Help & support',
-                    subtitle:
-                        'Payments, your account, verification, safety — ask us anything.',
+                    title: tr('Help & support'),
+                    subtitle: tr(
+                      'Payments, your account, verification, safety — ask us anything.',
+                    ),
                     onTap: () {
                       AppHaptics.selection();
                       context.push('/support');
@@ -289,12 +309,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
 
                   const SizedBox(height: 32),
-                  _sectionTitle('Profile & matching'),
+                  _sectionTitle(tr('Profile & matching')),
                   const SizedBox(height: 12),
                   _linkTile(
                     icon: Icons.tune_rounded,
-                    title: 'Partner preferences',
-                    subtitle: 'Age, denomination, castes, salary range…',
+                    title: tr('Partner preferences'),
+                    subtitle: tr('Age, denomination, castes, salary range…'),
                     onTap: () {
                       AppHaptics.selection();
                       context.push('/onboarding', extra: 5);
@@ -303,15 +323,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 12),
                   _linkTile(
                     icon: Icons.block_rounded,
-                    title: 'Blocked accounts',
-                    subtitle: 'Block or report from someone’s profile.',
+                    title: tr('Blocked accounts'),
+                    subtitle: tr('Block or report from someone’s profile.'),
                     onTap: () {
                       AppHaptics.selection();
                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                         SnackBar(
                           behavior: SnackBarBehavior.floating,
                           content: Text(
-                            'Use ⋮ or report on any profile screen to block.',
+                            tr(
+                              'Use ⋮ or report on any profile screen to block.',
+                            ),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white,
                             ),
@@ -346,7 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Log out',
+                              tr('Log out'),
                               style: AppTextStyles.labelLarge.copyWith(
                                 color: AppColors.error,
                               ),
@@ -398,8 +420,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 children: [
                                   Text(
                                     _deletionRequestedAt != null
-                                        ? 'Account deletion requested'
-                                        : 'Delete account',
+                                        ? tr('Account deletion requested')
+                                        : tr('Delete account'),
                                     style: AppTextStyles.labelLarge.copyWith(
                                       color: _deletionRequestedAt != null
                                           ? AppColors.textTertiary
@@ -411,7 +433,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     _deletionRequestedAt != null
                                         ? 'Requested on ${_date(_deletionRequestedAt!)}. '
                                               'Our team will delete your account and sign you out.'
-                                        : 'Ask our team to erase your profile, photos, and messages',
+                                        : tr(
+                                            'Ask our team to erase your profile, photos, and messages',
+                                          ),
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.textTertiary,
                                     ),
@@ -430,7 +454,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Notifications use your device permissions. Critical alerts still reach you inside the app.',
+                    tr(
+                      'Notifications use your device permissions. Critical alerts still reach you inside the app.',
+                    ),
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.textTertiary,
                     ),

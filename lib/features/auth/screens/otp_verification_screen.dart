@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -157,7 +158,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   const SizedBox(height: 24),
 
                   Text(
-                    'Verify Code',
+                    tr('Verify Code'),
                     style: AppTextStyles.displaySmall,
                   ).animate().fadeIn(duration: 400.ms).slideX(),
 
@@ -165,7 +166,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                   Text.rich(
                     TextSpan(
-                      text: 'Code sent to ',
+                      text: tr('Code sent to '),
                       style: AppTextStyles.bodyLarge,
                       children: [
                         TextSpan(
@@ -215,7 +216,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         : TextButton(
                             onPressed: isLoading ? null : _resendOtp,
                             child: Text(
-                              'Resend Code',
+                              tr('Resend Code'),
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: AppColors.gold,
                               ),
@@ -226,7 +227,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   const Spacer(),
 
                   AppButton(
-                        label: 'Verify',
+                        label: tr('Verify'),
                         isLoading: isLoading,
                         onPressed: pinputController.text.length == 6
                             ? () => _verifyOtp(pinputController.text)

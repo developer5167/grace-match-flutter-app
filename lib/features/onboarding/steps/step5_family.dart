@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -133,7 +134,7 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _fieldLabel('Family Type'),
+          _fieldLabel(tr('Family Type')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -149,7 +150,7 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
           ),
           const SizedBox(height: 24),
 
-          _fieldLabel('Family Values'),
+          _fieldLabel(tr('Family Values')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -185,7 +186,7 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
                   color: AppColors.gold,
                 ),
                 label: Text(
-                  'Add Sibling',
+                  tr('Add Sibling'),
                   style: TextStyle(color: AppColors.gold),
                 ),
               ),
@@ -238,13 +239,13 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
                       ..selection = TextSelection.collapsed(
                         offset: sib.education.length,
                       ),
-                    decoration: const InputDecoration(
-                      hintText: 'Education / Study',
+                    decoration: InputDecoration(
+                      hintText: tr('Education / Study'),
                       isDense: true,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _fieldLabel('Marital Status'),
+                  _fieldLabel(tr('Marital Status')),
                   Wrap(
                     spacing: 8,
                     children: _maritalStatuses
@@ -286,7 +287,7 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelSmall.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),
@@ -328,7 +329,7 @@ class _Step5FamilyState extends OnboardingStepState<Step5Family> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

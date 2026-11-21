@@ -1,4 +1,5 @@
 import '../../../core/notifications/push_center.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../discover/widgets/profile_list_card.dart' show denominationLabels;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -89,7 +90,7 @@ class _InterestsScreenState extends State<InterestsScreen>
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: Text('Interests', style: AppTextStyles.headlineMedium),
+            title: Text(tr('Interests'), style: AppTextStyles.headlineMedium),
             elevation: 0,
             backgroundColor: AppColors.background,
             bottom: TabBar(
@@ -164,13 +165,17 @@ class _InterestsScreenState extends State<InterestsScreen>
   }) {
     if (items.isEmpty) {
       String title = isMatch
-          ? 'No accepted interests yet'
-          : (isReceived ? 'No interests received' : 'No interests sent');
+          ? tr('No accepted interests yet')
+          : (isReceived
+                ? tr('No interests received')
+                : tr('No interests sent'));
       String desc = isMatch
-          ? 'When an interest is accepted on either side, you can talk here.'
+          ? tr(
+              'When an interest is accepted on either side, you can talk here.',
+            )
           : isReceived
-          ? 'Interests other members send you will appear here.'
-          : 'Send an interest from Discover to start a conversation.';
+          ? tr('Interests other members send you will appear here.')
+          : tr('Send an interest from Discover to start a conversation.');
       return LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -251,8 +256,10 @@ class _InterestsScreenState extends State<InterestsScreen>
                           const SizedBox(height: 4),
                           Text(
                             [
-                                  denominationLabels[profile['denomination']
-                                      ?.toString()],
+                                  if (denominationLabels[profile['denomination']
+                                          ?.toString()]
+                                      case final d?)
+                                    tr(d),
                                   profile['profession']?.toString(),
                                 ]
                                 .whereType<String>()
@@ -289,7 +296,7 @@ class _InterestsScreenState extends State<InterestsScreen>
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             visualDensity: VisualDensity.compact,
                           ),
-                          child: const Text('Accept'),
+                          child: Text(tr('Accept')),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -313,7 +320,7 @@ class _InterestsScreenState extends State<InterestsScreen>
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             visualDensity: VisualDensity.compact,
                           ),
-                          child: const Text('Decline'),
+                          child: Text(tr('Decline')),
                         ),
                       ),
                     ],
@@ -349,7 +356,7 @@ class _InterestsScreenState extends State<InterestsScreen>
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       ),
-                      child: const Text('Message'),
+                      child: Text(tr('Message')),
                     ),
                   ),
                 ],

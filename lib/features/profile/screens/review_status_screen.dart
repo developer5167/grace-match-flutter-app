@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/notifications/push_center.dart';
@@ -191,7 +192,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                       )
                     else
                       AppButton(
-                        label: 'Refresh status',
+                        label: tr('Refresh status'),
                         isLoading: _loading,
                         onPressed: _reload,
                       ),
@@ -199,7 +200,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                     TextButton(
                       onPressed: () => context.push('/support'),
                       child: Text(
-                        'Contact support',
+                        tr('Contact support'),
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.gold,
                         ),
@@ -212,7 +213,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         context.go('/auth/phone');
                       },
                       child: Text(
-                        'Sign out',
+                        tr('Sign out'),
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.textTertiary,
                         ),

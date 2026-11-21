@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -95,7 +96,9 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'You are almost done!\nGraceMatch is excited to welcome you.',
+                    tr(
+                      'You are almost done!\nGraceMatch is excited to welcome you.',
+                    ),
                     style: AppTextStyles.headlineSmall.copyWith(
                       color: AppColors.textOnGold,
                     ),
@@ -106,7 +109,7 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
           ),
           const SizedBox(height: 32),
 
-          _fieldLabel('This profile is managed by'),
+          _fieldLabel(tr('This profile is managed by')),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -142,32 +145,34 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
               Expanded(
                 child: Text.rich(
                   TextSpan(
-                    text:
-                        'I confirm the details provided are true and I agree to the ',
+                    text: tr(
+                      'I confirm the details provided are true and I agree to the ',
+                    ),
                     style: AppTextStyles.bodyMedium,
                     children: [
                       TextSpan(
-                        text: 'Terms & Community Rules',
+                        text: tr('Terms & Community Rules'),
                         recognizer: _termsTap,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.gold,
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                      const TextSpan(text: ' and '),
+                      TextSpan(text: tr(' and ')),
                       TextSpan(
-                        text: 'Privacy Policy',
+                        text: tr('Privacy Policy'),
                         recognizer: _privacyTap,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.gold,
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                      const TextSpan(
-                        text:
-                            '. I understand there is zero tolerance for abusive '
-                            'or objectionable content, and accounts that post it '
-                            'are removed.',
+                      TextSpan(
+                        text: tr(
+                          '. I understand there is zero tolerance for abusive '
+                          'or objectionable content, and accounts that post it '
+                          'are removed.',
+                        ),
                       ),
                     ],
                   ),
@@ -206,7 +211,7 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

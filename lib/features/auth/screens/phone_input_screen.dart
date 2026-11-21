@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/language_switch.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,7 +93,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
 
                   // Title
                   Text(
-                    'What\'s your number?',
+                    tr('What\'s your number?'),
                     style: AppTextStyles.displaySmall,
                   ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
 
@@ -99,7 +101,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
 
                   // Subtitle
                   Text(
-                        'We will send a code to verify your identity.',
+                        tr('We will send a code to verify your identity.'),
                         style: AppTextStyles.bodyLarge,
                       )
                       .animate()
@@ -122,11 +124,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       onTap: () => context.push('/terms'),
                       child: Text.rich(
                         TextSpan(
-                          text: 'By continuing, you agree to our ',
+                          text: tr('By continuing, you agree to our '),
                           style: AppTextStyles.labelSmall,
                           children: [
                             TextSpan(
-                              text: 'Terms & Community Rules',
+                              text: tr('Terms & Community Rules'),
                               style: AppTextStyles.labelSmall.copyWith(
                                 color: AppColors.gold,
                                 decoration: TextDecoration.underline,
@@ -142,7 +144,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                   const SizedBox(height: 16),
 
                   AppButton(
-                        label: 'Continue',
+                        label: tr('Continue'),
                         isLoading: isLoading,
                         onPressed: _isValid ? _onContinue : null,
                       )
@@ -171,6 +173,12 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
         ),
         onPressed: () => context.pop(),
       ),
+      actions: const [
+        Padding(
+          padding: EdgeInsets.only(right: 16),
+          child: Center(child: LanguageSwitch()),
+        ),
+      ],
     );
   }
 

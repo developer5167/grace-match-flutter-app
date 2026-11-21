@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -74,7 +75,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Gender
-          Text('I am a', style: AppTextStyles.labelLarge),
+          Text(tr('I am a'), style: AppTextStyles.labelLarge),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -98,7 +99,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           const SizedBox(height: 24),
 
           // Looking for
-          Text('Looking for a', style: AppTextStyles.labelLarge),
+          Text(tr('Looking for a'), style: AppTextStyles.labelLarge),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -122,17 +123,17 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
           const SizedBox(height: 24),
 
           // Name
-          _fieldLabel('First Name'),
+          _fieldLabel(tr('First Name')),
           _inputField(_nameCtrl, 'e.g. Samuel'),
           const SizedBox(height: 20),
 
           // DOB
-          _fieldLabel('Date of Birth'),
+          _fieldLabel(tr('Date of Birth')),
           _dobPicker(),
           const SizedBox(height: 20),
 
           // City
-          _fieldLabel('City'),
+          _fieldLabel(tr('City')),
           _inputField(_cityCtrl, 'e.g. Hyderabad'),
           const SizedBox(height: 32),
         ],
@@ -173,7 +174,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
               Text(emoji, style: const TextStyle(fontSize: 32)),
               const SizedBox(height: 8),
               Text(
-                label,
+                tr(label),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: isSelected ? AppColors.gold : AppColors.textSecondary,
                 ),
@@ -229,15 +230,17 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Adults only', style: AppTextStyles.headlineSmall),
+        title: Text(tr('Adults only'), style: AppTextStyles.headlineSmall),
         content: Text(
-          'GraceMatch is only for adults aged 18 and over, so we can\'t create an account for you.',
+          tr(
+            'GraceMatch is only for adults aged 18 and over, so we can\'t create an account for you.',
+          ),
           style: AppTextStyles.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('OK', style: TextStyle(color: AppColors.gold)),
+            child: Text(tr('OK'), style: TextStyle(color: AppColors.gold)),
           ),
         ],
       ),
@@ -290,7 +293,7 @@ class _Step1BasicState extends OnboardingStepState<Step1Basic> {
               child: Text(
                 _dob != null
                     ? '${_dob!.day}/${_dob!.month}/${_dob!.year}'
-                    : 'Select date of birth',
+                    : tr('Select date of birth'),
                 style: _dob != null
                     ? AppTextStyles.labelLarge
                     : AppTextStyles.bodyMedium,

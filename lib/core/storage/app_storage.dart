@@ -87,6 +87,10 @@ class AppStorage {
     _prefs = await Hive.openBox('prefs');
   }
 
+  /// 'en' or 'te'. Kept on sign-out: it is the phone's setting, not the account's.
+  static String? getLanguage() => _prefs.get('app_language') as String?;
+  static void saveLanguage(String code) => _prefs.put('app_language', code);
+
   static void saveOnboardingStep(int step) =>
       _prefs.put(StorageKeys.onboardingStep, step);
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -148,9 +149,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Browse', style: AppTextStyles.headlineLarge),
+                      Text(tr('Browse'), style: AppTextStyles.headlineLarge),
                       Text(
-                        'Find any profile by its ID',
+                        tr('Find any profile by its ID'),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.gold,
                         ),
@@ -159,7 +160,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                   ),
                   const Spacer(),
                   IconButton(
-                    tooltip: 'Filters',
+                    tooltip: tr('Filters'),
                     onPressed: _openFilters,
                     icon: Badge(
                       isLabelVisible: hasFilters,
@@ -181,7 +182,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Search by name or profile ID (GM-…)',
+                  hintText: tr('Search by name or profile ID (GM-…)'),
                   hintStyle: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -189,7 +190,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                   suffixIcon: _search.text.isEmpty
                       ? null
                       : IconButton(
-                          tooltip: 'Clear',
+                          tooltip: tr('Clear'),
                           icon: const Icon(
                             Icons.close_rounded,
                             color: AppColors.textSecondary,
@@ -227,9 +228,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _chip('All', null),
-                  _chip('Interest sent', 'liked'),
-                  _chip('Not contacted', 'passed'),
+                  _chip(tr('All'), null),
+                  _chip(tr('Interest sent'), 'liked'),
+                  _chip(tr('Not contacted'), 'passed'),
                 ],
               ),
             ),
@@ -291,7 +292,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
         _error!,
         action: TextButton(
           onPressed: _reload,
-          child: Text('Try again', style: TextStyle(color: AppColors.gold)),
+          child: Text(tr('Try again'), style: TextStyle(color: AppColors.gold)),
         ),
       );
     }
@@ -339,7 +340,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                     ? TextButton(
                         onPressed: _loadMore,
                         child: Text(
-                          'Load more',
+                          tr('Load more'),
                           style: TextStyle(color: AppColors.gold),
                         ),
                       )
@@ -474,7 +475,10 @@ class _BrowseScreenState extends State<BrowseScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
-      child: Text(text, style: AppTextStyles.labelSmall.copyWith(color: color)),
+      child: Text(
+        tr(text),
+        style: AppTextStyles.labelSmall.copyWith(color: color),
+      ),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/dio_client.dart';
@@ -20,7 +21,7 @@ class ProfileSafetyMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      tooltip: 'More',
+      tooltip: tr('More'),
       icon: Icon(Icons.more_vert_rounded, color: AppColors.gold),
       color: AppColors.surfaceHighest,
       onSelected: (v) => v == 'report' ? _report(context) : _block(context),
@@ -30,8 +31,8 @@ class ProfileSafetyMenu extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.flag_rounded, color: AppColors.error, size: 20),
-              const SizedBox(width: 10),
-              Text('Report profile', style: AppTextStyles.bodyMedium),
+              SizedBox(width: 10),
+              Text(tr('Report profile'), style: AppTextStyles.bodyMedium),
             ],
           ),
         ),
@@ -39,12 +40,12 @@ class ProfileSafetyMenu extends StatelessWidget {
           value: 'block',
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.block_rounded,
                 color: AppColors.textSecondary,
                 size: 20,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text('Block $name', style: AppTextStyles.bodyMedium),
             ],
           ),
@@ -60,8 +61,10 @@ class ProfileSafetyMenu extends StatelessWidget {
         backgroundColor: AppColors.surfaceElevated,
         title: Text('Block $name?', style: AppTextStyles.labelLarge),
         content: Text(
-          'You will not see each other anywhere in Grace Match, and they '
-          'cannot contact you. You can unblock them later in Settings.',
+          tr(
+            'You will not see each other anywhere in Grace Match, and they '
+            'cannot contact you. You can unblock them later in Settings.',
+          ),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -69,14 +72,11 @@ class ProfileSafetyMenu extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(tr('Cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Block',
-              style: TextStyle(color: AppColors.error),
-            ),
+            child: Text(tr('Block'), style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -102,42 +102,44 @@ class ProfileSafetyMenu extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Our team reviews every report. They will not be told who '
-                  'reported them, and they will be blocked from contacting you.',
+                  tr(
+                    'Our team reviews every report. They will not be told who '
+                    'reported them, and they will be blocked from contacting you.',
+                  ),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   initialValue: reason,
                   dropdownColor: AppColors.surfaceHighest,
                   style: AppTextStyles.bodyMedium,
-                  decoration: const InputDecoration(isDense: true),
-                  items: const [
+                  decoration: InputDecoration(isDense: true),
+                  items: [
                     DropdownMenuItem(
                       value: 'fake_profile',
-                      child: Text('Fake profile'),
+                      child: Text(tr('Fake profile')),
                     ),
                     DropdownMenuItem(
                       value: 'inappropriate',
-                      child: Text('Inappropriate photos or text'),
+                      child: Text(tr('Inappropriate photos or text')),
                     ),
                     DropdownMenuItem(
                       value: 'harassment',
-                      child: Text('Harassment or abuse'),
+                      child: Text(tr('Harassment or abuse')),
                     ),
                     DropdownMenuItem(
                       value: 'money_request',
-                      child: Text('Asked for money'),
+                      child: Text(tr('Asked for money')),
                     ),
                     DropdownMenuItem(
                       value: 'already_married',
-                      child: Text('Already married'),
+                      child: Text(tr('Already married')),
                     ),
                     DropdownMenuItem(
                       value: 'other',
-                      child: Text('Something else'),
+                      child: Text(tr('Something else')),
                     ),
                   ],
                   onChanged: (v) => setLocal(() => reason = v ?? reason),
@@ -149,7 +151,7 @@ class ProfileSafetyMenu extends StatelessWidget {
                   maxLength: 500,
                   style: AppTextStyles.bodySmall,
                   decoration: InputDecoration(
-                    hintText: 'What happened? (optional)',
+                    hintText: tr('What happened? (optional)'),
                     hintStyle: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textTertiary,
                     ),
@@ -161,12 +163,12 @@ class ProfileSafetyMenu extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
+              child: Text(tr('Cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(
-                'Report and block',
+              child: Text(
+                tr('Report and block'),
                 style: TextStyle(color: AppColors.error),
               ),
             ),
@@ -207,8 +209,8 @@ class ProfileSafetyMenu extends StatelessWidget {
       }
     } catch (_) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Could not send. Please try again.'),
+        SnackBar(
+          content: Text(tr('Could not send. Please try again.')),
           backgroundColor: AppColors.error,
         ),
       );

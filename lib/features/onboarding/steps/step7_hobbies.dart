@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/network/dio_client.dart';
@@ -76,7 +77,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
           _selectedHobbyIds.add(id);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You can select up to 10 hobbies.')),
+            SnackBar(content: Text(tr('You can select up to 10 hobbies.'))),
           );
         }
       }
@@ -93,7 +94,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
     if (_hobbies.isEmpty) {
       return Center(
         child: Text(
-          'Unable to load hobbies. Please try again.',
+          tr('Unable to load hobbies. Please try again.'),
           style: AppTextStyles.bodyMedium,
         ),
       );
@@ -106,7 +107,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
         children: [
           Row(
             children: [
-              Text('Selected: ', style: AppTextStyles.labelMedium),
+              Text(tr('Selected: '), style: AppTextStyles.labelMedium),
               Text(
                 '${_selectedHobbyIds.length}/10',
                 style: AppTextStyles.labelMedium.copyWith(
@@ -117,7 +118,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
           ),
           const SizedBox(height: 20),
 
-          Text('Choose your hobbies', style: AppTextStyles.labelLarge),
+          Text(tr('Choose your hobbies'), style: AppTextStyles.labelLarge),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -153,7 +154,7 @@ class _Step7HobbiesState extends OnboardingStepState<Step7Hobbies>
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

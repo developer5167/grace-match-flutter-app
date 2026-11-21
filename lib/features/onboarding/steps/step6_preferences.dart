@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -160,7 +161,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _fieldLabel('Age Range (Years)'),
+            _fieldLabel(tr('Age Range (Years)')),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -184,7 +185,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             ),
             const SizedBox(height: 24),
 
-            _fieldLabel('Height Range (cm)'),
+            _fieldLabel(tr('Height Range (cm)')),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -208,7 +209,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             ),
             const SizedBox(height: 24),
 
-            _fieldLabel('Preferred Denominations'),
+            _fieldLabel(tr('Preferred Denominations')),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -226,7 +227,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             // Flexibility checkbox removed as per single-select requirement
             const SizedBox(height: 24),
 
-            _fieldLabel('Profession Preference'),
+            _fieldLabel(tr('Profession Preference')),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -242,7 +243,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
             ),
             const SizedBox(height: 24),
 
-            _fieldLabel('Annual Salary Range (Lakhs)'),
+            _fieldLabel(tr('Annual Salary Range (Lakhs)')),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -296,7 +297,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),
@@ -320,7 +321,7 @@ class _Step6PreferencesState extends OnboardingStepState<Step6Preferences> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: AppTextStyles.labelMedium.copyWith(
             color: isSelected ? AppColors.gold : AppColors.textSecondary,
           ),

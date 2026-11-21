@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -139,12 +140,15 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
             padding: const EdgeInsets.fromLTRB(24, 8, 8, 4),
             child: Row(
               children: [
-                Text('Filter profiles', style: AppTextStyles.headlineMedium),
+                Text(
+                  tr('Filter profiles'),
+                  style: AppTextStyles.headlineMedium,
+                ),
                 const Spacer(),
                 TextButton(
                   onPressed: _resetFilters,
                   child: Text(
-                    'Reset All',
+                    tr('Reset All'),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.gold,
                     ),
@@ -204,8 +208,8 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Apply Filters',
+              child: Text(
+                tr('Apply Filters'),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
@@ -227,7 +231,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
   Widget _sectionLabel(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 14),
     child: Text(
-      text,
+      tr(text),
       style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
     ),
   );
@@ -248,7 +252,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionLabel('Age Range'),
+            _sectionLabel(tr('Age Range')),
             Text(
               '${_ageRange.start.round()} – ${_ageRange.end.round()} yrs',
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
@@ -268,8 +272,8 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('18 yrs', style: AppTextStyles.bodySmall),
-            Text('60 yrs', style: AppTextStyles.bodySmall),
+            Text(tr('18 yrs'), style: AppTextStyles.bodySmall),
+            Text(tr('60 yrs'), style: AppTextStyles.bodySmall),
           ],
         ),
       ],
@@ -284,7 +288,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionLabel('Height Range'),
+            _sectionLabel(tr('Height Range')),
             Text(
               '${_heightRange.start.round()} – ${_heightRange.end.round()} cm',
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
@@ -304,8 +308,8 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('140 cm', style: AppTextStyles.bodySmall),
-            Text('220 cm', style: AppTextStyles.bodySmall),
+            Text(tr('140 cm'), style: AppTextStyles.bodySmall),
+            Text(tr('220 cm'), style: AppTextStyles.bodySmall),
           ],
         ),
       ],
@@ -317,7 +321,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('Preferred Denomination'),
+        _sectionLabel(tr('Preferred Denomination')),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -345,7 +349,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                   ),
                 ),
                 child: Text(
-                  d,
+                  tr(d),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: selected ? AppColors.gold : AppColors.textSecondary,
                   ),
@@ -363,9 +367,11 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('Planning to marry'),
+        _sectionLabel(tr('Planning to marry')),
         Text(
-          _intents.isEmpty ? 'Any timeline' : 'Only the timelines you choose',
+          _intents.isEmpty
+              ? tr('Any timeline')
+              : tr('Only the timelines you choose'),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textTertiary,
           ),
@@ -397,7 +403,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
                   ),
                 ),
                 child: Text(
-                  e.value,
+                  tr(e.value),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: selected ? AppColors.gold : AppColors.textSecondary,
                   ),
@@ -408,15 +414,15 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         ),
         const SizedBox(height: 16),
         _faithSwitch(
-          'Baptised only',
-          'Show only members who are baptised',
+          tr('Baptised only'),
+          tr('Show only members who are baptised'),
           _baptisedOnly,
           (v) => setState(() => _baptisedOnly = v),
         ),
         const SizedBox(height: 8),
         _faithSwitch(
-          'Serves in church',
-          'Choir, worship, Sunday school, youth and other ministries',
+          tr('Serves in church'),
+          tr('Choir, worship, Sunday school, youth and other ministries'),
           _servesInChurch,
           (v) => setState(() => _servesInChurch = v),
         ),
@@ -460,7 +466,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('Profession Preference'),
+        _sectionLabel(tr('Profession Preference')),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -506,7 +512,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionLabel('Annual Salary'),
+            _sectionLabel(tr('Annual Salary')),
             Text(
               '${_salaryRange.start.round()}L – ${_salaryRange.end.round()}L+',
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
@@ -542,9 +548,9 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionLabel('City / Location'),
+            _sectionLabel(tr('City / Location')),
             _flexibleToggle(
-              label: 'Anywhere',
+              label: tr('Anywhere'),
               value: _locationFlexible,
               onChanged: (v) => setState(() => _locationFlexible = v),
             ),
@@ -555,7 +561,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
             controller: _locationCtrl,
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
-              hintText: 'e.g. Hyderabad, Vijayawada',
+              hintText: tr('e.g. Hyderabad, Vijayawada'),
               hintStyle: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -587,11 +593,11 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionLabel('Caste Preference'),
+            _sectionLabel(tr('Caste Preference')),
             Text(
               _casteFlexible
-                  ? 'Open to all castes'
-                  : 'Match my saved preference',
+                  ? tr('Open to all castes')
+                  : tr('Match my saved preference'),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -599,7 +605,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
           ],
         ),
         _flexibleToggle(
-          label: 'Flexible',
+          label: tr('Flexible'),
           value: _casteFlexible,
           onChanged: (v) => setState(() => _casteFlexible = v),
         ),
@@ -616,7 +622,7 @@ class _DiscoverFilterSheetState extends State<DiscoverFilterSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          label,
+          tr(label),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),

@@ -1,5 +1,6 @@
 import 'dart:math' show pi;
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_colors.dart';
@@ -75,10 +76,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     if (!mounted) return;
     if (userId == null || userId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
           content: Text(
-            'Your profile link is not ready yet. Pull to refresh and try again.',
+            tr(
+              'Your profile link is not ready yet. Pull to refresh and try again.',
+            ),
           ),
         ),
       );
@@ -95,9 +98,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text('Could not open the share sheet. Try again.'),
+          content: Text(tr('Could not open the share sheet. Try again.')),
         ),
       );
     }
@@ -198,7 +201,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     pinned: true,
                     centerTitle: false,
                     title: Text(
-                      'My Profile',
+                      tr('My Profile'),
                       style: AppTextStyles.headlineLarge,
                     ),
                     actions: [
@@ -207,7 +210,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           Icons.ios_share_rounded,
                           color: AppColors.gold,
                         ),
-                        tooltip: 'Share Profile',
+                        tooltip: tr('Share Profile'),
                         onPressed: () => _shareProfile(name, accountId),
                       ),
                       IconButton(
@@ -338,7 +341,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                     Icons.remove_red_eye_rounded,
                                     size: 18,
                                   ),
-                                  label: const Text('Preview'),
+                                  label: Text(tr('Preview')),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: AppColors.gold,
                                     side: BorderSide(color: AppColors.goldMild),
@@ -362,7 +365,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                     Icons.ios_share_rounded,
                                     size: 18,
                                   ),
-                                  label: const Text('Share'),
+                                  label: Text(tr('Share')),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: AppColors.gold,
                                     side: BorderSide(color: AppColors.goldMild),
@@ -433,7 +436,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Video Identity Available',
+                                    tr('Video Identity Available'),
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.gold,
                                     ),
@@ -541,9 +544,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                 await ProfileRepository().activateSpotlight();
                                 if (!mounted) return;
                                 messenger.showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'You are at the top of Discover for 24 hours',
+                                      tr(
+                                        'You are at the top of Discover for 24 hours',
+                                      ),
                                     ),
                                   ),
                                 );
@@ -694,7 +699,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('My Photos', style: AppTextStyles.labelLarge),
+                  child: Text(tr('My Photos'), style: AppTextStyles.labelLarge),
                 ),
                 GestureDetector(
                   onTap: () => context.push('/onboarding', extra: 7),
@@ -709,7 +714,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       border: Border.all(color: AppColors.goldMild),
                     ),
                     child: Text(
-                      'Manage',
+                      tr('Manage'),
                       style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.gold,
                       ),
@@ -744,7 +749,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Some photos were rejected. Tap Manage to upload replacements.',
+                        tr(
+                          'Some photos were rejected. Tap Manage to upload replacements.',
+                        ),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: Colors.red,
                         ),
@@ -777,7 +784,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Some photos are awaiting admin review before becoming visible.',
+                        tr(
+                          'Some photos are awaiting admin review before becoming visible.',
+                        ),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: Colors.amber,
                         ),
@@ -920,7 +929,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 ),
               ),
               child: Text(
-                'Primary',
+                tr('Primary'),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.overline.copyWith(color: AppColors.gold),
               ),
@@ -989,9 +998,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppTextStyles.labelLarge),
+                    Text(tr(title), style: AppTextStyles.labelLarge),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: AppTextStyles.labelSmall),
+                    Text(tr(subtitle), style: AppTextStyles.labelSmall),
                   ],
                 ),
               ),
