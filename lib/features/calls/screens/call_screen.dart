@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -110,7 +111,7 @@ class _CallScreenState extends State<CallScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Upgrade to call', style: AppTextStyles.headlineMedium),
+        title: Text(tr('Upgrade to call'), style: AppTextStyles.headlineMedium),
         content: Text(message, style: AppTextStyles.bodyMedium),
         actions: [
           TextButton(
@@ -118,7 +119,7 @@ class _CallScreenState extends State<CallScreen> {
               Navigator.of(ctx).pop();
               _leave();
             },
-            child: const Text('Not now'),
+            child: Text(tr('Not now')),
           ),
           TextButton(
             onPressed: () {
@@ -126,7 +127,7 @@ class _CallScreenState extends State<CallScreen> {
               _leave();
               AppRouter.router.push('/subscription');
             },
-            child: const Text('See plans'),
+            child: Text(tr('See plans')),
           ),
         ],
       ),
@@ -136,7 +137,7 @@ class _CallScreenState extends State<CallScreen> {
   String get _status {
     final s = _session;
     if (s == null) return '';
-    if (s.phase == CallPhase.ended) return s.error ?? 'Call ended';
+    if (s.phase == CallPhase.ended) return s.error ?? tr('Call ended');
     if (s.reconnecting) return 'Reconnecting…';
     switch (s.phase) {
       case CallPhase.idle:
@@ -149,7 +150,7 @@ class _CallScreenState extends State<CallScreen> {
       case CallPhase.connected:
         return _elapsed;
       case CallPhase.ended:
-        return 'Call ended';
+        return tr('Call ended');
     }
   }
 
@@ -235,7 +236,7 @@ class _CallScreenState extends State<CallScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip: 'Back to the app',
+                    tooltip: tr('Back to the app'),
                     onPressed: _minimise,
                     icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,

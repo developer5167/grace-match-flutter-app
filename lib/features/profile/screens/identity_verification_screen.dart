@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
@@ -116,12 +117,12 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         _dlMessage =
             last?['message']?.toString() ??
             (last?['outcome'] == 'denied'
-                ? 'Verification was cancelled. Nothing was shared.'
-                : 'Verification did not complete. Please try again.');
+                ? tr('Verification was cancelled. Nothing was shared.')
+                : tr('Verification did not complete. Please try again.'));
       }
     });
     if (afterDigiLocker && _idVerified && !wasVerified) {
-      _toast('Your identity is verified.', ok: true);
+      _toast(tr('Your identity is verified.'), ok: true);
     }
   }
 
@@ -173,7 +174,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         _errorText(
           e,
           e is DioException
-              ? 'Could not start DigiLocker verification.'
+              ? tr('Could not start DigiLocker verification.')
               : e.toString().replaceFirst('Exception: ', ''),
         ),
       );
@@ -213,11 +214,11 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         _idRejection = null;
       });
       _toast(
-        'Received. Our team will review it, usually within a day.',
+        tr('Received. Our team will review it, usually within a day.'),
         ok: true,
       );
     } catch (e) {
-      _toast(_errorText(e, 'Upload failed. Please try again.'));
+      _toast(_errorText(e, tr('Upload failed. Please try again.')));
     } finally {
       if (mounted) setState(() => _uploadingDocument = false);
     }
@@ -246,9 +247,14 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         }),
       );
       setState(() => _selfiePending = true);
-      _toast('Selfie received. Our team will confirm it shortly.', ok: true);
+      _toast(
+        tr('Selfie received. Our team will confirm it shortly.'),
+        ok: true,
+      );
     } catch (e) {
-      _toast(_errorText(e, 'Could not upload the selfie. Please try again.'));
+      _toast(
+        _errorText(e, tr('Could not upload the selfie. Please try again.')),
+      );
     } finally {
       if (mounted) setState(() => _uploadingSelfie = false);
     }
@@ -274,14 +280,14 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
                 children: [
                   _sectionTitle(
                     'Identity',
-                    'Earns the Verified tick on your profile',
+                    tr('Earns the Verified tick on your profile'),
                   ),
                   const SizedBox(height: 12),
                   ..._identitySection(),
                   const SizedBox(height: 36),
                   _sectionTitle(
                     'Photos',
-                    'Shows members your photos are really you',
+                    tr('Shows members your photos are really you'),
                   ),
                   const SizedBox(height: 12),
                   _photoSection(),
@@ -382,7 +388,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
 
   List<Widget> _identitySection() {
     if (_idVerified) {
-      return [_doneCard(Icons.verified_rounded, 'Identity verified')];
+      return [_doneCard(Icons.verified_rounded, tr('Identity verified'))];
     }
 
     // DigiLocker not set up on the server yet: a reviewed document is the
@@ -413,11 +419,16 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
               ],
             ),
             const SizedBox(height: 8),
-            Text('Verify with DigiLocker', style: AppTextStyles.headlineSmall),
+            Text(
+              tr('Verify with DigiLocker'),
+              style: AppTextStyles.headlineSmall,
+            ),
             const SizedBox(height: 6),
             Text(
-              'Sign in to DigiLocker and approve sharing. We check your name, date of birth '
-              'and gender against your profile. Your Aadhaar number is never shared with us.',
+              tr(
+                'Sign in to DigiLocker and approve sharing. We check your name, date of birth '
+                'and gender against your profile. Your Aadhaar number is never shared with us.',
+              ),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -433,7 +444,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
             ],
             const SizedBox(height: 16),
             _goldButton(
-              'Continue with DigiLocker',
+              tr('Continue with DigiLocker'),
               _startDigiLocker,
               busy: _dlStarting,
             ),
@@ -465,8 +476,12 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
     if (_documentPending) {
       return _waitingCard(
         passportOnly
-            ? 'Your passport is with our team. We usually review it within a day.'
-            : 'Your document is with our team. We usually review it within a day.',
+            ? tr(
+                'Your passport is with our team. We usually review it within a day.',
+              )
+            : tr(
+                'Your document is with our team. We usually review it within a day.',
+              ),
       );
     }
 
@@ -475,10 +490,14 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
       children: [
         Text(
           passportOnly
-              ? 'Upload a clear photo of your passport\'s photo page. Our team reviews it, '
-                    'usually within a day.'
-              : 'Upload a clear photo of a government ID (Aadhaar, PAN or passport). '
-                    'Our team reviews it, usually within a day.',
+              ? tr(
+                  'Upload a clear photo of your passport\'s photo page. Our team reviews it, '
+                  'usually within a day.',
+                )
+              : tr(
+                  'Upload a clear photo of a government ID (Aadhaar, PAN or passport). '
+                  'Our team reviews it, usually within a day.',
+                ),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -516,8 +535,8 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
                       const SizedBox(height: 10),
                       Text(
                         passportOnly
-                            ? 'Select passport photo'
-                            : 'Select ID photo',
+                            ? tr('Select passport photo')
+                            : tr('Select ID photo'),
                         style: AppTextStyles.labelMedium,
                       ),
                     ],
@@ -526,7 +545,9 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
         ),
         const SizedBox(height: 14),
         _goldButton(
-          _document == null ? 'Select a photo first' : 'Submit for review',
+          _document == null
+              ? tr('Select a photo first')
+              : tr('Submit for review'),
           _document == null ? null : _uploadDocument,
           busy: _uploadingDocument,
         ),
@@ -536,22 +557,29 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
 
   Widget _photoSection() {
     if (_photoVerified) {
-      return _doneCard(Icons.face_retouching_natural_rounded, 'Photo verified');
+      return _doneCard(
+        Icons.face_retouching_natural_rounded,
+        tr('Photo verified'),
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (_selfiePending) ...[
           _waitingCard(
-            'Your selfie is with our team. We compare it with your profile photo, '
-            'usually within a day.',
+            tr(
+              'Your selfie is with our team. We compare it with your profile photo, '
+              'usually within a day.',
+            ),
           ),
           const SizedBox(height: 12),
         ] else ...[
           Text(
-            'Take a clear selfie facing the camera, in good light, without sunglasses. '
-            'Our team compares it with your main profile photo. The selfie is never shown '
-            'to other members.',
+            tr(
+              'Take a clear selfie facing the camera, in good light, without sunglasses. '
+              'Our team compares it with your main profile photo. The selfie is never shown '
+              'to other members.',
+            ),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -559,7 +587,7 @@ class _IdentityVerificationScreenState extends State<IdentityVerificationScreen>
           const SizedBox(height: 14),
         ],
         _goldButton(
-          _selfiePending ? 'Retake selfie' : 'Take a selfie',
+          _selfiePending ? tr('Retake selfie') : tr('Take a selfie'),
           _takeSelfie,
           busy: _uploadingSelfie,
         ),

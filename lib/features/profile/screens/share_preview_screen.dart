@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -76,10 +77,10 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Profile unavailable', style: AppTextStyles.headlineSmall),
+            Text(tr('Profile unavailable'), style: AppTextStyles.headlineSmall),
             const SizedBox(height: 12),
             Text(
-              'This profile is private, or the link has expired.',
+              tr('This profile is private, or the link has expired.'),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -113,7 +114,10 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
               child: CachedNetworkImage(
                 imageUrl: photo,
                 fit: BoxFit.cover,
-                memCacheWidth: decodePx(context, MediaQuery.sizeOf(context).width),
+                memCacheWidth: decodePx(
+                  context,
+                  MediaQuery.sizeOf(context).width,
+                ),
               ),
             ),
           ),
@@ -155,7 +159,9 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
         ],
         const SizedBox(height: 24),
         Text(
-          'Full profile, photos and contact details are available after you log in.',
+          tr(
+            'Full profile, photos and contact details are available after you log in.',
+          ),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textTertiary,
           ),
@@ -172,8 +178,8 @@ class _SharePreviewScreenState extends State<SharePreviewScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          child: const Text(
-            'Log in to continue',
+          child: Text(
+            tr('Log in to continue'),
             style: TextStyle(fontWeight: FontWeight.w800),
           ),
         ),

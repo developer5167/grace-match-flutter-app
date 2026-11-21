@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -99,7 +100,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
           icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: Text('New message', style: AppTextStyles.headlineSmall),
+        title: Text(tr('New message'), style: AppTextStyles.headlineSmall),
       ),
       body: FutureBuilder<List<SupportCategory>>(
         future: _categories,
@@ -128,13 +129,13 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Could not reach support',
+                      tr('Could not reach support'),
                       style: AppTextStyles.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Check your connection and try again.',
+                      tr('Check your connection and try again.'),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -145,7 +146,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                       onPressed: () =>
                           setState(() => _categories = _repo.categories()),
                       child: Text(
-                        'Try again',
+                        tr('Try again'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.gold,
                         ),
@@ -160,7 +161,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
-              Text('What is this about?', style: AppTextStyles.labelLarge),
+              Text(tr('What is this about?'), style: AppTextStyles.labelLarge),
               const SizedBox(height: 10),
               ...categories.map(
                 (c) => _CategoryTile(
@@ -174,22 +175,27 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
               ),
 
               const SizedBox(height: 24),
-              Text('Give it a title', style: AppTextStyles.labelLarge),
+              Text(tr('Give it a title'), style: AppTextStyles.labelLarge),
               const SizedBox(height: 8),
               _field(
                 _subject,
-                'Charged but my plan did not activate',
+                tr('Charged but my plan did not activate'),
                 maxLines: 1,
                 maxLength: 160,
               ),
 
               const SizedBox(height: 20),
-              Text('Tell us what happened', style: AppTextStyles.labelLarge),
+              Text(
+                tr('Tell us what happened'),
+                style: AppTextStyles.labelLarge,
+              ),
               const SizedBox(height: 8),
               _field(
                 _message,
-                'The more detail the better — when it happened, what you saw, '
-                'and anything you have already tried.',
+                tr(
+                  'The more detail the better — when it happened, what you saw, '
+                  'and anything you have already tried.',
+                ),
                 maxLines: 6,
                 maxLength: 4000,
               ),
@@ -225,11 +231,14 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : Text('Send to support', style: AppTextStyles.buttonText),
+                    : Text(
+                        tr('Send to support'),
+                        style: AppTextStyles.buttonText,
+                      ),
               ),
               const SizedBox(height: 12),
               Text(
-                'We usually reply within a day.',
+                tr('We usually reply within a day.'),
                 style: AppTextStyles.overline.copyWith(
                   color: AppColors.textTertiary,
                 ),

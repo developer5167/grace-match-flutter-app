@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -69,8 +70,8 @@ class _OffersScreenState extends State<OffersScreen> {
           if (snap.hasError) {
             return _message(
               icon: Icons.cloud_off_rounded,
-              title: 'Could not load offers',
-              subtitle: 'Check your connection and pull down to try again.',
+              title: tr('Could not load offers'),
+              subtitle: tr('Check your connection and pull down to try again.'),
               onRetry: _refresh,
             );
           }
@@ -86,7 +87,7 @@ class _OffersScreenState extends State<OffersScreen> {
                   SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   _message(
                     icon: Icons.local_offer_outlined,
-                    title: 'No offers right now',
+                    title: tr('No offers right now'),
                     subtitle:
                         "When there's an offer for you, it will appear here "
                         'and you will get a notification.',
@@ -145,7 +146,7 @@ class _OffersScreenState extends State<OffersScreen> {
               TextButton(
                 onPressed: onRetry,
                 child: Text(
-                  'Try again',
+                  tr('Try again'),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.gold,
                   ),
@@ -204,7 +205,7 @@ class _OfferCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(100),
                             ),
                             child: Text(
-                              'JUST FOR YOU',
+                              tr('JUST FOR YOU'),
                               style: AppTextStyles.overline.copyWith(
                                 color: AppColors.rose,
                                 letterSpacing: 1.1,
@@ -260,7 +261,11 @@ class _OfferCard extends StatelessWidget {
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Code ${offer.code} copied'),
+                                  content: Text(
+                                    tr('Code {code} copied', {
+                                      'code': offer.code,
+                                    }),
+                                  ),
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: AppColors.surfaceHighest,
                                 ),
@@ -321,15 +326,15 @@ class _OfferCard extends StatelessWidget {
                       children: [
                         Text(
                           offer.planName == null
-                              ? 'Any plan'
-                              : 'On ${offer.planName}',
+                              ? tr('Any plan')
+                              : tr('On {plan}', {'plan': offer.planName}),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          spent ? 'Already used' : offer.expiryLabel,
+                          spent ? tr('Already used') : offer.expiryLabel,
                           style: AppTextStyles.overline.copyWith(
                             color: spent
                                 ? AppColors.textTertiary
@@ -356,7 +361,7 @@ class _OfferCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        offer.inProgress ? 'Continue' : 'Use offer',
+                        offer.inProgress ? 'Continue' : tr('Use offer'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: accent,
                         ),

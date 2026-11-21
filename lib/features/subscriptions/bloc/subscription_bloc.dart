@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:equatable/equatable.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../core/di/injection.dart' as di;
@@ -193,7 +194,9 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     emit(
       PaymentProcessed(
         success: false,
-        message: 'Payment Failed: ${event.response.message}',
+        message: tr('Payment failed: {reason}', {
+          'reason': event.response.message,
+        }),
       ),
     );
   }

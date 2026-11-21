@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -262,7 +263,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             TextButton(
               onPressed: _markAllRead,
               child: Text(
-                'Mark all read',
+                tr('Mark all read'),
                 style: AppTextStyles.labelSmall.copyWith(color: AppColors.gold),
               ),
             ),
@@ -285,8 +286,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (_error != null && _items.isEmpty) {
       return _empty(
         icon: Icons.cloud_off_rounded,
-        title: 'Could not load notifications',
-        subtitle: 'Pull down to try again.',
+        title: tr('Could not load notifications'),
+        subtitle: tr('Pull down to try again.'),
       );
     }
 
@@ -300,8 +301,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.22),
             _empty(
               icon: Icons.notifications_none_rounded,
-              title: 'Nothing yet',
-              subtitle: 'Interests, messages and offers will show up here.',
+              title: tr('Nothing yet'),
+              subtitle: tr('Interests, messages and offers will show up here.'),
             ),
           ],
         ),

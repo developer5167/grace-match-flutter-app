@@ -187,7 +187,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       if (mounted) {
         final msg = resp.data is Map && resp.data['message'] != null
             ? resp.data['message'].toString()
-            : 'Contact request sent ✓';
+            : tr('Contact request sent ✓');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.green),
         );
@@ -411,7 +411,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
             ? DateTime.parse(profile['date_of_birth'].toString())
             : null;
         final age = dob != null ? (DateTime.now().year - dob.year) : 26;
-        final bio = profile['bio'] ?? 'No bio provided yet.';
+        final bio = profile['bio'] ?? tr('No bio provided yet.');
         final hobbies =
             (data['hobbies'] as List?)
                 ?.map((h) {
@@ -426,7 +426,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
             [];
 
         String formatValue(String? val) {
-          if (val == null) return 'Not specified';
+          if (val == null) return tr('Not specified');
           return val
               .replaceAll('_', ' ')
               .split(' ')
@@ -465,8 +465,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             return IconButton(
                               tooltip: tr(
                                 starred
-                                    ? 'Remove from shortlist'
-                                    : 'Add to shortlist',
+                                    ? tr('Remove from shortlist')
+                                    : tr('Add to shortlist'),
                               ),
                               icon: AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 200),
@@ -494,8 +494,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                       content: Text(
                                         tr(
                                           starred
-                                              ? 'Removed from shortlist'
-                                              : 'Added to shortlist',
+                                              ? tr('Removed from shortlist')
+                                              : tr('Added to shortlist'),
                                         ),
                                       ),
                                       duration: const Duration(seconds: 2),
@@ -751,7 +751,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ).isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'Profile ID: ${profileCode(profile['user_id'] ?? widget.userId)}',
+                          tr('Profile ID: {id}', {
+                            'id': profileCode(
+                              profile['user_id'] ?? widget.userId,
+                            ),
+                          }),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textTertiary,
                           ),
@@ -784,7 +788,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         _infoTile(
                           Icons.church_rounded,
                           tr('Church'),
-                          profile['church_name'] ?? 'Not specified',
+                          profile['church_name'] ?? tr('Not specified'),
                         ),
                         if (baptismLabels[profile['baptism_status']]
                             case final b?)
@@ -837,12 +841,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         _infoTile(
                           Icons.work_rounded,
                           tr('Profession'),
-                          profile['profession'] ?? 'Not specified',
+                          profile['profession'] ?? tr('Not specified'),
                         ),
                         _infoTile(
                           Icons.school_rounded,
                           tr('Education'),
-                          profile['education'] ?? 'Not specified',
+                          profile['education'] ?? tr('Not specified'),
                         ),
                         _infoTile(
                           Icons.payments_rounded,
@@ -853,7 +857,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           Icons.height_rounded,
                           tr('Height'),
                           profile['height_cm'] == null
-                              ? 'Not specified'
+                              ? tr('Not specified')
                               : '${profile['height_cm']} cm',
                         ),
                       ]),
@@ -865,12 +869,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                         _infoTile(
                           Icons.family_restroom_rounded,
                           tr('Father'),
-                          family['father_occupation'] ?? 'Not specified',
+                          family['father_occupation'] ?? tr('Not specified'),
                         ),
                         _infoTile(
                           Icons.face_retouching_natural_rounded,
                           tr('Mother'),
-                          family['mother_occupation'] ?? 'Not specified',
+                          family['mother_occupation'] ?? tr('Not specified'),
                         ),
                       ]),
                       const SizedBox(height: 20),
@@ -1400,12 +1404,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Widget _trustStrip(Map<String, dynamic> profile) {
     final rows = <(IconData, String)>[
       if (profile['review_status'] == 'approved')
-        (Icons.fact_check_rounded, 'Reviewed by the Grace Match team'),
+        (Icons.fact_check_rounded, tr('Reviewed by the Grace Match team')),
       if (profile['trust_badge'] == true)
-        (Icons.verified_rounded, 'ID verified'),
+        (Icons.verified_rounded, tr('ID verified')),
       if (profile['profile_managed_by'] == 'parents')
-        (Icons.family_restroom_rounded, 'Profile managed by parents'),
-      (Icons.lock_outline_rounded, 'Phone number hidden until both agree'),
+        (Icons.family_restroom_rounded, tr('Profile managed by parents')),
+      (Icons.lock_outline_rounded, tr('Phone number hidden until both agree')),
     ];
     return Container(
       width: double.infinity,
@@ -1502,7 +1506,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Favourite verse: $verse',
+                    tr('Favourite verse: {verse}', {'verse': verse}),
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.gold,
                     ),
@@ -1694,7 +1698,7 @@ class _ContactRevealTile extends StatelessWidget {
             )
           : const Icon(Icons.phone_in_talk_rounded, size: 18),
       label: Text(
-        outStatus == 'rejected' ? 'Request Again' : 'Request Contact',
+        outStatus == 'rejected' ? tr('Request Again') : tr('Request Contact'),
       ),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.gold,

@@ -459,12 +459,14 @@ const Map<String, String> teluguStrings = {
   "Contacts": "ఫోన్ నంబర్లు",
   "Retry": "మళ్ళీ ప్రయత్నించండి",
   "No notifications yet": "ఇంకా నోటిఫికేషన్లు లేవు",
-  "Interests, views, and messages will appear here.": "ఆసక్తులు, చూసినవారు మరియు సందేశాలు ఇక్కడ కనిపిస్తాయి.",
+  "Interests, views, and messages will appear here.":
+      "ఆసక్తులు, చూసినవారు మరియు సందేశాలు ఇక్కడ కనిపిస్తాయి.",
   "Profile views": "ప్రొఫైల్ చూసినవారు",
   "Upgrade to Silver or above to see who viewed your profile.":
       "మీ ప్రొఫైల్ ఎవరు చూశారో తెలుసుకోవడానికి సిల్వర్ లేదా అంతకంటే పై ప్లాన్‌కు మారండి.",
   "No views yet": "ఇంకా ఎవరూ చూడలేదు",
-  "When someone opens your profile, they will appear here.": "ఎవరైనా మీ ప్రొఫైల్ తెరిచినప్పుడు, వారు ఇక్కడ కనిపిస్తారు.",
+  "When someone opens your profile, they will appear here.":
+      "ఎవరైనా మీ ప్రొఫైల్ తెరిచినప్పుడు, వారు ఇక్కడ కనిపిస్తారు.",
   "Who viewed you": "మిమ్మల్ని ఎవరు చూశారు",
   "No shortlisted profiles": "షార్ట్‌లిస్ట్ చేసిన ప్రొఫైల్స్ లేవు",
   "Premium Feature": "ప్రీమియం సౌకర్యం",
@@ -496,14 +498,18 @@ const Map<String, String> teluguStrings = {
   "Voice call": "వాయిస్ కాల్",
   "Video call": "వీడియో కాల్",
   "Report and stop contact": "రిపోర్ట్ చేసి సంప్రదింపు ఆపండి",
-  "They will not be able to message or call you again.": "వారు మీకు మళ్ళీ సందేశం పంపలేరు, కాల్ చేయలేరు.",
+  "They will not be able to message or call you again.":
+      "వారు మీకు మళ్ళీ సందేశం పంపలేరు, కాల్ చేయలేరు.",
   "Our team will review this. They will not be told who reported them, and they will not be able to reach you again.":
       "మా బృందం దీన్ని పరిశీలిస్తుంది. ఎవరు రిపోర్ట్ చేశారో వారికి చెప్పబడదు, వారు మిమ్మల్ని మళ్ళీ సంప్రదించలేరు.",
   "Inappropriate content": "అనుచితమైన విషయం",
   "Asked me for money": "నన్ను డబ్బు అడిగారు",
-  "Reported. You will not hear from them again.": "రిపోర్ట్ చేయబడింది. వారి నుండి మీకు ఇక ఏమీ రాదు.",
-  "Could not send the report. Please try again.": "రిపోర్ట్ పంపడం కుదరలేదు. దయచేసి మళ్ళీ ప్రయత్నించండి.",
-  "Say \"Praise the Lord!\" to start.": "\"వందనాలు!\" అని చెప్పి ప్రారంభించండి.",
+  "Reported. You will not hear from them again.":
+      "రిపోర్ట్ చేయబడింది. వారి నుండి మీకు ఇక ఏమీ రాదు.",
+  "Could not send the report. Please try again.":
+      "రిపోర్ట్ పంపడం కుదరలేదు. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+  "Say \"Praise the Lord!\" to start.":
+      "\"వందనాలు!\" అని చెప్పి ప్రారంభించండి.",
   "Type a message...": "సందేశం టైప్ చేయండి...",
 
   // ── Settings ────────────────────────────────────────────────
@@ -561,4 +567,252 @@ const Map<String, String> teluguStrings = {
   "App language": "యాప్ భాష",
   "Ask our team to erase your profile, photos, and messages":
       "మీ ప్రొఫైల్, ఫోటోలు మరియు సందేశాలను తొలగించమని మా బృందాన్ని అడగండి",
+  // Second sweep: review, plans, verification, support, offers, calls.
+  "Sent back for review. We will take another look.":
+      "సమీక్ష కోసం తిరిగి పంపబడింది. మేము మళ్లీ పరిశీలిస్తాము.",
+  "Nothing left to send.": "పంపడానికి ఇంకేమీ లేదు.",
+  "Action needed": "మీ చర్య అవసరం",
+  "Application update": "దరఖాస్తు సమాచారం",
+  "Profile under review": "ప్రొఫైల్ సమీక్షలో ఉంది",
+  "Open each item, add what is missing, and we will send everything back to our team.":
+      "ప్రతి అంశాన్ని తెరిచి, లేనిది జోడించండి. ఆ తర్వాత అన్నింటినీ మా బృందానికి తిరిగి పంపుతాము.",
+  "Please read the note below. You can still send updates from this screen if anything is listed.":
+      "దయచేసి క్రింది గమనికను చదవండి. ఏవైనా అంశాలు ఉంటే, ఈ స్క్రీన్ నుండే మార్పులు పంపవచ్చు.",
+  "We could not approve this profile yet. Contact support if you need help.":
+      "ఈ ప్రొఫైల్‌ను ఇంకా ఆమోదించలేకపోయాము. సహాయం కావాలంటే సపోర్ట్‌ను సంప్రదించండి.",
+  "Our team is reviewing your profile. You will get a notification when it is approved.":
+      "మా బృందం మీ ప్రొఫైల్‌ను పరిశీలిస్తోంది. ఆమోదించిన వెంటనే మీకు నోటిఫికేషన్ వస్తుంది.",
+  "No new profiles right now": "ప్రస్తుతం కొత్త ప్రొఫైల్స్ లేవు",
+  "New profiles arrive tomorrow, or see plans for more each day.":
+      "కొత్త ప్రొఫైల్స్ రేపు వస్తాయి. రోజుకు మరిన్ని కావాలంటే ప్లాన్లు చూడండి.",
+  "New members are reviewed by our team every day. Check back soon, or widen your filters.":
+      "కొత్త సభ్యులను మా బృందం ప్రతిరోజూ పరిశీలిస్తుంది. త్వరలో మళ్లీ చూడండి, లేదా ఫిల్టర్లను విస్తరించండి.",
+  "Premium Plans": "ప్రీమియం ప్లాన్లు",
+  "No active plans found.": "ప్రస్తుతం ప్లాన్లు అందుబాటులో లేవు.",
+  "Find your life partner sooner": "మీ జీవిత భాగస్వామిని త్వరగా కనుగొనండి",
+  "Get direct contacts, unlimited matches, and priority spotlight.":
+      "నేరుగా కాంటాక్ట్‌లు, అపరిమిత మ్యాచ్‌లు, ప్రాధాన్య స్పాట్‌లైట్ పొందండి.",
+  "Problem with a payment?": "చెల్లింపులో సమస్యా?",
+  "Plan changes happen outside the app": "ప్లాన్ మార్పులు యాప్ బయట జరుగుతాయి",
+  "All plan changes are handled through your GraceMatch account, outside the app.":
+      "ప్లాన్ మార్పులన్నీ యాప్ బయట, మీ GraceMatch ఖాతా ద్వారా జరుగుతాయి.",
+  "Got it": "సరే",
+  "Have an offer code?": "ఆఫర్ కోడ్ ఉందా?",
+  "See who viewed your profile": "మీ ప్రొఫైల్ ఎవరు చూశారో చూడండి",
+  "Voice calls with matches": "మ్యాచ్‌లతో వాయిస్ కాల్స్",
+  "Video calls with matches": "మ్యాచ్‌లతో వీడియో కాల్స్",
+  "Priority in discovery": "ప్రొఫైల్స్‌లో ప్రాధాన్యత",
+  "Dedicated support": "ప్రత్యేక సపోర్ట్",
+  "Unlimited contact reveals": "అపరిమిత కాంటాక్ట్ వివరాలు",
+  "Contact reveals per month": "నెలకు కాంటాక్ట్ వివరాలు",
+  "Unlimited spotlight boosts": "అపరిమిత స్పాట్‌లైట్ బూస్ట్‌లు",
+  "Spotlight boosts": "స్పాట్‌లైట్ బూస్ట్‌లు",
+  "Unlimited super interests": "అపరిమిత సూపర్ ఆసక్తులు",
+  "Super interests": "సూపర్ ఆసక్తులు",
+  "Current active plan": "ప్రస్తుత యాక్టివ్ ప్లాన్",
+  "Your plan": "మీ ప్లాన్",
+  "Included free": "ఉచితంగా లభిస్తుంది",
+  "Current Plan": "ప్రస్తుత ప్లాన్",
+  "Get started": "ప్రారంభించండి",
+  "Subscribe Now": "ఇప్పుడే సబ్‌స్క్రైబ్ చేయండి",
+  "Choose Plan": "ప్లాన్ ఎంచుకోండి",
+  "Verification was cancelled. Nothing was shared.":
+      "ధృవీకరణ రద్దయింది. ఏ సమాచారం పంచుకోబడలేదు.",
+  "Verification did not complete. Please try again.":
+      "ధృవీకరణ పూర్తి కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
+  "Your identity is verified.": "మీ గుర్తింపు ధృవీకరించబడింది.",
+  "Could not start DigiLocker verification.":
+      "DigiLocker ధృవీకరణను ప్రారంభించలేకపోయాము.",
+  "Received. Our team will review it, usually within a day.":
+      "అందింది. మా బృందం సాధారణంగా ఒక రోజులో పరిశీలిస్తుంది.",
+  "Upload failed. Please try again.":
+      "అప్‌లోడ్ విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి.",
+  "Selfie received. Our team will confirm it shortly.":
+      "సెల్ఫీ అందింది. మా బృందం త్వరలో నిర్ధారిస్తుంది.",
+  "Could not upload the selfie. Please try again.":
+      "సెల్ఫీని అప్‌లోడ్ చేయలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.",
+  "Earns the Verified tick on your profile":
+      "మీ ప్రొఫైల్‌కు ధృవీకరణ గుర్తు లభిస్తుంది",
+  "Shows members your photos are really you":
+      "ఫోటోలు నిజంగా మీవేనని సభ్యులకు తెలుస్తుంది",
+  "Identity verified": "గుర్తింపు ధృవీకరించబడింది",
+  "Verify with DigiLocker": "DigiLocker తో ధృవీకరించండి",
+  "Sign in to DigiLocker and approve sharing. We check your name, date of birth and gender against your profile. Your Aadhaar number is never shared with us.":
+      "DigiLocker లో సైన్ ఇన్ చేసి, షేరింగ్‌ను ఆమోదించండి. మీ పేరు, పుట్టిన తేదీ, లింగం మీ ప్రొఫైల్‌తో సరిపోతున్నాయో చూస్తాము. మీ ఆధార్ నంబర్ మాకు ఎప్పుడూ రాదు.",
+  "Continue with DigiLocker": "DigiLocker తో కొనసాగండి",
+  "Your passport is with our team. We usually review it within a day.":
+      "మీ పాస్‌పోర్ట్ మా బృందం వద్ద ఉంది. సాధారణంగా ఒక రోజులో పరిశీలిస్తాము.",
+  "Your document is with our team. We usually review it within a day.":
+      "మీ పత్రం మా బృందం వద్ద ఉంది. సాధారణంగా ఒక రోజులో పరిశీలిస్తాము.",
+  "Upload a clear photo of your passport's photo page. Our team reviews it, usually within a day.":
+      "మీ పాస్‌పోర్ట్ ఫోటో పేజీ స్పష్టమైన ఫోటోను అప్‌లోడ్ చేయండి. మా బృందం సాధారణంగా ఒక రోజులో పరిశీలిస్తుంది.",
+  "Upload a clear photo of a government ID (Aadhaar, PAN or passport). Our team reviews it, usually within a day.":
+      "ప్రభుత్వ గుర్తింపు పత్రం (ఆధార్, పాన్ లేదా పాస్‌పోర్ట్) స్పష్టమైన ఫోటోను అప్‌లోడ్ చేయండి. మా బృందం సాధారణంగా ఒక రోజులో పరిశీలిస్తుంది.",
+  "Select passport photo": "పాస్‌పోర్ట్ ఫోటో ఎంచుకోండి",
+  "Select ID photo": "గుర్తింపు పత్రం ఫోటో ఎంచుకోండి",
+  "Select a photo first": "ముందుగా ఒక ఫోటో ఎంచుకోండి",
+  "Submit for review": "సమీక్షకు పంపండి",
+  "Your selfie is with our team. We compare it with your profile photo, usually within a day.":
+      "మీ సెల్ఫీ మా బృందం వద్ద ఉంది. సాధారణంగా ఒక రోజులో మీ ప్రొఫైల్ ఫోటోతో పోల్చి చూస్తాము.",
+  "Take a clear selfie facing the camera, in good light, without sunglasses. Our team compares it with your main profile photo. The selfie is never shown to other members.":
+      "మంచి వెలుతురులో, సన్‌గ్లాసెస్ లేకుండా, కెమెరా వైపు చూస్తూ స్పష్టమైన సెల్ఫీ తీయండి. మా బృందం దాన్ని మీ ప్రధాన ప్రొఫైల్ ఫోటోతో పోల్చి చూస్తుంది. సెల్ఫీ ఇతర సభ్యులకు ఎప్పుడూ కనిపించదు.",
+  "Retake selfie": "సెల్ఫీ మళ్లీ తీయండి",
+  "Take a selfie": "సెల్ఫీ తీయండి",
+  "Subscription active": "సబ్‌స్క్రిప్షన్ యాక్టివ్‌గా ఉంది",
+  "Unlock Spotlight": "స్పాట్‌లైట్ పొందండి",
+  "Appear at the top of Discover for 24 hours":
+      "24 గంటలు ప్రొఫైల్స్ జాబితాలో పైన కనిపించండి",
+  "Spotlight is included on Gold and Platinum":
+      "గోల్డ్, ప్లాటినం ప్లాన్లలో స్పాట్‌లైట్ ఉంటుంది",
+  "Verified Account": "ధృవీకరించిన ఖాతా",
+  "Trust badge status": "విశ్వసనీయ గుర్తు స్థితి",
+  "Add a photo": "ఫోటో జోడించండి",
+  "Add denomination": "డినామినేషన్ జోడించండి",
+  "Add profession": "వృత్తి జోడించండి",
+  "Write a bio": "మీ గురించి రాయండి",
+  "Add church name": "చర్చి పేరు జోడించండి",
+  "Verify identity": "గుర్తింపు ధృవీకరించండి",
+  "New message": "కొత్త సందేశం",
+  "Could not reach support": "సపోర్ట్‌ను చేరుకోలేకపోయాము",
+  "Check your connection and try again.":
+      "మీ ఇంటర్నెట్ కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.",
+  "What is this about?": "ఇది దేని గురించి?",
+  "Give it a title": "శీర్షిక ఇవ్వండి",
+  "Charged but my plan did not activate":
+      "డబ్బు కట్ అయింది కానీ ప్లాన్ యాక్టివ్ కాలేదు",
+  "Tell us what happened": "ఏమి జరిగిందో చెప్పండి",
+  "The more detail the better — when it happened, what you saw, and anything you have already tried.":
+      "ఎంత వివరంగా చెబితే అంత మంచిది — ఎప్పుడు జరిగింది, మీకు ఏమి కనిపించింది, మీరు ఇప్పటికే ఏమి ప్రయత్నించారు.",
+  "Send to support": "సపోర్ట్‌కు పంపండి",
+  "We usually reply within a day.": "సాధారణంగా ఒక రోజులో జవాబిస్తాము.",
+  "Could not load your messages": "మీ సందేశాలను లోడ్ చేయలేకపోయాము",
+  "How can we help?": "మేము ఎలా సహాయపడగలము?",
+  "Pull down to try again.": "మళ్లీ ప్రయత్నించడానికి క్రిందికి లాగండి.",
+  "Payments, your account, verification, safety — anything at all. We usually reply within a day.":
+      "చెల్లింపులు, మీ ఖాతా, ధృవీకరణ, భద్రత — ఏ విషయమైనా సరే. సాధారణంగా ఒక రోజులో జవాబిస్తాము.",
+  "This conversation is closed. Start a new one if you still need help.":
+      "ఈ సంభాషణ ముగిసింది. ఇంకా సహాయం కావాలంటే కొత్తది ప్రారంభించండి.",
+  "Marked as resolved. Reply below if it is still happening.":
+      "పరిష్కరించినట్లు గుర్తించాము. సమస్య ఇంకా ఉంటే క్రింద జవాబివ్వండి.",
+  "Could not load this conversation": "ఈ సంభాషణను లోడ్ చేయలేకపోయాము",
+  "Photo attached": "ఫోటో జత చేయబడింది",
+  "Write a message…": "సందేశం రాయండి…",
+  "Could not load offers": "ఆఫర్లను లోడ్ చేయలేకపోయాము",
+  "Check your connection and pull down to try again.":
+      "మీ కనెక్షన్ చూసి, మళ్లీ ప్రయత్నించడానికి క్రిందికి లాగండి.",
+  "No offers right now": "ప్రస్తుతం ఆఫర్లు లేవు",
+  "JUST FOR YOU": "మీ కోసమే",
+  "Any plan": "ఏ ప్లాన్ అయినా",
+  "Already used": "ఇప్పటికే వాడారు",
+  "Use offer": "ఆఫర్ వాడండి",
+  "Could not load match explanation. Please try again.":
+      "మ్యాచ్ వివరణను లోడ్ చేయలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.",
+  "Why You Match": "మీరు ఎందుకు సరిపోతారు",
+  "AI Match Insight": "AI మ్యాచ్ విశ్లేషణ",
+  "Analyzing your compatibility...": "మీ అనుకూలతను విశ్లేషిస్తున్నాము...",
+  "No explanation available.": "వివరణ అందుబాటులో లేదు.",
+  "GraceMatch uses faith, values, and lifestyle to find your best match.":
+      "మీకు సరైన జోడీని కనుగొనడానికి GraceMatch విశ్వాసం, విలువలు, జీవనశైలిని పరిగణిస్తుంది.",
+  "Could not load": "లోడ్ చేయలేకపోయాము",
+  "No profile with this ID": "ఈ ID తో ప్రొఫైల్ లేదు",
+  "Check the ID and try again. Profiles that are hidden, under review or blocked cannot be opened.":
+      "ID సరిచూసి మళ్లీ ప్రయత్నించండి. దాచిన, సమీక్షలో ఉన్న లేదా బ్లాక్ చేసిన ప్రొఫైల్స్ తెరవబడవు.",
+  "No one matches": "ఎవరూ సరిపోలలేదు",
+  "Nothing here yet": "ఇక్కడ ఇంకా ఏమీ లేదు",
+  "Try another name, profile ID or filter.":
+      "వేరే పేరు, ప్రొఫైల్ ID లేదా ఫిల్టర్ ప్రయత్నించండి.",
+  "Profiles you come across on Discover appear here. To open a profile someone shared, search its ID.":
+      "మీరు చూసిన ప్రొఫైల్స్ ఇక్కడ కనిపిస్తాయి. ఎవరైనా పంపిన ప్రొఫైల్‌ను తెరవడానికి దాని IDని వెతకండి.",
+  "Last seen just now": "ఇప్పుడే ఆన్‌లైన్‌లో ఉన్నారు",
+  "Last seen yesterday": "నిన్న ఆన్‌లైన్‌లో ఉన్నారు",
+  "When an interest is accepted, you can talk here.":
+      "ఆసక్తిని అంగీకరించిన తర్వాత, ఇక్కడ మాట్లాడుకోవచ్చు.",
+  "Contact request sent ✓": "కాంటాక్ట్ అభ్యర్థన పంపబడింది ✓",
+  "No bio provided yet.": "ఇంకా తమ గురించి రాయలేదు.",
+  "Request Again": "మళ్లీ అభ్యర్థించండి",
+  "Request Contact": "కాంటాక్ట్ అభ్యర్థించండి",
+  "Profile unavailable": "ప్రొఫైల్ అందుబాటులో లేదు",
+  "This profile is private, or the link has expired.":
+      "ఈ ప్రొఫైల్ ప్రైవేట్‌గా ఉంది, లేదా లింక్ గడువు ముగిసింది.",
+  "Full profile, photos and contact details are available after you log in.":
+      "లాగిన్ అయిన తర్వాత పూర్తి ప్రొఫైల్, ఫోటోలు, కాంటాక్ట్ వివరాలు చూడవచ్చు.",
+  "Log in to continue": "కొనసాగడానికి లాగిన్ అవ్వండి",
+  "GraceMatch is temporarily unavailable. Please try again shortly.":
+      "GraceMatch తాత్కాలికంగా అందుబాటులో లేదు. దయచేసి కొద్దిసేపటి తర్వాత ప్రయత్నించండి.",
+  "Update available": "అప్‌డేట్ అందుబాటులో ఉంది",
+  "A newer version of GraceMatch is ready. Update to keep using the app.":
+      "GraceMatch కొత్త వెర్షన్ సిద్ధంగా ఉంది. యాప్ వాడటం కొనసాగించడానికి అప్‌డేట్ చేయండి.",
+  "Update now": "ఇప్పుడే అప్‌డేట్ చేయండి",
+  "Under maintenance": "నిర్వహణ పనులు జరుగుతున్నాయి",
+  "Upgrade to call": "కాల్ చేయడానికి అప్‌గ్రేడ్ చేయండి",
+  "Call ended": "కాల్ ముగిసింది",
+  "Back to the app": "యాప్‌కు తిరిగి వెళ్లండి",
+  "On call": "కాల్‌లో ఉన్నారు",
+  "Tap to return": "తిరిగి వెళ్లడానికి తాకండి",
+  "Could not load notifications": "నోటిఫికేషన్లను లోడ్ చేయలేకపోయాము",
+  "Nothing yet": "ఇంకా ఏమీ లేవు",
+  "Interests, messages and offers will show up here.":
+      "ఆసక్తులు, సందేశాలు, ఆఫర్లు ఇక్కడ కనిపిస్తాయి.",
+  "Basic Info": "ప్రాథమిక సమాచారం",
+  "Complete Profile ✓": "ప్రొఫైల్ పూర్తి చేయండి ✓",
+  "Match Score": "మ్యాచ్ స్కోర్",
+  "Account suspended": "ఖాతా నిలిపివేయబడింది",
+  "This account has been suspended. Use the website contact form and we will look into it.":
+      "ఈ ఖాతా నిలిపివేయబడింది. వెబ్‌సైట్‌లోని సంప్రదింపు ఫారం ద్వారా తెలియజేయండి, మేము పరిశీలిస్తాము.",
+  "Unlimited daily matches": "రోజుకు అపరిమిత మ్యాచ్‌లు",
+  "Months": "నెలలు",
+  "Month": "నెల",
+  "Fix {item}": "{item} సరిచేయండి",
+  "Fix {n} items": "{n} అంశాలు సరిచేయండి",
+  "Profile photos": "ప్రొఫైల్ ఫోటోలు",
+  "Upload clear photos of yourself. The first one is your profile picture.":
+      "మీ స్పష్టమైన ఫోటోలు అప్‌లోడ్ చేయండి. మొదటిది మీ ప్రొఫైల్ ఫోటో అవుతుంది.",
+  "Identity document": "గుర్తింపు పత్రం",
+  "Upload a government ID or finish DigiLocker verification.":
+      "ప్రభుత్వ గుర్తింపు పత్రం అప్‌లోడ్ చేయండి లేదా DigiLocker ధృవీకరణ పూర్తి చేయండి.",
+  "Verification selfie": "ధృవీకరణ సెల్ఫీ",
+  "Take a selfie so we can confirm the photos are of you.":
+      "ఫోటోలు మీవేనని నిర్ధారించడానికి ఒక సెల్ఫీ తీయండి.",
+  "Profile details": "ప్రొఫైల్ వివరాలు",
+  "Update the profile information we asked you to correct.":
+      "మేము సరిచేయమని అడిగిన ప్రొఫైల్ సమాచారాన్ని మార్చండి.",
+  "Family details": "కుటుంబ వివరాలు",
+  "Update your family information.": "మీ కుటుంబ సమాచారాన్ని మార్చండి.",
+  "Update what you are looking for in a partner.":
+      "భాగస్వామిలో మీరు కోరుకునే వాటిని మార్చండి.",
+  "Update needed": "మార్పు అవసరం",
+  "Offline": "ఆఫ్‌లైన్",
+  "Last seen {n}m ago": "{n} నిమిషాల క్రితం ఆన్‌లైన్‌లో ఉన్నారు",
+  "Last seen {n}h ago": "{n} గంటల క్రితం ఆన్‌లైన్‌లో ఉన్నారు",
+  "Last seen {n}d ago": "{n} రోజుల క్రితం ఆన్‌లైన్‌లో ఉన్నారు",
+  "Report {name}?": "{name} గురించి ఫిర్యాదు చేయాలా?",
+  "Finalize": "ముగింపు",
+  "Profile {n}% Complete": "ప్రొఫైల్ {n}% పూర్తయింది",
+  "Code {code} copied": "కోడ్ {code} కాపీ అయింది",
+  "On {plan}": "{plan} ప్లాన్‌పై",
+  "Requested on {date}. Our team will delete your account and sign you out.":
+      "{date} న అభ్యర్థించారు. మా బృందం మీ ఖాతాను తొలగించి, మిమ్మల్ని సైన్ అవుట్ చేస్తుంది.",
+  "MOST POPULAR · {plan}": "అత్యంత ప్రజాదరణ · {plan}",
+  "Active until {date}": "{date} వరకు యాక్టివ్‌గా ఉంటుంది",
+  "1 Month": "1 నెల",
+  "{n} Months": "{n} నెలలు",
+  "{n} curated match / day": "రోజుకు {n} ఎంపిక చేసిన మ్యాచ్",
+  "{n} curated matches / day": "రోజుకు {n} ఎంపిక చేసిన మ్యాచ్‌లు",
+  "{n} contact reveal / month": "నెలకు {n} కాంటాక్ట్ వివరం",
+  "{n} contact reveals / month": "నెలకు {n} కాంటాక్ట్ వివరాలు",
+  "{n} spotlight boost": "{n} స్పాట్‌లైట్ బూస్ట్",
+  "{n} spotlight boosts": "{n} స్పాట్‌లైట్ బూస్ట్‌లు",
+  "{n} super interest": "{n} సూపర్ ఆసక్తి",
+  "{n} super interests": "{n} సూపర్ ఆసక్తులు",
+  "Curated matches each day": "రోజూ ఎంపిక చేసిన మ్యాచ్‌లు",
+  "Unlimited daily swipes": "రోజుకు అపరిమిత ప్రొఫైల్స్",
+  "Voice calls": "వాయిస్ కాల్స్",
+  "Video calls": "వీడియో కాల్స్",
+  "Apply": "వర్తింపజేయండి",
+  "Received ({n})": "వచ్చినవి ({n})",
+  "Accepted ({n})": "అంగీకరించినవి ({n})",
+  "Sent ({n})": "పంపినవి ({n})",
+  "Block {name}": "{name} ని బ్లాక్ చేయండి",
+  "Block {name}?": "{name} ని బ్లాక్ చేయాలా?",
+  "Payment failed: {reason}": "చెల్లింపు విఫలమైంది: {reason}",
 };

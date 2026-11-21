@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -186,8 +187,12 @@ class _TicketScreenState extends State<TicketScreen> {
               color: AppColors.surface,
               child: Text(
                 _ticket!.status == 'closed'
-                    ? 'This conversation is closed. Start a new one if you still need help.'
-                    : 'Marked as resolved. Reply below if it is still happening.',
+                    ? tr(
+                        'This conversation is closed. Start a new one if you still need help.',
+                      )
+                    : tr(
+                        'Marked as resolved. Reply below if it is still happening.',
+                      ),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -220,7 +225,7 @@ class _TicketScreenState extends State<TicketScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Could not load this conversation',
+                tr('Could not load this conversation'),
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -234,7 +239,7 @@ class _TicketScreenState extends State<TicketScreen> {
                   _load();
                 },
                 child: Text(
-                  'Try again',
+                  tr('Try again'),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.gold,
                   ),
@@ -284,7 +289,7 @@ class _TicketScreenState extends State<TicketScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Photo attached',
+                        tr('Photo attached'),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -337,7 +342,7 @@ class _TicketScreenState extends State<TicketScreen> {
                     style: AppTextStyles.bodyMedium,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: 'Write a message…',
+                      hintText: tr('Write a message…'),
                       hintStyle: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textTertiary,
                       ),

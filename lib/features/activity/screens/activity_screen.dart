@@ -558,7 +558,9 @@ class _ViewsTab extends StatelessWidget {
           if (isPremiumRequired) ...[
             _PremiumGate(
               message: tr(
-                'Upgrade to Silver or above to see who viewed your profile.',
+                tr(
+                  'Upgrade to Silver or above to see who viewed your profile.',
+                ),
               ),
               onTap: () => context.push('/subscription'),
             ),
@@ -567,7 +569,7 @@ class _ViewsTab extends StatelessWidget {
               icon: Icons.visibility_off_rounded,
               title: tr('No views yet'),
               subtitle: tr(
-                'When someone opens your profile, they will appear here.',
+                tr('When someone opens your profile, they will appear here.'),
               ),
             ),
           ] else ...[
@@ -1079,8 +1081,10 @@ class _ContactRequestsTab extends StatelessWidget {
         title: Text(tr('Share your number?'), style: AppTextStyles.labelLarge),
         content: Text(
           tr(
-            'They will see your number. You will not see theirs unless you request it '
-            'on a Premium plan that includes contact reveals.',
+            tr(
+              'They will see your number. You will not see theirs unless you request it '
+              'on a Premium plan that includes contact reveals.',
+            ),
           ),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,

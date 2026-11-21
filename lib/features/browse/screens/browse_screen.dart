@@ -294,7 +294,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
     if (_items.isEmpty && _error != null) {
       return _message(
         Icons.wifi_off_rounded,
-        'Could not load',
+        tr('Could not load'),
         _error!,
         action: TextButton(
           onPressed: _reload,
@@ -307,20 +307,24 @@ class _BrowseScreenState extends State<BrowseScreen> {
       if (_looksLikeId(text)) {
         return _message(
           Icons.badge_outlined,
-          'No profile with this ID',
-          'Check the ID and try again. Profiles that are hidden, under review '
-              'or blocked cannot be opened.',
+          tr('No profile with this ID'),
+          tr(
+            'Check the ID and try again. Profiles that are hidden, under review '
+            'or blocked cannot be opened.',
+          ),
         );
       }
       final searching =
           text.isNotEmpty || !_filters.isDefault || _action != null;
       return _message(
         Icons.manage_search_rounded,
-        searching ? 'No one matches' : 'Nothing here yet',
+        searching ? tr('No one matches') : tr('Nothing here yet'),
         searching
-            ? 'Try another name, profile ID or filter.'
-            : 'Profiles you come across on Discover appear here. To open a '
-                  'profile someone shared, search its ID.',
+            ? tr('Try another name, profile ID or filter.')
+            : tr(
+                'Profiles you come across on Discover appear here. To open a '
+                'profile someone shared, search its ID.',
+              ),
       );
     }
     return RefreshIndicator(
@@ -373,7 +377,8 @@ class _BrowseScreenState extends State<BrowseScreen> {
     final name = p['name']?.toString() ?? p['first_name']?.toString() ?? '—';
     final age = p['age'];
     final city = p['city']?.toString() ?? p['location_city']?.toString();
-    final denom = _denominations[p['denomination']?.toString()];
+    final denomEn = _denominations[p['denomination']?.toString()];
+    final denom = denomEn == null ? null : tr(denomEn);
     final code = p['profile_code']?.toString() ?? profileCode(id);
     final details = [
       city,
@@ -473,7 +478,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
         ? ('Connected', AppColors.success)
         : status == 'rejected'
         ? ('Declined', AppColors.error)
-        : ('Interest sent', AppColors.gold);
+        : (tr('Interest sent'), AppColors.gold);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(

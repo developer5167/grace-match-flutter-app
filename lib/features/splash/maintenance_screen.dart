@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -11,8 +12,9 @@ class MaintenanceGate {
   MaintenanceGate._();
 
   static bool? _blocked;
-  static String message =
-      'GraceMatch is temporarily unavailable. Please try again shortly.';
+  static String message = tr(
+    'GraceMatch is temporarily unavailable. Please try again shortly.',
+  );
 
   /// The policy the last check fetched (null if it failed). It carries the
   /// update prompt too, so splash hands it to [UpdateGate.maybePrompt]
@@ -72,13 +74,13 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Under maintenance',
+                  tr('Under maintenance'),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.headlineMedium,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  MaintenanceGate.message,
+                  tr(MaintenanceGate.message),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.textSecondary,
@@ -106,7 +108,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               color: AppColors.gold,
                             ),
                           )
-                        : const Text('Try again'),
+                        : Text(tr('Try again')),
                   ),
                 ),
                 const SizedBox(height: 28),

@@ -80,7 +80,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
           behavior: SnackBarBehavior.floating,
           content: Text(
             tr(
-              'Your profile link is not ready yet. Pull to refresh and try again.',
+              tr(
+                'Your profile link is not ready yet. Pull to refresh and try again.',
+              ),
             ),
           ),
         ),
@@ -499,7 +501,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                             ),
                                             Text(
                                               isPremium
-                                                  ? 'Subscription active'
+                                                  ? tr('Subscription active')
                                                   : '20 matches a day · tap to upgrade',
                                               style: AppTextStyles.labelSmall
                                                   .copyWith(
@@ -525,11 +527,15 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           _buildSettingsTile(
                             Icons.wb_sunny_rounded,
                             canSpotlight
-                                ? 'Boost my profile'
-                                : 'Unlock Spotlight',
+                                ? tr('Boost my profile')
+                                : tr('Unlock Spotlight'),
                             canSpotlight
-                                ? 'Appear at the top of Discover for 24 hours'
-                                : 'Spotlight is included on Gold and Platinum',
+                                ? tr(
+                                    'Appear at the top of Discover for 24 hours',
+                                  )
+                                : tr(
+                                    'Spotlight is included on Gold and Platinum',
+                                  ),
                             onTap: () async {
                               if (!canSpotlight) {
                                 context.push('/subscription');
@@ -547,7 +553,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   SnackBar(
                                     content: Text(
                                       tr(
-                                        'You are at the top of Discover for 24 hours',
+                                        tr(
+                                          'You are at the top of Discover for 24 hours',
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -580,32 +588,32 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
                           _buildSettingsTile(
                             Icons.person_rounded,
-                            'Basic Information',
-                            'Name, age, and location',
+                            tr('Basic Information'),
+                            tr('Name, age, and location'),
                             onTap: () => context.push('/onboarding', extra: 0),
                           ),
                           _buildSettingsTile(
                             Icons.photo_library_rounded,
-                            'My Photos',
-                            'Manage your gallery',
+                            tr('My Photos'),
+                            tr('Manage your gallery'),
                             onTap: () => context.push('/onboarding', extra: 7),
                           ),
                           _buildSettingsTile(
                             Icons.text_snippet_rounded,
-                            'Bio & Details',
-                            'Edit your personal intro',
+                            tr('Bio & Details'),
+                            tr('Edit your personal intro'),
                             onTap: () => context.push('/onboarding', extra: 2),
                           ),
                           _buildSettingsTile(
                             Icons.church_rounded,
-                            'Faith Details',
-                            'Denomination & Church',
+                            tr('Faith Details'),
+                            tr('Denomination & Church'),
                             onTap: () => context.push('/onboarding', extra: 1),
                           ),
                           _buildSettingsTile(
                             Icons.volunteer_activism_rounded,
-                            'Lifestyle & Hobbies',
-                            'Smoking, drinking, hobbies',
+                            tr('Lifestyle & Hobbies'),
+                            tr('Smoking, drinking, hobbies'),
                             onTap: () => context.push(
                               '/onboarding',
                               extra: 3,
@@ -613,8 +621,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                           _buildSettingsTile(
                             Icons.favorite_rounded,
-                            'My Hobbies',
-                            'Select what you love',
+                            tr('My Hobbies'),
+                            tr('Select what you love'),
                             onTap: () => context.push(
                               '/onboarding',
                               extra: 6,
@@ -622,22 +630,22 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                           _buildSettingsTile(
                             Icons.family_restroom_rounded,
-                            'Family Background',
-                            'Update parent occupation',
+                            tr('Family Background'),
+                            tr('Update parent occupation'),
                             onTap: () => context.push('/onboarding', extra: 4),
                           ),
                           _buildSettingsTile(
                             Icons.tune_rounded,
-                            'Partner Preferences',
-                            'Who are you looking for?',
+                            tr('Partner Preferences'),
+                            tr('Who are you looking for?'),
                             onTap: () => context.push('/onboarding', extra: 5),
                           ),
                           _buildSettingsTile(
                             Icons.verified_user_rounded,
-                            'Identity Verification',
+                            tr('Identity Verification'),
                             isVerified
-                                ? 'Verified Account'
-                                : 'Trust badge status',
+                                ? tr('Verified Account')
+                                : tr('Trust badge status'),
                             onTap: () =>
                                 Navigator.of(context, rootNavigator: true).push(
                                   MaterialPageRoute(
@@ -648,8 +656,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           ),
                           _buildSettingsTile(
                             Icons.ios_share_rounded,
-                            'Share My Profile',
-                            'Invite someone via link',
+                            tr('Share My Profile'),
+                            tr('Invite someone via link'),
                             onTap: () => _shareProfile(name, accountId),
                           ),
 
@@ -750,7 +758,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     Expanded(
                       child: Text(
                         tr(
-                          'Some photos were rejected. Tap Manage to upload replacements.',
+                          tr(
+                            'Some photos were rejected. Tap Manage to upload replacements.',
+                          ),
                         ),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: Colors.red,
@@ -785,7 +795,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     Expanded(
                       child: Text(
                         tr(
-                          'Some photos are awaiting admin review before becoming visible.',
+                          tr(
+                            'Some photos are awaiting admin review before becoming visible.',
+                          ),
                         ),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: Colors.amber,
@@ -1088,17 +1100,17 @@ class _ProfileCompletionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final missing = <_MissingItem>[];
-    if (!hasPhotos) missing.add(_MissingItem('Add a photo', 7));
+    if (!hasPhotos) missing.add(_MissingItem(tr('Add a photo'), 7));
     if (profile['denomination'] == null)
-      missing.add(_MissingItem('Add denomination', 1));
+      missing.add(_MissingItem(tr('Add denomination'), 1));
     if (profile['profession'] == null)
-      missing.add(_MissingItem('Add profession', 2));
+      missing.add(_MissingItem(tr('Add profession'), 2));
     if (profile['bio'] == null || (profile['bio'] as String?)?.isEmpty == true)
-      missing.add(_MissingItem('Write a bio', 2));
+      missing.add(_MissingItem(tr('Write a bio'), 2));
     if (profile['church_name'] == null)
-      missing.add(_MissingItem('Add church name', 1));
+      missing.add(_MissingItem(tr('Add church name'), 1));
     // Use -1 as special action: open govt ID proof upload screen directly.
-    if (!isVerified) missing.add(_MissingItem('Verify identity', -1));
+    if (!isVerified) missing.add(_MissingItem(tr('Verify identity'), -1));
 
     if (missing.isEmpty) return const SizedBox.shrink();
 
@@ -1116,7 +1128,10 @@ class _ProfileCompletionCard extends StatelessWidget {
             children: [
               Icon(Icons.bar_chart_rounded, color: AppColors.gold, size: 18),
               const SizedBox(width: 8),
-              Text('Profile $score% Complete', style: AppTextStyles.labelLarge),
+              Text(
+                tr('Profile {n}% Complete', {'n': score}),
+                style: AppTextStyles.labelLarge,
+              ),
               const Spacer(),
               Text(
                 '${missing.length} left',

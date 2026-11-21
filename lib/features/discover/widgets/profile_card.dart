@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -460,7 +461,7 @@ class _ProfileCardState extends State<ProfileCard>
               if (locked) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Photos hidden until you connect',
+                  tr('Photos hidden until you connect'),
                   style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -563,7 +564,7 @@ class _ProfileCardState extends State<ProfileCard>
         Row(
           children: [
             Text(
-              'Match Score',
+              tr('Match Score'),
               style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -610,7 +611,7 @@ class PhotoVerifiedLabel extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          'Photo verified',
+          tr('Photo verified'),
           style: AppTextStyles.labelSmall.copyWith(color: AppColors.blessing),
         ),
       ],

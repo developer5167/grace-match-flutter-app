@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
@@ -124,7 +125,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           return Scaffold(
             backgroundColor: AppColors.background,
             appBar: AppBar(
-              title: Text('Premium Plans', style: AppTextStyles.headlineMedium),
+              title: Text(
+                tr('Premium Plans'),
+                style: AppTextStyles.headlineMedium,
+              ),
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
@@ -138,7 +142,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           return Scaffold(
             backgroundColor: AppColors.background,
             appBar: AppBar(
-              title: Text('Premium Plans', style: AppTextStyles.headlineMedium),
+              title: Text(
+                tr('Premium Plans'),
+                style: AppTextStyles.headlineMedium,
+              ),
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
@@ -162,13 +169,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           return Scaffold(
             backgroundColor: AppColors.background,
             appBar: AppBar(
-              title: Text('Premium Plans', style: AppTextStyles.headlineMedium),
+              title: Text(
+                tr('Premium Plans'),
+                style: AppTextStyles.headlineMedium,
+              ),
               elevation: 0,
               backgroundColor: AppColors.background,
             ),
-            body: const Center(
+            body: Center(
               child: Text(
-                'No active plans found.',
+                tr('No active plans found.'),
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -178,7 +188,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: Text('Premium Plans', style: AppTextStyles.headlineMedium),
+            title: Text(
+              tr('Premium Plans'),
+              style: AppTextStyles.headlineMedium,
+            ),
             elevation: 0,
             backgroundColor: AppColors.background,
           ),
@@ -188,13 +201,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Find your life partner sooner',
+                  tr('Find your life partner sooner'),
                   style: AppTextStyles.displaySmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Get direct contacts, unlimited matches, and priority spotlight.',
+                  tr(
+                    'Get direct contacts, unlimited matches, and priority spotlight.',
+                  ),
                   style: AppTextStyles.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -216,7 +231,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         color: AppColors.textSecondary,
                       ),
                       label: Text(
-                        'Problem with a payment?',
+                        tr('Problem with a payment?'),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -260,13 +275,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Plan changes happen outside the app',
+                tr('Plan changes happen outside the app'),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.headlineSmall,
               ),
               const SizedBox(height: 12),
               Text(
-                'All plan changes are handled through your GraceMatch account, outside the app.',
+                tr(
+                  'All plan changes are handled through your GraceMatch account, outside the app.',
+                ),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
@@ -279,7 +296,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   minimumSize: const Size(160, 52),
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                 ),
-                child: const Text('Got it'),
+                child: Text(tr('Got it')),
               ),
             ],
           ),
@@ -352,7 +369,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 textCapitalization: TextCapitalization.characters,
                 style: AppTextStyles.labelMedium.copyWith(letterSpacing: 1.2),
                 decoration: InputDecoration(
-                  hintText: 'Have an offer code?',
+                  hintText: tr('Have an offer code?'),
                   hintStyle: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -440,13 +457,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final raw = plan['features'];
     if (raw is! Map) return [];
     final map = Map<String, dynamic>.from(raw);
-    const catalog = <List<String>>[
+    final catalog = <List<String>>[
       ['daily_matches', '20 curated matches / day'],
-      ['see_who_viewed', 'See who viewed your profile'],
-      ['voice_calls', 'Voice calls with matches'],
-      ['video_calls', 'Video calls with matches'],
-      ['priority_discover', 'Priority in discovery'],
-      ['dedicated_support', 'Dedicated support'],
+      ['see_who_viewed', tr('See who viewed your profile')],
+      ['voice_calls', tr('Voice calls with matches')],
+      ['video_calls', tr('Video calls with matches')],
+      ['priority_discover', tr('Priority in discovery')],
+      ['dedicated_support', tr('Dedicated support')],
     ];
     final rows = <Map<String, dynamic>>[];
     for (final row in catalog) {
@@ -478,9 +495,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         map['contact_reveals_per_month'],
         'contact reveal / month',
         'contact reveals / month',
-        'Unlimited contact reveals',
+        tr('Unlimited contact reveals'),
       ),
-      'compare': 'Contact reveals per month',
+      'compare': tr('Contact reveals per month'),
       'included': intOn(map['contact_reveals_per_month']),
     });
     rows.add({
@@ -489,9 +506,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         map['spotlight_boosts'],
         'spotlight boost',
         'spotlight boosts',
-        'Unlimited spotlight boosts',
+        tr('Unlimited spotlight boosts'),
       ),
-      'compare': 'Spotlight boosts',
+      'compare': tr('Spotlight boosts'),
       'included': intOn(map['spotlight_boosts']),
     });
     rows.add({
@@ -500,9 +517,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         map['super_interests'],
         'super interest',
         'super interests',
-        'Unlimited super interests',
+        tr('Unlimited super interests'),
       ),
-      'compare': 'Super interests',
+      'compare': tr('Super interests'),
       'included': intOn(map['super_interests']),
     });
     return rows;
@@ -513,10 +530,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return '₹${n.toStringAsFixed(0)}';
   }
 
+  /// Plan feature lines come from the server in English ("5 contact
+  /// reveals / month"); translate the count pattern or the whole line.
+  String _featureText(String en) {
+    final m = RegExp(r'^(\d+) (.+)$').firstMatch(en);
+    if (m != null) return tr('{n} ${m[2]}', {'n': m[1]});
+    return tr(en);
+  }
+
   String _termLabel(dynamic months) {
     final n = int.tryParse(months?.toString() ?? '') ?? 0;
-    if (n == 1) return '1 Month';
-    return '$n Months';
+    if (n == 1) return tr('1 Month');
+    return tr('{n} Months', {'n': n});
   }
 
   String? _formatExpiry(dynamic value) {
@@ -578,7 +603,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             child: Text(
               isPopular
-                  ? 'MOST POPULAR · ${palette.label.toUpperCase()}'
+                  ? tr('MOST POPULAR · {plan}', {
+                      'plan': palette.label.toUpperCase(),
+                    })
                   : palette.label.toUpperCase(),
               textAlign: TextAlign.center,
               style: AppTextStyles.labelSmall.copyWith(
@@ -639,6 +666,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             f['label']?.toString() ??
                             '');
                   if (text.isEmpty) return const SizedBox.shrink();
+                  final shown = _featureText(text);
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
@@ -655,7 +683,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            text,
+                            shown,
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: included ? null : AppColors.textTertiary,
                             ),
@@ -689,7 +717,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Current active plan',
+                            tr('Current active plan'),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.blessing,
                             ),
@@ -702,7 +730,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
-                        'Active until $expiryText',
+                        tr('Active until {date}', {'date': expiryText}),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -752,13 +780,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       : Text(
                           isFree
                               ? (isCurrentActive
-                                    ? 'Your plan'
-                                    : 'Included free')
+                                    ? tr('Your plan')
+                                    : tr('Included free'))
                               : isCurrentActive
-                              ? 'Current Plan'
+                              ? tr('Current Plan')
                               : !canSellPlansHere
-                              ? 'Get started'
-                              : (isPopular ? 'Subscribe Now' : 'Choose Plan'),
+                              ? tr('Get started')
+                              : (isPopular
+                                    ? tr('Subscribe Now')
+                                    : tr('Choose Plan')),
                         ),
                 ),
               ],

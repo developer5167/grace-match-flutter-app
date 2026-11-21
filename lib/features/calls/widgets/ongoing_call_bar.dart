@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/l10n/app_language.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -97,7 +98,7 @@ class _CallBarState extends State<_CallBar> {
     switch (s.phase) {
       case CallPhase.connected:
         final start = s.connectedAt;
-        if (start == null) return 'On call';
+        if (start == null) return tr('On call');
         final d = DateTime.now().difference(start);
         final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
         final sec = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -139,7 +140,7 @@ class _CallBarState extends State<_CallBar> {
                 ),
               ),
               Text(
-                'Tap to return',
+                tr('Tap to return'),
                 style: AppTextStyles.labelSmall.copyWith(color: Colors.white70),
               ),
               // No tooltip: this sits above the navigator, where there is no

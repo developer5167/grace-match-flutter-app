@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_language.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/app_constants.dart';
@@ -30,10 +31,15 @@ class ContactSupport {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Account suspended', style: AppTextStyles.headlineMedium),
+        title: Text(
+          tr('Account suspended'),
+          style: AppTextStyles.headlineMedium,
+        ),
         content: Text(
           message ??
-              'This account has been suspended. Use the website contact form and we will look into it.',
+              tr(
+                'This account has been suspended. Use the website contact form and we will look into it.',
+              ),
           style: AppTextStyles.bodyMedium,
         ),
         actions: [
@@ -46,7 +52,7 @@ class ContactSupport {
               Navigator.of(ctx).pop();
               open();
             },
-            child: const Text('Contact support'),
+            child: Text(tr('Contact support')),
           ),
         ],
       ),

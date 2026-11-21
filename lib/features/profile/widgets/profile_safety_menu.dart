@@ -46,7 +46,10 @@ class ProfileSafetyMenu extends StatelessWidget {
                 size: 20,
               ),
               SizedBox(width: 10),
-              Text('Block $name', style: AppTextStyles.bodyMedium),
+              Text(
+                tr('Block {name}', {'name': name}),
+                style: AppTextStyles.bodyMedium,
+              ),
             ],
           ),
         ),
@@ -59,7 +62,10 @@ class ProfileSafetyMenu extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceElevated,
-        title: Text('Block $name?', style: AppTextStyles.labelLarge),
+        title: Text(
+          tr('Block {name}?', {'name': name}),
+          style: AppTextStyles.labelLarge,
+        ),
         content: Text(
           tr(
             'You will not see each other anywhere in Grace Match, and they '
@@ -95,7 +101,10 @@ class ProfileSafetyMenu extends StatelessWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: AppColors.surfaceElevated,
-          title: Text('Report $name?', style: AppTextStyles.labelLarge),
+          title: Text(
+            tr('Report {name}?', {'name': name}),
+            style: AppTextStyles.labelLarge,
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

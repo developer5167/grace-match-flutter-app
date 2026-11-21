@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -43,7 +44,7 @@ class _SupportScreenState extends State<SupportScreen> {
           ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Help & support', style: AppTextStyles.headlineSmall),
+        title: Text(tr('Help & support'), style: AppTextStyles.headlineSmall),
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.gold,
@@ -55,7 +56,7 @@ class _SupportScreenState extends State<SupportScreen> {
         },
         icon: const Icon(Icons.add_comment_rounded, size: 18),
         label: Text(
-          'New message',
+          tr('New message'),
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.textOnGold,
           ),
@@ -119,16 +120,20 @@ class _SupportScreenState extends State<SupportScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            errored ? 'Could not load your messages' : 'How can we help?',
+            errored
+                ? tr('Could not load your messages')
+                : tr('How can we help?'),
             style: AppTextStyles.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             errored
-                ? 'Pull down to try again.'
-                : 'Payments, your account, verification, safety — anything at all. '
-                      'We usually reply within a day.',
+                ? tr('Pull down to try again.')
+                : tr(
+                    'Payments, your account, verification, safety — anything at all. '
+                    'We usually reply within a day.',
+                  ),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),

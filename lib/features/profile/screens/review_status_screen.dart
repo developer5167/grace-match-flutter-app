@@ -54,7 +54,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
         _inbox = inbox;
         _loading = false;
         if (inbox.resubmitted) {
-          _banner = 'Sent back for review. We will take another look.';
+          _banner = tr('Sent back for review. We will take another look.');
         }
       });
       if (inbox.reviewStatus == 'approved' && mounted) {
@@ -85,8 +85,8 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
             setState(() {
               _inbox = done;
               _banner = done.resubmitted
-                  ? 'Sent back for review. We will take another look.'
-                  : 'Nothing left to send.';
+                  ? tr('Sent back for review. We will take another look.')
+                  : tr('Nothing left to send.');
             });
             if (done.reviewStatus == 'approved') context.go('/discover');
           } catch (e) {
@@ -107,7 +107,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
           setState(() {
             _inbox = next;
             if (next.resubmitted) {
-              _banner = 'Sent back for review. We will take another look.';
+              _banner = tr('Sent back for review. We will take another look.');
             }
           });
           if (next.reviewStatus == 'approved' && mounted) {
@@ -149,10 +149,10 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                     const SizedBox(height: 36),
                     Text(
                       hasWork
-                          ? 'Action needed'
+                          ? tr('Action needed')
                           : isRejected
-                          ? 'Application update'
-                          : 'Profile under review',
+                          ? tr('Application update')
+                          : tr('Profile under review'),
                       style: AppTextStyles.headlineMedium,
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 120.ms),
@@ -185,8 +185,8 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                     if (hasWork)
                       AppButton(
                         label: open.length == 1
-                            ? 'Fix ${open.first.title}'
-                            : 'Fix ${open.length} items',
+                            ? tr('Fix {item}', {'item': tr(open.first.title)})
+                            : tr('Fix {n} items', {'n': open.length}),
                         isLoading: _working,
                         onPressed: _runQueue,
                       )
@@ -228,14 +228,22 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
 
   String _bodyCopy(bool isRejected, bool hasWork, String? note) {
     if (hasWork) {
-      return 'Open each item, add what is missing, and we will send everything back to our team.';
+      return tr(
+        'Open each item, add what is missing, and we will send everything back to our team.',
+      );
     }
     if (isRejected) {
       return note?.trim().isNotEmpty == true
-          ? 'Please read the note below. You can still send updates from this screen if anything is listed.'
-          : 'We could not approve this profile yet. Contact support if you need help.';
+          ? tr(
+              'Please read the note below. You can still send updates from this screen if anything is listed.',
+            )
+          : tr(
+              'We could not approve this profile yet. Contact support if you need help.',
+            );
     }
-    return 'Our team is reviewing your profile. You will get a notification when it is approved.';
+    return tr(
+      'Our team is reviewing your profile. You will get a notification when it is approved.',
+    );
   }
 
   Widget _hero(bool isRejected, bool hasWork) {
@@ -303,8 +311,9 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                     setState(() {
                       _inbox = next;
                       if (next.resubmitted) {
-                        _banner =
-                            'Sent back for review. We will take another look.';
+                        _banner = tr(
+                          'Sent back for review. We will take another look.',
+                        );
                       }
                     });
                   } catch (e) {
@@ -330,11 +339,11 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(action.title, style: AppTextStyles.labelLarge),
+                      Text(tr(action.title), style: AppTextStyles.labelLarge),
                       if (action.hint.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
-                          action.hint,
+                          tr(action.hint),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),

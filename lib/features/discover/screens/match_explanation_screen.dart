@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_language.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
@@ -106,7 +107,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Could not load match explanation. Please try again.';
+        _error = tr('Could not load match explanation. Please try again.');
         _loading = false;
       });
     }
@@ -119,7 +120,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: Text('Why You Match', style: AppTextStyles.headlineMedium),
+        title: Text(tr('Why You Match'), style: AppTextStyles.headlineMedium),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -263,7 +264,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
               ),
               const SizedBox(width: 12),
               Text(
-                'AI Match Insight',
+                tr('AI Match Insight'),
                 style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
               ),
             ],
@@ -279,7 +280,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Analyzing your compatibility...',
+                  tr('Analyzing your compatibility...'),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -306,7 +307,7 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
             )
           else
             Text(
-              _explanation ?? 'No explanation available.',
+              _explanation ?? tr('No explanation available.'),
               style: AppTextStyles.bodyLarge.copyWith(
                 height: 1.6,
                 color: AppColors.textPrimary,
@@ -333,7 +334,9 @@ class _MatchExplanationScreenState extends State<MatchExplanationScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'GraceMatch uses faith, values, and lifestyle to find your best match.',
+              tr(
+                'GraceMatch uses faith, values, and lifestyle to find your best match.',
+              ),
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.cross),
             ),
           ),

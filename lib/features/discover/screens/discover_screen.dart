@@ -489,7 +489,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             limitReached
                 ? "You've seen today's profiles"
                 : empty
-                ? 'No new profiles right now'
+                ? tr('No new profiles right now')
                 : "That's everyone for now",
             style: AppTextStyles.headlineSmall,
             textAlign: TextAlign.center,
@@ -497,9 +497,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           const SizedBox(height: 8),
           Text(
             limitReached
-                ? 'New profiles arrive tomorrow, or see plans for more each day.'
-                : 'New members are reviewed by our team every day. Check back '
-                      'soon, or widen your filters.',
+                ? tr(
+                    'New profiles arrive tomorrow, or see plans for more each day.',
+                  )
+                : tr(
+                    'New members are reviewed by our team every day. Check back '
+                    'soon, or widen your filters.',
+                  ),
             style: AppTextStyles.bodyMedium,
             textAlign: TextAlign.center,
           ),

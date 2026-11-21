@@ -196,7 +196,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     tr(
-                      'Control who discovers you, how members reach you, and your photos.',
+                      tr(
+                        'Control who discovers you, how members reach you, and your photos.',
+                      ),
                     ),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
@@ -215,7 +217,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _radioTile<String>(
                     title: tr('Everyone on GraceMatch'),
                     subtitle: tr(
-                      'Your profile can appear in Discover for suitable matches.',
+                      tr(
+                        'Your profile can appear in Discover for suitable matches.',
+                      ),
                     ),
                     value: 'everyone',
                     group: visibility,
@@ -224,7 +228,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _radioTile<String>(
                     title: tr('Interest & connections'),
                     subtitle: tr(
-                      'Only people you have interacted with (sent/received interest) can open your full profile.',
+                      tr(
+                        'Only people you have interacted with (sent/received interest) can open your full profile.',
+                      ),
                     ),
                     value: 'interests_only',
                     group: visibility,
@@ -234,7 +240,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _radioTile<String>(
                     title: tr('Hidden'),
                     subtitle: tr(
-                      'Your profile stays off Discover until you switch back.',
+                      tr(
+                        'Your profile stays off Discover until you switch back.',
+                      ),
                     ),
                     value: 'hidden',
                     group: visibility,
@@ -246,7 +254,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _radioTile<String>(
                     title: tr('Matched connections'),
                     subtitle: tr(
-                      'Only after both sides accept interest can chat open (recommended).',
+                      tr(
+                        'Only after both sides accept interest can chat open (recommended).',
+                      ),
                     ),
                     value: 'interests_only',
                     group: whoChat,
@@ -255,7 +265,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _radioTile<String>(
                     title: tr('Open to messages'),
                     subtitle: tr(
-                      'Stored for your preference; chat still unlocks when you connect in the app.',
+                      tr(
+                        'Stored for your preference; chat still unlocks when you connect in the app.',
+                      ),
                     ),
                     value: 'everyone',
                     group: whoChat,
@@ -267,7 +279,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _switchTile(
                     title: tr('Allow contact requests'),
                     subtitle: tr(
-                      'Premium members may request your number. You can approve each request or turn this off.',
+                      tr(
+                        'Premium members may request your number. You can approve each request or turn this off.',
+                      ),
                     ),
                     value: contactOk,
                     onChanged: (v) => _patch({'is_contact_sharing_allowed': v}),
@@ -276,7 +290,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _switchTile(
                     title: tr('Lock photos until connected'),
                     subtitle: tr(
-                      'Hide your photos from people you are not matched with yet. Off by default — turn this on if you want them private.',
+                      tr(
+                        'Hide your photos from people you are not matched with yet. Off by default — turn this on if you want them private.',
+                      ),
                     ),
                     value: imagesLocked,
                     onChanged: (v) => _patch({'is_images_locked': v}),
@@ -285,7 +301,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _switchTile(
                     title: tr('Typing notifications'),
                     subtitle: tr(
-                      'Get a banner when someone you are connected with starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                      tr(
+                        'Get a banner when someone you are connected with starts typing to you, even if you are not in the chat. The banner disappears when they stop or you open the conversation.',
+                      ),
                     ),
                     value: typingPush,
                     onChanged: (v) => _patch({'typing_push_enabled': v}),
@@ -300,7 +318,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.support_agent_rounded,
                     title: tr('Help & support'),
                     subtitle: tr(
-                      'Payments, your account, verification, safety — ask us anything.',
+                      tr(
+                        'Payments, your account, verification, safety — ask us anything.',
+                      ),
                     ),
                     onTap: () {
                       AppHaptics.selection();
@@ -332,7 +352,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           behavior: SnackBarBehavior.floating,
                           content: Text(
                             tr(
-                              'Use ⋮ or report on any profile screen to block.',
+                              tr(
+                                'Use ⋮ or report on any profile screen to block.',
+                              ),
                             ),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white,
@@ -431,10 +453,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     _deletionRequestedAt != null
-                                        ? 'Requested on ${_date(_deletionRequestedAt!)}. '
-                                              'Our team will delete your account and sign you out.'
+                                        ? tr(
+                                            'Requested on {date}. Our team will delete your account and sign you out.',
+                                            {
+                                              'date': _date(
+                                                _deletionRequestedAt!,
+                                              ),
+                                            },
+                                          )
                                         : tr(
-                                            'Ask our team to erase your profile, photos, and messages',
+                                            tr(
+                                              'Ask our team to erase your profile, photos, and messages',
+                                            ),
                                           ),
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.textTertiary,
@@ -455,7 +485,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 24),
                   Text(
                     tr(
-                      'Notifications use your device permissions. Critical alerts still reach you inside the app.',
+                      tr(
+                        'Notifications use your device permissions. Critical alerts still reach you inside the app.',
+                      ),
                     ),
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.textTertiary,

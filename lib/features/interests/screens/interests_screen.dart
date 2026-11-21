@@ -101,9 +101,9 @@ class _InterestsScreenState extends State<InterestsScreen>
               labelStyle: AppTextStyles.labelMedium,
               dividerColor: AppColors.surfaceHighest,
               tabs: [
-                Tab(text: 'Received ($receivedCount)'),
-                Tab(text: 'Accepted ($matchedCount)'),
-                Tab(text: 'Sent ($sentCount)'),
+                Tab(text: tr('Received ({n})', {'n': receivedCount})),
+                Tab(text: tr('Accepted ({n})', {'n': matchedCount})),
+                Tab(text: tr('Sent ({n})', {'n': sentCount})),
               ],
             ),
           ),

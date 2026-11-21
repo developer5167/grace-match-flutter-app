@@ -53,29 +53,29 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   );
 
   final _stepTitles = [
-    'About You',
-    'Your Faith',
-    'Career & Life',
+    tr('About You'),
+    tr('Your Faith'),
+    tr('Career & Life'),
     'Lifestyle',
     'Family',
-    'Partner Preferences',
+    tr('Partner Preferences'),
     'Hobbies',
     'Photos',
     'Verification',
-    'Almost There!',
+    tr('Almost There!'),
   ];
 
   final _stepSubtitles = [
-    'Let\'s start with the basics',
-    'Your faith is your foundation',
-    'Tell us about your career',
-    'How do you like to live?',
-    'Tell us about your family',
-    'What are you looking for?',
-    'What do you enjoy?',
-    'Show your best smile',
-    'Build trust with others',
-    'Who manages this profile?',
+    tr('Let\'s start with the basics'),
+    tr('Your faith is your foundation'),
+    tr('Tell us about your career'),
+    tr('How do you like to live?'),
+    tr('Tell us about your family'),
+    tr('What are you looking for?'),
+    tr('What do you enjoy?'),
+    tr('Show your best smile'),
+    tr('Build trust with others'),
+    tr('Who manages this profile?'),
   ];
 
   Map<String, dynamic>? onboardingData;
@@ -127,18 +127,18 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   String _getStepTitle() {
     if (_isFixing) {
       final titles = [
-        'Basic Info',
-        'Faith Details',
-        'Bio & Details',
-        'Lifestyle',
-        'Family Background',
-        'Partner Preferences',
-        'Hobbies',
-        'My Photos',
-        'Verification',
-        'Finalize',
+        tr('Basic Info'),
+        tr('Faith Details'),
+        tr('Bio & Details'),
+        tr('Lifestyle'),
+        tr('Family Background'),
+        tr('Partner Preferences'),
+        tr('Hobbies'),
+        tr('My Photos'),
+        tr('Verification'),
+        tr('Finalize'),
       ];
-      return 'Edit ${titles[_currentStep]}';
+      return tr('Edit {step}', {'step': titles[_currentStep]});
     }
     return 'GraceMatch';
   }
@@ -295,7 +295,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                     label: _isFixing
                         ? 'Save'
                         : _currentStep == _totalSteps - 1
-                        ? 'Complete Profile ✓'
+                        ? tr('Complete Profile ✓')
                         : tr('Continue'),
                     isLoading: isLoading,
                     onPressed: _nextStep,

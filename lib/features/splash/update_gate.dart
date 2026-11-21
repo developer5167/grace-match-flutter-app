@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../core/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,7 +11,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/app_version.dart';
 
 class AppUpdatePolicy {
-  const AppUpdatePolicy({
+  AppUpdatePolicy({
     required this.enabled,
     required this.latestVersion,
     required this.mandatory,
@@ -41,17 +42,21 @@ class AppUpdatePolicy {
       enabled: json['enabled'] == true,
       latestVersion: (json['latest_version'] ?? '').toString(),
       mandatory: json['mandatory'] == true,
-      title: (json['title'] ?? 'Update available').toString(),
+      title: (json['title'] ?? tr('Update available')).toString(),
       message:
           (json['message'] ??
-                  'A newer version of GraceMatch is ready. Update to keep using the app.')
+                  tr(
+                    'A newer version of GraceMatch is ready. Update to keep using the app.',
+                  ))
               .toString(),
       androidUrl: json['android_url']?.toString(),
       iosUrl: json['ios_url']?.toString(),
       androidMaintenance: json['android_maintenance'] == true,
       iosMaintenance: json['ios_maintenance'] == true,
       maintenanceMessage: note.isEmpty
-          ? 'GraceMatch is temporarily unavailable. Please try again shortly.'
+          ? tr(
+              'GraceMatch is temporarily unavailable. Please try again shortly.',
+            )
           : note,
     );
   }
@@ -222,7 +227,7 @@ class _UpdateDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('Update now', style: AppTextStyles.buttonText),
+                child: Text(tr('Update now'), style: AppTextStyles.buttonText),
               ),
             ),
             if (!policy.mandatory) ...[

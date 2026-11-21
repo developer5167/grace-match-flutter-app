@@ -218,15 +218,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String _formatLastSeen() {
     if (_peerTyping) return 'typing…';
     if (_isOnline) return 'Online';
-    if (_lastSeenAt == null) return 'Offline';
+    if (_lastSeenAt == null) return tr('Offline');
     final dt = DateTime.tryParse(_lastSeenAt!)?.toLocal();
-    if (dt == null) return 'Offline';
+    if (dt == null) return tr('Offline');
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'Last seen just now';
-    if (diff.inMinutes < 60) return 'Last seen ${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return 'Last seen ${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Last seen yesterday';
-    return 'Last seen ${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return tr('Last seen just now');
+    if (diff.inMinutes < 60)
+      return tr('Last seen {n}m ago', {'n': diff.inMinutes});
+    if (diff.inHours < 24) return tr('Last seen {n}h ago', {'n': diff.inHours});
+    if (diff.inDays == 1) return tr('Last seen yesterday');
+    return tr('Last seen {n}d ago', {'n': diff.inDays});
   }
 
   String _formatTime(dynamic raw) {
@@ -549,7 +550,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             borderRadius: BorderRadius.circular(18),
           ),
           title: Text(
-            'Report ${widget.otherUserName}?',
+            tr('Report {name}?', {'name': widget.otherUserName}),
             style: AppTextStyles.labelLarge,
           ),
           content: Column(
@@ -558,8 +559,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             children: [
               Text(
                 tr(
-                  'Our team will review this. They will not be told who reported '
-                  'them, and they will not be able to reach you again.',
+                  tr(
+                    'Our team will review this. They will not be told who reported '
+                    'them, and they will not be able to reach you again.',
+                  ),
                 ),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,

@@ -114,27 +114,35 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   /// Shield in the app bar: how to talk safely and how to report or block.
   void _showSafety(BuildContext context) {
-    const tips = <(IconData, String)>[
+    final tips = <(IconData, String)>[
       (
         Icons.lock_outline_rounded,
-        'Your phone number stays hidden. Use voice and video calls inside '
-            'Grace Match until you are sure.',
+        tr(
+          'Your phone number stays hidden. Use voice and video calls inside '
+          'Grace Match until you are sure.',
+        ),
       ),
       (
         Icons.money_off_rounded,
-        'Never send money, gifts or bank details to anyone you meet here, '
-            'whatever the reason given.',
+        tr(
+          'Never send money, gifts or bank details to anyone you meet here, '
+          'whatever the reason given.',
+        ),
       ),
       (
         Icons.family_restroom_rounded,
-        'Involve your family early, and meet in a public place with family '
-            'present.',
+        tr(
+          'Involve your family early, and meet in a public place with family '
+          'present.',
+        ),
       ),
       (
         Icons.flag_rounded,
-        'Report or block anyone from the ⋯ menu in their chat or on their '
-            'profile. Our team reviews every report, and they will not be '
-            'told who reported them.',
+        tr(
+          'Report or block anyone from the ⋯ menu in their chat or on their '
+          'profile. Our team reviews every report, and they will not be '
+          'told who reported them.',
+        ),
       ),
     ];
     showModalBottomSheet<void>(
@@ -218,7 +226,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             Text(tr('No active chats'), style: AppTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
-              'When an interest is accepted, you can talk here.',
+              tr('When an interest is accepted, you can talk here.'),
               style: AppTextStyles.bodyMedium,
             ),
           ],
