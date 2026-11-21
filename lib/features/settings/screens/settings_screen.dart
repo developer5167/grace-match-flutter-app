@@ -24,6 +24,10 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _busy = false;
+  // When the member asked staff to delete the account; null if they have
+  // not, or staff closed the request without deleting.
+  DateTime? _deletionRequestedAt;
+  bool _deletionLoaded = false;
 
   @override
   void initState() {
@@ -31,6 +35,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     context.read<ProfileBloc>().add(
       const FetchProfileEvent(silentRefresh: true),
     );
+    di.sl<AuthRepository>().accountDeletionRequestedAt().then(
+      (at) {
+        if (mounted) {
+          setState(() {
+            _deletionRequestedAt = at;
+            _deletionLoaded = true;
+          });
+        }
+      },
+      onError: (_) {
+        if (mounted) setState(() => _deletionLoaded = true);
+      },
+    );
+  }
+
+  Future<void> _requestDeletion() async {
+    final at = await confirmRequestAccountDeletion(context);
+    if (at != null && mounted) setState(() => _deletionRequestedAt = at);
+  }
+
+  static String _date(DateTime d) {
+    const m = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${d.day} ${m[d.month - 1]} ${d.year}';
   }
 
   Future<void> _patch(Map<String, dynamic> body) async {
@@ -326,7 +366,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      onTap: _busy ? null : () => confirmDeleteAccount(context),
+                      // Disabled while a request is with the team.
+                      onTap:
+                          _busy ||
+                              !_deletionLoaded ||
+                              _deletionRequestedAt != null
+                          ? null
+                          : _requestDeletion,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -351,14 +397,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Delete account',
+                                    _deletionRequestedAt != null
+                                        ? 'Account deletion requested'
+                                        : 'Delete account',
                                     style: AppTextStyles.labelLarge.copyWith(
-                                      color: AppColors.error,
+                                      color: _deletionRequestedAt != null
+                                          ? AppColors.textTertiary
+                                          : AppColors.error,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Permanently erase your profile, photos, and messages',
+                                    _deletionRequestedAt != null
+                                        ? 'Requested on ${_date(_deletionRequestedAt!)}. '
+                                              'Our team will delete your account and sign you out.'
+                                        : 'Ask our team to erase your profile, photos, and messages',
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.textTertiary,
                                     ),

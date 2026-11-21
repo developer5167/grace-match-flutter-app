@@ -17,7 +17,9 @@ import 'core/notifications/push_center.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/membership_palette.dart';
 import 'core/di/injection.dart' as di;
+import 'core/network/dio_client.dart';
 import 'core/network/socket_service.dart';
+import 'features/auth/delete_account.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart' as ck;
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'features/calls/data/call_kit.dart';
@@ -33,7 +35,6 @@ import 'features/chat/bloc/chat_bloc.dart';
 import 'features/subscriptions/bloc/subscription_bloc.dart';
 import 'features/activity/bloc/activity_bloc.dart';
 import 'firebase_options.dart';
-
 
 // Background message handler — must be top-level, called when app is killed/background.
 //
@@ -55,7 +56,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
   if (_isTypingCleared(data)) {
     await PushCenter.ensurePlugin();
-    await PushCenter.clear([data['tag']?.toString() ?? 'typing:${data['conversation_id']}']);
+    await PushCenter.clear([
+      data['tag']?.toString() ?? 'typing:${data['conversation_id']}',
+    ]);
     return;
   }
   // Data-only Android messages: the app draws the tray item so tap and
@@ -68,7 +71,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 bool _isTypingCleared(Map<String, dynamic> data) =>
-    data['kind']?.toString() == 'typing_cleared' || data['type']?.toString() == 'typing_cleared';
+    data['kind']?.toString() == 'typing_cleared' ||
+    data['type']?.toString() == 'typing_cleared';
 
 // The call UI's buttons, pressed while the app is not running. Accept needs
 // nothing here: it launches the app, which picks the call up on start.
@@ -144,15 +148,24 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  await AppRouter.init(initialLocation: answeredOnLaunch != null ? '/call' : '/splash');
+  await AppRouter.init(
+    initialLocation: answeredOnLaunch != null ? '/call' : '/splash',
+  );
+  // Staff deleted the account (socket), or the server refused the session for
+  // good (HTTP): sign out and return to the phone screen.
+  SocketService.onAccountDeleted = () =>
+      signOutEndedSession(message: 'Your account has been deleted.');
+  DioClient.onSessionEnded = () => signOutEndedSession();
   if (answeredOnLaunch != null) {
     CallManager.instance.acceptIncoming(
       answeredOnLaunch,
@@ -213,11 +226,13 @@ Future<void> _initStorage() async {
 
 Future<IncomingCallData?> _answeredCallOnLaunch() async {
   try {
-    final hasSession = await AppStorage.getAccessToken()
-        .timeout(const Duration(seconds: 3));
+    final hasSession = await AppStorage.getAccessToken().timeout(
+      const Duration(seconds: 3),
+    );
     if (hasSession == null) return null;
-    return await CallKit.takeAcceptedOnLaunch()
-        .timeout(const Duration(seconds: 3));
+    return await CallKit.takeAcceptedOnLaunch().timeout(
+      const Duration(seconds: 3),
+    );
   } catch (e, st) {
     debugPrint('Launch call check failed: $e\n$st');
     return null;
@@ -261,7 +276,10 @@ Future<void> _prepareNotifications(bool firebaseReady) async {
         return;
       }
       if (_isTypingCleared(message.data)) {
-        PushCenter.clear([message.data['tag']?.toString() ?? 'typing:${message.data['conversation_id']}']);
+        PushCenter.clear([
+          message.data['tag']?.toString() ??
+              'typing:${message.data['conversation_id']}',
+        ]);
         return;
       }
 
@@ -273,14 +291,12 @@ Future<void> _prepareNotifications(bool firebaseReady) async {
         return; // Socket already delivered it live — no duplicate notification
       }
 
-      final title = message.notification?.title ?? message.data['title']?.toString();
-      final body = message.notification?.body ?? message.data['body']?.toString();
+      final title =
+          message.notification?.title ?? message.data['title']?.toString();
+      final body =
+          message.notification?.body ?? message.data['body']?.toString();
       if (title != null && title.isNotEmpty) {
-        PushCenter.showForeground(
-          title: title,
-          body: body,
-          data: message.data,
-        );
+        PushCenter.showForeground(title: title, body: body, data: message.data);
       }
     });
 
@@ -368,7 +384,9 @@ Future<void> _initLocalNotifications() async {
       importance: Importance.high,
     );
     await PushCenter.plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(androidChannel);
   } catch (e) {
     debugPrint('Local notifications init failed: $e');
@@ -382,7 +400,8 @@ class GraceMatchApp extends StatefulWidget {
   State<GraceMatchApp> createState() => _GraceMatchAppState();
 }
 
-class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserver {
+class _GraceMatchAppState extends State<GraceMatchApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
@@ -429,7 +448,9 @@ class _GraceMatchAppState extends State<GraceMatchApp> with WidgetsBindingObserv
             routerConfig: AppRouter.router,
             builder: (context, child) {
               return MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: TextScaler.noScaling),
                 child: AnimatedTheme(
                   data: AppTheme.dark,
                   duration: const Duration(milliseconds: 280),

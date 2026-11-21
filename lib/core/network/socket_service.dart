@@ -5,6 +5,9 @@ import '../constants/app_constants.dart';
 import 'dio_client.dart';
 
 class SocketService {
+  /// Set in main.dart: signs out when staff delete this member's account.
+  static void Function()? onAccountDeleted;
+
   io.Socket? _socket;
   bool _listenersBound = false;
 
@@ -233,6 +236,11 @@ class SocketService {
         ...Map<String, dynamic>.from(data as Map),
         'type': 'offline',
       });
+    });
+
+    // Staff completed this member's deletion request.
+    socket.on('account_deleted', (_) {
+      SocketService.onAccountDeleted?.call();
     });
 
     _socket?.on('support:message', (data) {

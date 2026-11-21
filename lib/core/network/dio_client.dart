@@ -8,6 +8,10 @@ import '../storage/app_storage.dart';
 class DioClient {
   static Dio? _instance;
 
+  /// Set in main.dart: the server no longer accepts this session (for example
+  /// staff deleted the account). Storage is already cleared when it runs.
+  static void Function()? onSessionEnded;
+
   static Dio get instance {
     _instance ??= _createDio();
     return _instance!;
@@ -75,16 +79,17 @@ class DioClient {
       }
       // Bounded like every other request. Without timeouts a refresh stuck
       // on a dead connection held every request queued behind it for good.
-      final response = await Dio(
-        BaseOptions(
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 20),
-          sendTimeout: const Duration(seconds: 20),
-        ),
-      ).post(
-        '${AppConstants.baseUrl}${ApiEndpoints.refreshToken}',
-        data: {'refresh_token': refreshToken},
-      );
+      final response =
+          await Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              sendTimeout: const Duration(seconds: 20),
+            ),
+          ).post(
+            '${AppConstants.baseUrl}${ApiEndpoints.refreshToken}',
+            data: {'refresh_token': refreshToken},
+          );
       final data = response.data['data'] as Map<String, dynamic>;
       final newAccess = data['access_token'] as String;
       final newRefresh = data['refresh_token'] as String;
@@ -168,6 +173,7 @@ class _AuthInterceptor extends Interceptor {
     if (_isRefreshCall(err.requestOptions) ||
         err.requestOptions.extra['retried'] == true) {
       await AppStorage.clearAll();
+      DioClient.onSessionEnded?.call();
       return handler.next(err);
     }
 
@@ -182,7 +188,10 @@ class _AuthInterceptor extends Interceptor {
     } catch (e) {
       // A refresh that timed out says nothing about the session: keep it and
       // let the next request try again, rather than signing the member out.
-      if (!_isTimeout(e)) await AppStorage.clearAll();
+      if (!_isTimeout(e)) {
+        await AppStorage.clearAll();
+        DioClient.onSessionEnded?.call();
+      }
       return handler.next(err);
     }
 

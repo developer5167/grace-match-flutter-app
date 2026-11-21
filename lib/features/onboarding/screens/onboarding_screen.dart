@@ -21,7 +21,6 @@ import '../steps/step9_verification.dart';
 import '../steps/step10_final.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
-import '../../auth/delete_account.dart';
 import '../bloc/onboarding_state.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -299,18 +298,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                     onPressed: _nextStep,
                   ),
                 ),
-                if (!_isFixing)
-                  TextButton(
-                    onPressed: isLoading
-                        ? null
-                        : () => confirmDeleteAccount(context),
-                    child: Text(
-                      'Delete account',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.error,
-                      ),
-                    ),
-                  ),
                 const SizedBox(height: 12),
               ],
             ),

@@ -205,17 +205,7 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: _working
-                          ? null
-                          : () => confirmDeleteAccount(context),
-                      child: Text(
-                        'Delete account',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ),
+                    DeleteAccountTextButton(enabled: !_working),
                     TextButton(
                       onPressed: () {
                         AppStorage.clearAll();

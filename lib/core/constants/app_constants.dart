@@ -62,6 +62,7 @@ class ApiEndpoints {
   static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
   static const String deleteAccount = '/privacy/account';
+  static const String deleteAccountRequest = '/privacy/account/delete-request';
   static const String updateFcmToken = '/auth/fcm-token';
 
   // Onboarding

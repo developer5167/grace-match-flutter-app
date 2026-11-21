@@ -108,18 +108,37 @@ class AuthRepository {
     await AppStorage.clearAll();
   }
 
-  /// Permanently erases the signed-in account. The server requires the
-  /// confirmation word; the caller shows that to the member first.
-  Future<void> deleteAccount() async {
+  /// Asks staff to delete the account. The member stays signed in; staff
+  /// complete it from the admin inbox. Returns when it was requested.
+  Future<DateTime> requestAccountDeletion({String? reason}) async {
     try {
-      await _dio.delete(
-        ApiEndpoints.deleteAccount,
-        data: const {'confirm': 'DELETE'},
+      final res = await _dio.post(
+        ApiEndpoints.deleteAccountRequest,
+        data: {if (reason != null && reason.isNotEmpty) 'reason': reason},
       );
+      return _requestedAt(res.data) ?? DateTime.now();
     } on DioException catch (e) {
       throw _handleError(e);
     }
-    await AppStorage.clearAll();
+  }
+
+  /// When an open deletion request was made, or null if there is none.
+  Future<DateTime?> accountDeletionRequestedAt() async {
+    try {
+      final res = await _dio.get(ApiEndpoints.deleteAccountRequest);
+      return _requestedAt(res.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  static DateTime? _requestedAt(Object? body) {
+    final data = body is Map ? body['data'] : null;
+    if (data is! Map || data['status'] != 'pending') return null;
+    return DateTime.tryParse(
+          data['requested_at']?.toString() ?? '',
+        )?.toLocal() ??
+        DateTime.now();
   }
 
   Exception _handleError(DioException e) {
