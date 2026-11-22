@@ -7,7 +7,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../auth/delete_account.dart';
 import '../data/review_repository.dart';
 
 /// After onboarding the member used to sit on a dead "under review" screen.
@@ -206,7 +205,6 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         ),
                       ),
                     ),
-                    DeleteAccountTextButton(enabled: !_working),
                     TextButton(
                       onPressed: () {
                         AppStorage.clearAll();
