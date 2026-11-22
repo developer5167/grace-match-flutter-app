@@ -259,9 +259,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         }
                         final p = profiles[i - 1];
                         final id = _idOf(p);
+                        // The server puts profiles that fit the saved
+                        // preferences first; a heading marks where the
+                        // rest begin.
+                        final firstOutside = profiles.indexWhere(
+                          (x) => x['outside_preferences'] == true,
+                        );
                         // The card tilts with the phone (as the old swipe
                         // card did), gently, so it stays easy to tap.
-                        return DeviceTilt(
+                        final card = DeviceTilt(
                           key: ValueKey(id),
                           maxAngle: 0.09,
                           borderRadius: BorderRadius.circular(20),
@@ -277,6 +283,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                             onNotNow: () => _notNow(id),
                           ),
                         );
+                        if (i - 1 != firstOutside) return card;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _outsideHeader(onlyOutside: firstOutside == 0),
+                            const SizedBox(height: 12),
+                            card,
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -286,6 +301,33 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// Above the first profile outside the member's saved preferences.
+  Widget _outsideHeader({required bool onlyOutside}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr('More profiles you may like'),
+            style: AppTextStyles.labelLarge.copyWith(color: AppColors.gold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            onlyOutside
+                ? tr(
+                    'No one matches all your saved preferences yet. These families are a little outside them. New members join every week.',
+                  )
+                : tr('These are a little outside your saved preferences.'),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -501,8 +543,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     'New profiles arrive tomorrow, or see plans for more each day.',
                   )
                 : tr(
-                    'New members are reviewed by our team every day. Check back '
-                    'soon, or widen your filters.',
+                    'New families join GraceMatch every week. We will send you a '
+                    'notification as soon as a new profile joins.',
                   ),
             style: AppTextStyles.bodyMedium,
             textAlign: TextAlign.center,

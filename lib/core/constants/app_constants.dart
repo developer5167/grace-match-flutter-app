@@ -171,6 +171,7 @@ class ApiEndpoints {
   static const String reviewActions = '/review/actions';
   static const String reviewSubmit = '/review/actions/submit';
   static const String reviewSubmitAll = '/review/actions/submit-all';
+  static const String reviewVerify = '/review/verify';
 
   // Discover
   static const String dailyMatches = '/discover/daily-matches';

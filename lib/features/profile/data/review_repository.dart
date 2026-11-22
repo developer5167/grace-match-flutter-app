@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/dio_client.dart';
 
@@ -65,8 +66,79 @@ class ReviewInbox {
   );
 }
 
+/// One section of the automatic profile check.
+class VerifySection {
+  final String key;
+  final String title;
+  final String status; // passed | failed | review | recommended
+  final String? message;
+  final List<({String field, String message})> issues;
+  final String route;
+  final bool optional;
+
+  const VerifySection({
+    required this.key,
+    required this.title,
+    required this.status,
+    required this.message,
+    required this.issues,
+    required this.route,
+    required this.optional,
+  });
+
+  factory VerifySection.fromJson(Map<String, dynamic> j) => VerifySection(
+    key: j['key']?.toString() ?? '',
+    title: j['title']?.toString() ?? '',
+    status: j['status']?.toString() ?? 'review',
+    message: j['message']?.toString(),
+    issues: (j['issues'] as List? ?? [])
+        .whereType<Map>()
+        .map(
+          (i) => (
+            field: i['field']?.toString() ?? '',
+            message: i['message']?.toString() ?? '',
+          ),
+        )
+        .toList(),
+    route: j['route']?.toString() ?? '/onboarding',
+    optional: j['optional'] == true,
+  );
+}
+
+class VerifyResult {
+  final String reviewStatus;
+  final bool approved;
+  final List<VerifySection> sections;
+
+  const VerifyResult({
+    required this.reviewStatus,
+    required this.approved,
+    required this.sections,
+  });
+
+  factory VerifyResult.fromJson(Map<String, dynamic> j) => VerifyResult(
+    reviewStatus: j['review_status']?.toString() ?? 'pending',
+    approved: j['approved'] == true,
+    sections: (j['sections'] as List? ?? [])
+        .whereType<Map>()
+        .map((e) => VerifySection.fromJson(Map<String, dynamic>.from(e)))
+        .toList(),
+  );
+}
+
 class ReviewRepository {
   final _dio = DioClient.instance;
+
+  /// Run the automatic checks now (only changed sections are checked again).
+  Future<VerifyResult> verify() async {
+    final res = await _dio.post(
+      ApiEndpoints.reviewVerify,
+      options: Options(receiveTimeout: const Duration(seconds: 90)),
+    );
+    return VerifyResult.fromJson(
+      Map<String, dynamic>.from(res.data['data'] ?? {}),
+    );
+  }
 
   Future<ReviewInbox> fetch() async {
     final res = await _dio.get(ApiEndpoints.reviewActions);

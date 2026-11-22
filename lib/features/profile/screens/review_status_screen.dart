@@ -195,6 +195,15 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
                         isLoading: _loading,
                         onPressed: _reload,
                       ),
+                    if (!isRejected) ...[
+                      const SizedBox(height: 12),
+                      AppButton(
+                        label: tr('Check my details'),
+                        isSecondary: true,
+                        icon: Icons.fact_check_rounded,
+                        onPressed: () => context.push('/verify-profile'),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: () => context.push('/support'),

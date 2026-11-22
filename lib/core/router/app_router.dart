@@ -23,6 +23,7 @@ import '../../features/support/screens/support_screen.dart';
 import '../../features/support/screens/new_ticket_screen.dart';
 import '../../features/support/screens/ticket_screen.dart';
 import '../../features/profile/screens/review_status_screen.dart';
+import '../../features/profile/screens/verify_profile_screen.dart';
 import '../../features/profile/screens/identity_verification_screen.dart';
 import '../../features/splash/maintenance_screen.dart';
 import '../storage/app_storage.dart';
@@ -73,6 +74,7 @@ class AppRouter {
         if (reviewStatus != 'approved') {
           final fixing =
               path == '/review-status' ||
+              path == '/verify-profile' ||
               path == '/onboarding' ||
               path == '/settings' ||
               path == '/verify-identity' ||
@@ -89,6 +91,10 @@ class AppRouter {
         GoRoute(
           path: '/review-status',
           builder: (_, __) => const ReviewStatusScreen(),
+        ),
+        GoRoute(
+          path: '/verify-profile',
+          builder: (_, __) => const VerifyProfileScreen(),
         ),
         GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
         GoRoute(path: '/terms', builder: (_, __) => const TermsScreen()),
@@ -108,7 +114,9 @@ class AppRouter {
                 final extra = state.extra;
                 final args = extra is Map ? extra : const {};
                 return OtpVerificationScreen(
-                  phone: extra is String ? extra : args['phone'] as String? ?? '',
+                  phone: extra is String
+                      ? extra
+                      : args['phone'] as String? ?? '',
                   testOtp: args['testOtp'] as String?,
                 );
               },

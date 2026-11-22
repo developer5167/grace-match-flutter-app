@@ -70,7 +70,12 @@ class _Step10FinalState extends OnboardingStepState<Step10Final> {
     if (_managedBy == null || !_agreeTerms) {
       return null;
     }
-    return {'profile_managed_by': _managers[_managedBy]};
+    return {
+      'profile_managed_by': _managers[_managedBy],
+      // This app shows the automatic checks itself (/verify-profile), so
+      // the server need not push about items to fix.
+      'client_verifies': true,
+    };
   }
 
   @override

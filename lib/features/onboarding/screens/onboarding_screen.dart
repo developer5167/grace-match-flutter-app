@@ -116,10 +116,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Completed onboarding
+      // Completed onboarding: the automatic checks run next, on screen.
       AppStorage.saveOnboardingComplete(true);
       if (mounted) {
-        context.go('/discover');
+        context.go('/verify-profile');
       }
     }
   }
@@ -342,18 +342,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           else
             const SizedBox(width: 48),
           const Spacer(),
-          if (!_isFixing && _currentStep != 7 && _currentStep != 9)
-            TextButton(
-              onPressed: isLoading
-                  ? null
-                  : () {
-                      AppHaptics.light();
-                      _onStepSaved();
-                    },
-              child: Text(tr('Skip'), style: AppTextStyles.labelMedium),
-            )
-          else
-            const SizedBox(width: 48),
+          // No Skip: members were skipping every step, even their name,
+          // and families saw empty profiles. Each step asks only for what
+          // matters, and the server checks it again after sign-up.
+          const SizedBox(width: 48),
         ],
       ),
     );

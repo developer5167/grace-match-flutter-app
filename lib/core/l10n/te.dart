@@ -815,4 +815,92 @@ const Map<String, String> teluguStrings = {
   "Block {name}": "{name} ని బ్లాక్ చేయండి",
   "Block {name}?": "{name} ని బ్లాక్ చేయాలా?",
   "Payment failed: {reason}": "చెల్లింపు విఫలమైంది: {reason}",
+  "New families join GraceMatch every week. We will send you a notification as soon as a new profile joins.":
+      "ప్రతి వారం కొత్త కుటుంబాలు GraceMatch లో చేరుతున్నాయి. కొత్త ప్రొఫైల్ చేరిన వెంటనే మీకు నోటిఫికేషన్ పంపుతాము.",
+  "More profiles you may like": "మీకు నచ్చే మరిన్ని ప్రొఫైల్స్",
+  "No one matches all your saved preferences yet. These families are a little outside them. New members join every week.":
+      "మీ ప్రాధాన్యతలన్నింటికీ సరిపోయేవారు ఇంకా లేరు. ఈ కుటుంబాలు వాటికి కొంచెం బయట ఉన్నాయి. ప్రతి వారం కొత్త సభ్యులు చేరుతున్నారు.",
+  "These are a little outside your saved preferences.":
+      "ఇవి మీ ప్రాధాన్యతలకు కొంచెం బయట ఉన్నాయి.",
+  // Automatic verification screen.
+  "Verifying your details": "మీ వివరాలను ధృవీకరిస్తున్నాము",
+  "To keep GraceMatch genuine and free of fake profiles, every family completes all their details. This keeps everyone safe, including you.":
+      "GraceMatch ను నిజమైనదిగా, నకిలీ ప్రొఫైల్స్ లేకుండా ఉంచడానికి, ప్రతి కుటుంబం తమ వివరాలన్నీ పూర్తి చేస్తుంది. ఇది మీతో సహా అందరినీ సురక్షితంగా ఉంచుతుంది.",
+  "Basic details": "ప్రాథమిక వివరాలు",
+  "Faith details": "విశ్వాస వివరాలు",
+  "About you": "మీ గురించి",
+  "Identity (DigiLocker)": "గుర్తింపు (DigiLocker)",
+  "Done": "పూర్తయింది",
+  "Checking…": "పరిశీలిస్తున్నాము…",
+  "Looks good": "బాగుంది",
+  "Our team will take a quick look.": "మా బృందం ఒకసారి పరిశీలిస్తుంది.",
+  "Fix now": "ఇప్పుడే సరిచేయండి",
+  "Verify now": "ఇప్పుడే ధృవీకరించండి",
+  "We could not check your details right now. Please try again.":
+      "ప్రస్తుతం మీ వివరాలను పరిశీలించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.",
+  "You are verified!": "మీరు ధృవీకరించబడ్డారు!",
+  "Your profile is now live. Families can see you, and you can start exploring.":
+      "మీ ప్రొఫైల్ ఇప్పుడు అందుబాటులో ఉంది. కుటుంబాలు మిమ్మల్ని చూడగలవు, మీరు ప్రొఫైల్స్ చూడటం ప్రారంభించవచ్చు.",
+  "Start exploring": "ప్రొఫైల్స్ చూడండి",
+  "Please fix the items marked above. We will check only those again.":
+      "పైన గుర్తించిన అంశాలను సరిచేయండి. వాటిని మాత్రమే మళ్లీ పరిశీలిస్తాము.",
+  "Almost there": "దాదాపు పూర్తయింది",
+  "Our team will take a quick look and you will get a notification, usually within a day.":
+      "మా బృందం ఒకసారి పరిశీలిస్తుంది, సాధారణంగా ఒక రోజులో మీకు నోటిఫికేషన్ వస్తుంది.",
+  "Check my details": "నా వివరాలు పరిశీలించండి",
+  "Please fill this in.": "దయచేసి దీన్ని నింపండి.",
+  "Some details are missing. Please fill them in.":
+      "కొన్ని వివరాలు లేవు. దయచేసి వాటిని నింపండి.",
+  "Please rewrite this. It has words that are not suitable for a matrimony profile.":
+      "దయచేసి దీన్ని మళ్లీ రాయండి. ఇందులో వివాహ ప్రొఫైల్‌కు తగని పదాలు ఉన్నాయి.",
+  "Please rewrite this respectfully. GraceMatch asks members to respect every faith and community.":
+      "దయచేసి దీన్ని గౌరవంగా మళ్లీ రాయండి. ప్రతి విశ్వాసాన్ని, సమాజాన్ని గౌరవించమని GraceMatch సభ్యులను కోరుతుంది.",
+  "Please remove phone numbers, email, social media or WhatsApp details. You can share contacts safely after you connect.":
+      "దయచేసి ఫోన్ నంబర్లు, ఇమెయిల్, సోషల్ మీడియా లేదా WhatsApp వివరాలను తొలగించండి. కనెక్ట్ అయిన తర్వాత కాంటాక్ట్‌లను సురక్షితంగా పంచుకోవచ్చు.",
+  "Please remove requests for money or payments.":
+      "దయచేసి డబ్బు లేదా చెల్లింపుల అభ్యర్థనలను తొలగించండి.",
+  "GraceMatch is for marriage. Please rewrite this to reflect that.":
+      "GraceMatch వివాహం కోసం. దయచేసి దానికి తగినట్లు మళ్లీ రాయండి.",
+  "Please enter your real name.": "దయచేసి మీ అసలు పేరు నమోదు చేయండి.",
+  "Please write this properly so families can understand it.":
+      "కుటుంబాలకు అర్థమయ్యేలా దయచేసి దీన్ని సరిగ్గా రాయండి.",
+  "We could not see a face clearly in a photo. Please upload a clear photo of yourself, facing the camera.":
+      "ఒక ఫోటోలో ముఖం స్పష్టంగా కనిపించలేదు. కెమెరా వైపు చూస్తున్న మీ స్పష్టమైన ఫోటోను అప్‌లోడ్ చేయండి.",
+  "A photo has more than one person. Please use photos that show only you.":
+      "ఒక ఫోటోలో ఒకరి కంటే ఎక్కువ మంది ఉన్నారు. మీరు మాత్రమే ఉన్న ఫోటోలు వాడండి.",
+  "A photo is not suitable for a matrimony profile. Please replace it.":
+      "ఒక ఫోటో వివాహ ప్రొఫైల్‌కు తగినది కాదు. దయచేసి దాన్ని మార్చండి.",
+  "A photo could not be opened. Please upload it again.":
+      "ఒక ఫోటో తెరవబడలేదు. దయచేసి మళ్లీ అప్‌లోడ్ చేయండి.",
+  "Please add at least one clear photo of yourself.":
+      "దయచేసి మీ స్పష్టమైన ఫోటో కనీసం ఒకటి జోడించండి.",
+  "Please take a verification selfie. It is never shown to other members.":
+      "దయచేసి ధృవీకరణ సెల్ఫీ తీయండి. అది ఇతర సభ్యులకు ఎప్పుడూ కనిపించదు.",
+  "We could not see your face clearly in the selfie. Please retake it facing the camera, in good light, without sunglasses.":
+      "సెల్ఫీలో మీ ముఖం స్పష్టంగా కనిపించలేదు. మంచి వెలుతురులో, సన్‌గ్లాసెస్ లేకుండా, కెమెరా వైపు చూస్తూ మళ్లీ తీయండి.",
+  "Our team will compare your selfie with your photo.":
+      "మా బృందం మీ సెల్ఫీని మీ ఫోటోతో పోల్చి చూస్తుంది.",
+  "Received. Our team will verify it.": "అందింది. మా బృందం ధృవీకరిస్తుంది.",
+  "Recommended: verify with DigiLocker to earn the Verified badge families trust.":
+      "సిఫార్సు: కుటుంబాలు నమ్మే ధృవీకరణ గుర్తు కోసం DigiLocker తో ధృవీకరించండి.",
+  "Name": "పేరు",
+  "Surname": "ఇంటి పేరు",
+  "Gender": "లింగం",
+  "Looking for": "వెతుకుతున్నది",
+  "Date of birth": "పుట్టిన తేదీ",
+  "Church name": "చర్చి పేరు",
+  "Favourite verse": "ఇష్టమైన వచనం",
+  "Faith journey": "విశ్వాస ప్రయాణం",
+  "About me": "నా గురించి",
+  "Family type": "కుటుంబ రకం",
+  "Family values": "కుటుంబ విలువలు",
+  "Father's occupation": "తండ్రి వృత్తి",
+  "Mother's occupation": "తల్లి వృత్తి",
+  "Sibling details": "తోబుట్టువుల వివరాలు",
+  "Preferred age": "ఇష్టపడే వయస్సు",
+  "Selfie": "సెల్ఫీ",
+  "Add your name, date of birth and city.":
+      "మీ పేరు, పుట్టిన తేదీ, నగరం జోడించండి.",
+  "Add your denomination, church and marriage plans.":
+      "మీ డినామినేషన్, చర్చి, వివాహ ప్రణాళిక జోడించండి.",
 };
