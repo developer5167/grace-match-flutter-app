@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/posters/poster_gate.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -28,7 +29,30 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // A poster staff published shows once, when the app opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) PosterGate.maybeShow(context);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Opening the app from the background counts as opening it too.
+    if (state == AppLifecycleState.resumed && mounted)
+      PosterGate.maybeShow(context);
+  }
+
   int get _selectedIndex {
     try {
       final location = GoRouterState.of(context).uri.path;

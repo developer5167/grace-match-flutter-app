@@ -903,4 +903,5 @@ const Map<String, String> teluguStrings = {
       "మీ పేరు, పుట్టిన తేదీ, నగరం జోడించండి.",
   "Add your denomination, church and marriage plans.":
       "మీ డినామినేషన్, చర్చి, వివాహ ప్రణాళిక జోడించండి.",
+  "Open": "తెరవండి",
 };

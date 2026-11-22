@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/storage/app_storage.dart';
 import '../../../core/widgets/app_button.dart';
 import '../data/review_repository.dart';
+import '../../posters/poster_gate.dart';
 
 /// After onboarding the member used to sit on a dead "under review" screen.
 /// Staff could only approve or reject, and a missing photo had no way back.
@@ -36,6 +37,10 @@ class _ReviewStatusScreenState extends State<ReviewStatusScreen> {
     super.initState();
     PushCenter.clear(const ['review']);
     _reload();
+    // Members waiting for review see posters too.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) PosterGate.maybeShow(context);
+    });
   }
 
   Future<void> _reload() async {
